@@ -1,0 +1,35 @@
+.sidenavigation {
+  width: 250px;
+  height: 100%;
+  background: $black; 
+  position: relative;
+  padding-top: 1rem;
+  border-right: 1px solid $border-color;
+}
+
+.sidenavigation-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidenavigation-menu {
+  padding: $m-size 0 $m-size $l-size;
+  display: block;
+  color: $white;
+  font-weight: bold;
+  opacity: .8;
+
+  &:hover {
+    background: lighten($black, 5%);
+    text-decoration: none;
+    opacity: 1;
+  }
+}
+
+.sidenavigation-menu-active {
+  background: lighten($black, 7%);
+  opacity: 1;
+  border-right: 4px solid $yellow;
+}

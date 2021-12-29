@@ -1,0 +1,66 @@
+.user-tab {
+  width: 700px;
+  height: 100%;
+  margin: 0 auto;
+  margin-top: 3rem;
+  background: $white;
+  border: 1px solid $border-color;
+
+  @media (max-width: $mobile) {
+    width: 100%;
+    margin-top: 6rem;
+  }
+}
+
+.user-tab-content {
+  padding: $m-size;
+  height: 100%;
+
+  @include mobile {
+    padding: 0;
+  }
+}
+
+.user-tab-nav {
+  background: $background-color-01;
+  border-bottom: 1px solid $border-color;
+  padding: 0 $l-size;
+
+  @media (max-width: $mobile) {
+    padding: 0;
+  }
+}
+
+.user-tab-menu {
+  padding: 0;
+  margin: 0;
+  position: relative;
+  bottom: -1px;
+}
+
+.user-tab-item {
+  list-style-type: none;
+  color: $gray-10;
+  padding: $m-size;
+  font-size: $font-medium;
+  border-bottom: 1px solid transparent;
+  display: inline-block;
+  transition: all .3s ease;
+
+  &:hover {
+    cursor: pointer;
+    background: $background-color;
+  }
+}
+
+.user-tab-active {
+  color: $paragraph-color;
+  font-weight: bold;
+  border-bottom: 1px solid $white;
+  background: $white;
+
+  &:hover {
+    cursor: default;
+    background: $white;
+  }
+}

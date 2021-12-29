@@ -1,0 +1,87 @@
+.user-nav {
+  margin-left: $m-size;
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 0 $s-size;
+  border-bottom: 2px solid transparent;
+  display: flex;
+  justify-content: center;
+  
+  @include mobile {
+    width: 100%;
+  }
+
+  &:hover {
+    cursor: pointer;
+    // border-bottom: 2px solid $black;
+  }
+}
+
+.user-nav-img-wrapper {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-left: 10px;
+  position: relative;
+  background: $border-color-focus;
+
+  &:after {
+    content: attr('data-alt');
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    color: $white;
+  }
+}
+
+.user-nav-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-nav-sub {
+  width: 150px;
+  height: auto;
+  background: $white;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, .1);
+  display: none;
+}
+
+.user-nav-sub-link {
+  font-size: $font-small;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  padding: $s-size $m-size;
+  text-align: left;
+
+  &:hover {
+    background: $background-color;
+    text-decoration: none;
+  }
+
+  &:first-child {
+    border-bottom: .5px solid $background-color;
+  }
+}
+
+.user-sub-open {
+  border-bottom: 2px solid $black;
+}
+
+.user-sub-open .user-caret {
+  transform: rotate(180deg);
+}
+
+.user-sub-open > .user-nav-sub {
+  display: block;
+}

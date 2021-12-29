@@ -1,0 +1,164 @@
+input {
+  border: 1px solid $border-color;
+  background: transparent;
+  font-size: $font-small;
+  padding: $s-size $m-size;
+  font-weight: bold;
+  box-shadow: 0;
+  outline: 0;
+
+  &:focus {
+    outline: none;
+    border: 1px solid $border-color-focus !important;
+  }
+}
+
+input::-webkit-input-placeholder {
+  font-weight: bold;
+  opacity: .7;
+}
+
+input:read-only:not(.price-range-input) {
+  opacity: .5;
+
+  &:hover {
+    cursor: default;
+  }
+}
+
+input[type=tel] {
+  background: transparent;
+  border-radius: 0;
+  padding-left: 48px !important;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+input[type=number]:invalid,
+input[type=number]:out-of-range {
+  border: 2px solid #ff6347;
+}
+
+input[type=date] {
+  -moz-appearance: textfield;
+  -webkit-appearance: textfield;
+}
+
+input[type=checkbox],
+input[type=radio] {
+  padding: 0;
+  height: initial;
+  width: initial;
+  margin-bottom: 0;
+  display: none;
+  cursor: pointer;
+}
+
+input[type=checkbox] + label,
+input[type=radio] + label {
+  font-size: $font-medium;
+  background: none;
+  border: none;
+  padding: $s-size 0;
+  display: flex;
+  align-items: center;
+}
+
+
+input[type=checkbox] + label:before,
+input[type=radio] + label:before {
+  content:'';
+  -webkit-appearance: none;
+  background-color: $white;
+  border: 2px solid $border-color-focus;
+  // box-shadow: 0 0 0 $white,  inset 0px -15px 10px -12px rgba(0, 0, 0, 0.05);
+  padding: 10px;
+  display: inline-block;
+  position: relative;
+  vertical-align: middle;
+  cursor: pointer;
+  margin-right: 5px;
+  border-radius: 50%;
+  transition: all .3s ease;
+}
+
+input[type=checkbox] + label:after,
+input[type=radio] + label:after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 10px;
+  bottom: 0;
+  margin: auto;
+  width: 3px;
+  height: 10px;
+  border: solid $border-color;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  transition: all .3s ease;
+}
+
+input[type=checkbox]:hover + label:before,
+input[type=radio]:hover + label:before {
+  border: 2px solid darken($border-color-focus, 5%);
+}
+
+input[type=checkbox]:checked + label:before,
+input[type=radio]:checked + label:before {
+  border: 2px solid $black;
+	background: $black;
+}
+
+input[type=checkbox]:checked + label:after,
+input[type=radio]:checked + label:after {
+  border: solid $white;
+  border-width: 0 2px 2px 0;
+}
+
+input[type=color] {
+  padding: 0;
+}
+
+
+// override react-phone-input-2
+.react-tel-input input[type=tel] {
+  @extend input;
+  width: 100% !important;
+  font-family: 'Tajawal' !important;
+  // margin-bottom: 1.2rem !important;
+  font-size: $font-medium !important;
+  border: 1px solid $border-color-focus !important;
+}
+
+.react-tel-input input[type=tel].input-error {
+  border: 1px solid $red !important;
+}
+
+.react-tel-input input[type=tel].input-error ~ .flag-dropdown {
+  border: 1px solid $red !important;
+}
+
+.input-message {
+  display: block;
+  padding: $s-size;
+  color: $red;
+  font-weight: bold;
+}
+
+.input-form {
+  padding: 10px $m-size !important;
+  border: 1px solid $border-color-focus !important;
+  font-size: $font-medium !important;
+  // margin-bottom: $s-size;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+}

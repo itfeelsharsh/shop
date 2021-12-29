@@ -1,0 +1,102 @@
+.button {
+  background: $button-color;
+  padding: $m-size;
+  border: 1px solid $button-color;
+  color: $white;
+  font-weight: bold;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  @include bezier-transition(all, .3s, ease);
+
+  &:hover {
+    cursor: pointer;
+    background: $button-hover;
+    border: 1px solid $button-hover;
+    text-decoration: none;
+  }
+}
+
+.button:disabled {
+  opacity: .5;
+
+  &:hover {
+    cursor: not-allowed;   
+    // background: none;
+  }
+}
+
+.button-link {
+  @extend .button;
+  background: none;
+  color: $black;
+  border: none;
+
+  &:hover {
+    background: none;
+    border: none;
+  }
+}
+
+.button-muted {
+  @extend .button;
+  background: $background-color-01;
+  color: lighten($paragraph-color, 20%);
+  border: 1px solid $border-color;
+
+  &:hover {
+    background: $background-color;
+    border: 1px solid $border-color-focus;
+  }
+}
+
+.button-block {
+  display: block;
+  width: 100%;
+}
+
+.button-border {
+  background: transparent;
+  border: 1px solid $button-color;
+  color: $button-color;
+
+  &:hover {
+    background: $border-color;
+    border: 1px solid $button-color;
+  }
+}
+
+.button-danger {
+  background: red;
+  color: #fff;
+
+  &:hover {
+    background: darken(red, 10%);
+  }
+}
+
+.button-border-gray {
+  border: 1px solid $border-color;
+  color: $paragraph-color;
+
+  &:hover {
+    border: 1px solid $border-color;
+    background: $border-color;
+  }
+}
+
+.button-small {
+  font-size: $font-small;
+  padding: $s-size $m-size;
+}
+.button-icon {
+  display: flex;
+  text-align: center;
+  align-items: center;
+  text-align: center;
+
+  & * {
+    font-size: inherit;
+  }
+}

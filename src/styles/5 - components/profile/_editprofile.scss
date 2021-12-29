@@ -1,0 +1,76 @@
+.edit-user {
+  width: 600px;
+  height: auto;
+  padding: $m-size;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+
+  @include mobile {
+    width: 100%;
+    padding: 0;
+  }
+
+  .user-profile-banner-wrapper,
+  .user-profile-avatar-wrapper {
+    overflow: visible;
+  }
+}
+
+.edit-user-details {
+  width: 60%;
+}
+
+.edit-user-images {
+  width: 40%;
+}
+
+// .edit-wrapper {
+//   position: absolute;
+//   left: 0;
+//   right: 0;
+//   top: 0;
+//   bottom: 0;
+//   width: 3rem;
+//   height: 3rem;
+//   border-radius: 50%;
+//   background: $black;
+//   color: $white;
+// }
+
+.edit-button {
+  padding: $s-size;
+  position: absolute;
+  bottom: -10px;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none !important;
+  background: $black !important;
+  color: $white;
+}
+
+.edit-avatar-button {
+  right: 0;
+}
+
+.edit-banner-button {
+  right: 2rem;
+}
+
+.edit-user-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  @include mobile {
+   button {
+    width: 50%;
+   }
+  }
+}
+
