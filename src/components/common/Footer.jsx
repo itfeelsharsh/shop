@@ -18,25 +18,26 @@ const Footer = () => {
           <span>
             Developed by
             {' '}
-            <a href='https://github.com/jgudo'>JULIUS GUEVARRA</a>
+            <a href='https://github.com/itfeelsharsh'>Harsh</a>
           </span>
         </strong>
+        Images Copyright is to imagesbazzar.com, other rights to firebase google, site secured by cloudflare
       </div>
-      <div className='footer-col-2'>
+      {/* <div className='footer-col-2'>
         <img alt='Footer logo' className='footer-logo' src={logo} />
         <h5>
           &copy;&nbsp;
           {new Date().getFullYear()}
         </h5>
-      </div>
-      <div className='footer-col-3'>
+      </div> */}
+      {/* <div className='footer-col-3'>
         <strong>
           <span>
-            Fork this project &nbsp;
-            <a href='https://github.com/jgudo/ecommerce-react'>HERE</a>
+            Star &nbsp;
+            <a href='https://github.com/itfeelsharsh/shop'>from here</a>
           </span>
         </strong>
-      </div>
+      </div> */}
     </footer>
   );
 };

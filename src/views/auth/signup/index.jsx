@@ -32,7 +32,7 @@ const SignUp = ({ history }) => {
   const dispatch = useDispatch();
 
   useScrollTop();
-  useDocumentTitle('Sign Up | hrsh');
+  useDocumentTitle('Sign Up | Shop Hrsh');
 
   useEffect(() => () => {
     dispatch(setAuthStatus(null));
@@ -87,7 +87,7 @@ const SignUp = ({ history }) => {
                         name='fullname'
                         type='text'
                         label='* Full Name'
-                        placeholder='John Doe'
+                        placeholder='Ram Rahim'
                         style={{ textTransform: 'capitalize' }}
                         component={CustomInput}
                       />
@@ -98,7 +98,7 @@ const SignUp = ({ history }) => {
                         name='email'
                         type='email'
                         label='* Email'
-                        placeholder='test@example.com'
+                        placeholder='hello@example.com'
                         component={CustomInput}
                       />
                     </div>
@@ -108,8 +108,8 @@ const SignUp = ({ history }) => {
                         name='password'
                         type='password'
                         label='* Password'
-                        placeholder='Your Password'
-                        component={CustomInput}
+                        placeholder='Your Mom'
+                        component={CustomInput} 
                       />
                     </div>
                     <br />

@@ -30,7 +30,7 @@ const CustomMobileInput = (props) => {
       )}
       <PhoneInput
         name={field.name}
-        country='ph'
+        country='in'
         inputClass='input-form d-block'
         style={{
           border: touched && error ? '1px solid red' : '1px solid #cacaca'
@@ -46,8 +46,8 @@ const CustomMobileInput = (props) => {
 
 CustomMobileInput.defaultProps = {
   label: 'Mobile Number',
-  placeholder: '09254461351'
-};
+  placeholder: '+91 69696969'
+}; 
 
 CustomMobileInput.propTypes = {
   label: PropType.string,

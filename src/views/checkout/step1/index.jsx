@@ -11,7 +11,7 @@ import { StepTracker } from '../components';
 import withCheckout from '../hoc/withCheckout';
 
 const OrderSummary = ({ basket, subtotal }) => {
-  useDocumentTitle('Check Out Step 1 | hrsh');
+  useDocumentTitle('Check Out Step 1 | Shop Hrsh');
   useScrollTop();
   const dispatch = useDispatch();
   const history = useHistory();

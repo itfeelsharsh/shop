@@ -25,8 +25,8 @@ const useFileHandler = (initState) => {
     if (!regex.exec(val)) {
       alert('File type must be JPEG or PNG', 'error');
       setFileLoading(false);
-    } else if (size > 0.5) {
-      alert('File size exceeded 500kb, consider optimizing your image', 'error');
+    } else if (size > 10) {
+      alert('File size exceeded 10MB, consider optimizing your image', 'error');
       setFileLoading(false);
     } else if (type === 'multiple') {
       Array.from(event.target.files).forEach((file) => {

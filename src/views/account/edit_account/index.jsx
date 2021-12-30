@@ -31,7 +31,7 @@ const FormSchema = Yup.object().shape({
 });
 
 const EditProfile = () => {
-  useDocumentTitle('Edit Account | hrsh');
+  useDocumentTitle('Edit Account | Shop Hrsh');
   useScrollTop();
 
   const modal = useModal();

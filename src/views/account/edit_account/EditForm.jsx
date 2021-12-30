@@ -24,17 +24,17 @@ const EditForm = ({ isLoading, authProvider }) => {
       <Field
         disabled={authProvider !== 'password' || isLoading}
         name='email'
-        type='email'
+        type='email'  
         label='* Email Address'
-        placeholder='test@example.com'
+        placeholder='hello@example.com'
         component={CustomInput}
       />
       <Field
         disabled={isLoading}
         name='address'
         type='text'
-        label='Address (Will be used for checkout)'
-        placeholder='#245 Brgy. Maligalig, Arayat Pampanga, Philippines'
+        label='Address'
+        placeholder='B-6708, Floor 67, Scam Appartments, Tardeo, Mumbai'
         component={CustomInput}
         style={{ textTransform: 'capitalize' }}
       />

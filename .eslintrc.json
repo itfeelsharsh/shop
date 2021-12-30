@@ -1,54 +1,54 @@
 {
-    'env': {
-        'browser': true,
-        'es2021': true
+    "env": {
+        "browser": true,
+        "es2021": true
     },
-    'extends': [
-        'plugin:react/recommended',
-        'airbnb'
+    "extends": [
+        "plugin:react/recommended",
+        "airbnb"
     ],
-    'parser': 'babel-eslint',
-    'parserOptions': {
-        'ecmaFeatures': {
-            'jsx': true
+    "parser": "babel-eslint",
+    "parserOptions": {
+        "ecmaFeatures": {
+            "jsx": true
         },
-        'ecmaVersion': 12,
-        'sourceType': 'module'
+        "ecmaVersion": 12,
+        "sourceType": "module"
     },
-    'plugins': [
-        'react'
+    "plugins": [
+        "react"
     ],
-    'rules': {
-        'no-multiple-empty-lines': [
-            'error',
+    "rules": {
+        "no-multiple-empty-lines": [
+            "error",
             {
-                'max': 2,
-                'maxEOF': 1
+                "max": 2,
+                "maxEOF": 1
             }
         ],
-        'comma-dangle': [
-            'error',
+        "comma-dangle": [
+            "error",
             {
-                'arrays': 'never',
-                'objects': 'never',
-                'imports': 'never',
-                'exports': 'never',
-                'functions': 'ignore'
+                "arrays": "never",
+                "objects": "never",
+                "imports": "never",
+                "exports": "never",
+                "functions": "ignore"
             }
         ],
-        'no-console': 0
+        "no-console": 0
     },
-    'settings': {
-        'import/resolver': {
-            'node': {
-                'paths': [
-                    'src'
+    "settings": {
+        "import/resolver": {
+            "node": {
+                "paths": [
+                    "src"
                 ],
-                'extensions': [
-                    '.js',
-                    '.jsx',
-                    '.ts',
-                    '.tsx'
+                "extensions": [
+                    ".js",
+                    ".jsx",
+                    ".ts",
+                    ".tsx"
                 ]
             }
         }

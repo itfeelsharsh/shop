@@ -29,7 +29,7 @@ const SignIn = ({ history }) => {
   const dispatch = useDispatch();
 
   useScrollTop();
-  useDocumentTitle('Sign In | hrsh');
+  useDocumentTitle('Sign In | Shop Hrsh');
 
   useEffect(() => () => {
     dispatch(setAuthStatus(null));

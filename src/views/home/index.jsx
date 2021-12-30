@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom';
 
 
 const Home = () => {
-  useDocumentTitle('hrsh | Home');
+  useDocumentTitle('shop hrsh | Home | purchase anything!!');
   useScrollTop();
 
   const {
@@ -33,13 +33,12 @@ const Home = () => {
         <div className='banner'>
           <div className='banner-desc'>
             <h1 className='text-thin'>
-              <strong>See</strong>
-              &nbsp;everything with&nbsp;
-              <strong>Clarity</strong>
+              <strong>Purchase</strong>
+              &nbsp;Anything from&nbsp;
+              <strong>Shop Hrsh</strong>
             </h1>
             <p>
-              Buying eyewear should leave you happy and good-looking, with money in your pocket.
-              Glasses, sunglasses, and contacts—we’ve got your eyes covered.
+              purchase anything from small nipple to huge trucks!! anything and i mean anything u can get here!!
             </p>
             <br />
             <Link to={SHOP} className='button'>

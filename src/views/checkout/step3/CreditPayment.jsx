@@ -99,7 +99,7 @@ const CreditPayment = () => {
                   name='name'
                   type='text'
                   label='* Name on Card'
-                  placeholder='Jane Doe'
+                  placeholder='Ram Rahim'
                   component={CustomInput}
                   style={{ textTransform: 'capitalize' }}
                   inputRef={cardInputRef}

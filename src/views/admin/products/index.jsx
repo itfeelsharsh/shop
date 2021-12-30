@@ -10,7 +10,7 @@ import { ProductsNavbar } from '../components';
 import ProductsTable from '../components/ProductsTable';
 
 const Products = () => {
-  useDocumentTitle('Product List | hrsh Admin');
+  useDocumentTitle('Product List | Shop Hrsh Admin');
   useScrollTop();
 
   const store = useSelector((state) => ({

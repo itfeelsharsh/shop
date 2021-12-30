@@ -12,7 +12,7 @@
         "email": {
           ".validate": "newData.isString()"
         },
-        "address": {
+        "address": {  
           ".validate": "newData.isString()"
         },
         "mobile": {

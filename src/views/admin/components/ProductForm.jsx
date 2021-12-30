@@ -14,10 +14,19 @@ import * as Yup from 'yup';
 
 // Default brand names that I used. You can use what you want
 const brandOptions = [
-  { value: 'Salt Maalat', label: 'Salt Maalat' },
-  { value: 'Betsin Maalat', label: 'Betsin Maalat' },
-  { value: 'Sexbomb', label: 'Sexbomb' },
-  { value: 'Black Kibal', label: 'Black Kibal' }
+  { value: 'No Brand', label: 'No brand' },
+  { value: 'Harsh special ', label: 'Harsh special' },
+  { value: 'Samsung', label: 'Samsung' },
+  { value: 'Apple', label: 'Apple' },
+  { value: 'Jaaddo', label: 'jaaddo' },
+  { value: 'Your Mom', label: 'Your mom' },
+  { value: 'Amul', label: 'Amul' },
+  { value: 'TATA', label: 'TATA' },
+  { value: 'Ashok Le Land', label: 'Ashok Le land' },
+  { value: 'Adani', label: 'Adani' },
+  { value: 'Government Of India', label: 'Government Of India' },
+  { value: 'Pussy', label: 'Pussy' },
+  { value: 'Bobs', label: 'bos' }
 ];
 
 const FormSchema = Yup.object().shape({
@@ -106,7 +115,7 @@ const ProductForm = ({ product, onSubmit, isLoading }) => {
                     name='name'
                     type='text'
                     label='* Product Name'
-                    placeholder='Gago'
+                    placeholder='Condoms'
                     style={{ textTransform: 'capitalize' }}
                     component={CustomInput}
                   />
@@ -179,7 +188,7 @@ const ProductForm = ({ product, onSubmit, isLoading }) => {
                     isMulti
                     disabled={isLoading}
                     placeholder='Create/Select Sizes'
-                    label='* Sizes (Millimeter)'
+                    label='* Quantity'
                   />
                 </div>
               </div>

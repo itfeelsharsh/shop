@@ -30,7 +30,7 @@ const FormSchema = Yup.object().shape({
 });
 
 const Payment = ({ shipping, payment, subtotal }) => {
-  useDocumentTitle('Check Out Final Step | hrsh');
+  useDocumentTitle('Check Out Final Step | Shop Hrsh');
   useScrollTop();
 
   const initFormikValues = {
@@ -42,7 +42,7 @@ const Payment = ({ shipping, payment, subtotal }) => {
   };
 
   const onConfirm = () => {
-    displayActionMessage('Feature not ready yet :)', 'info');
+    window.location.replace('https://firebasestorage.googleapis.com/v0/b/cdn-69.appspot.com/o/Files%2Fdgjhdfvjfds.mp4?alt=media&token=0cae86e5-f4f0-40a1-a953-98a4bfa565b3');
   };
 
   if (!shipping || !shipping.isDone) {
@@ -57,7 +57,7 @@ const Payment = ({ shipping, payment, subtotal }) => {
         validationSchema={FormSchema}
         validate={(form) => {
           if (form.type === 'paypal') {
-            displayActionMessage('Feature not ready yet :)', 'info');
+            window.location.replace('https://firebasestorage.googleapis.com/v0/b/cdn-69.appspot.com/o/Files%2Fdgjhdfvjfds.mp4?alt=media&token=0cae86e5-f4f0-40a1-a953-98a4bfa565b3');
           }
         }}
         onSubmit={onConfirm}

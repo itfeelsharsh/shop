@@ -92,11 +92,19 @@ const Filters = ({ closeModal }) => {
             disabled={isLoading || products.length === 0}
             onChange={onBrandFilterChange}
           >
-            <option value=''>All Brands</option>
-            <option value='salt'>Salt Maalat</option>
-            <option value='betsin'>Betsin Maalat</option>
-            <option value='black'>Black Kibal</option>
-            <option value='sexbomb'>Sexbomb</option>
+            <option value='All Brands'>All Brands</option>
+            <option value='Harsh special'>Harsh Special</option>
+            <option value='Samsung'>Samsung</option>
+            <option value='Apple'>Apple</option>
+            <option value='Jaaddo'>Jadoo</option>
+            <option value='Your Mom'>Your Mom</option>
+            <option value='Amul'>Amul</option>
+            <option value='TATA'>TATA</option>
+            <option value='Ashok Le Land'>Ashok Le Land</option>
+            <option value='Adani'>Adani</option>
+            <option value='Government of India'>Government of India</option>
+            <option value='Pussy'>Pussy</option>
+            <option value='Bobs'>Bobs</option>
           </select>
         )}
       </div>
