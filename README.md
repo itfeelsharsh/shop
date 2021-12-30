@@ -53,6 +53,8 @@ Run this to build this project and host
 ```console
   npm run build --force
 ```
+
+- [How to make admin on site](https://raw.githubusercontent.com/itfeelsharsh/shop/main/screenshots/Screenshot%202021-12-30%20145219.png)
     
 
 ## Screenshots
