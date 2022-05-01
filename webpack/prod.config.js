@@ -1,7 +1,6 @@
 const webpack = require('webpack');
 const { merge } = require('webpack-merge');
 const DotEnv = require('dotenv');
-// const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const workboxPlugin = require('workbox-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -36,9 +35,6 @@ module.exports = merge(baseConfig, {
     },
     minimizer: [
       new OptimizeCSSAssetsPlugin({}),
-      // in case you got a minified error #307, just remove uglify js
-      // problems may occur when using react hooks
-      // new UglifyJsPlugin()
     ],
   },
   plugins: [
@@ -52,7 +48,6 @@ module.exports = merge(baseConfig, {
         collapseWhitespace: true,
         removeAttributeQuotes: true,
       },
-      // necessary to consistently work with multiple chunks via CommonsChunkPlugin
       chunksSortMode: 'auto',
     }),
     new HtmlWebpackPlugin({
@@ -64,7 +59,6 @@ module.exports = merge(baseConfig, {
         collapseWhitespace: true,
         removeAttributeQuotes: true,
       },
-      // necessary to consistently work with multiple chunks via CommonsChunkPlugin
       chunksSortMode: 'auto',
     }),
     new CopyWebpackPlugin({
@@ -98,11 +92,6 @@ module.exports = merge(baseConfig, {
         process.env.FIREBASE_APP_ID
       ),
     }),
-    //  // keep module.id stable when vendor modules does not change
-    // new webpack.HashedModuleIdsPlugin(),
-    // // enable scope hoisting
-    // new webpack.optimize.ModuleConcatenationPlugin(),
-    // generate service worker
     new workboxPlugin.InjectManifest({
       swSrc: path.resolve(__dirname, '../src/sw-src.js'),
       swDest: 'sw.js',

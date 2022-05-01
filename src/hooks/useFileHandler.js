@@ -41,7 +41,7 @@ const useFileHandler = (initState) => {
       });
 
       setFileLoading(false);
-    } else { // type is single
+    } else {
       const reader = new FileReader();
 
       reader.addEventListener('load', (e) => {

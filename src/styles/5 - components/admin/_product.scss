@@ -21,8 +21,6 @@
 .item:hover > .item-action {
   display: flex;
 }
-
-// reset styles for loading item
 .item-loading {
   &:nth-child(even) {
     background: none;
@@ -33,8 +31,6 @@
   border: none;
   box-shadow: none;
 }
-
-// ---- 
 
 .item-action {
   position: absolute;

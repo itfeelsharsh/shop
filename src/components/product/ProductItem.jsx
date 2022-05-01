@@ -80,7 +80,6 @@ ProductItem.defaultProps = {
 };
 
 ProductItem.propTypes = {
-  // eslint-disable-next-line react/forbid-prop-types
   product: PropType.object.isRequired,
   isItemOnBasket: PropType.func,
   addToBasket: PropType.func

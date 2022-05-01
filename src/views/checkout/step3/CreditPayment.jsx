@@ -1,5 +1,4 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
-/* eslint-disable no-else-return */
 import { CustomInput } from 'components/formik';
 import { Field, useFormikContext } from 'formik';
 import React, { useEffect, useRef } from 'react';
@@ -60,7 +59,7 @@ const CreditPayment = () => {
             <input
               checked={values.type === 'credit'}
               id='modeCredit'
-              name='type' // the field name in formik I used is type
+              name='type'
               onChange={onCreditModeChange}
               type='radio'
             />

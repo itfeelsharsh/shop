@@ -58,10 +58,8 @@ class Handle extends Component {
             width: 26,
             height: 42,
             cursor: 'pointer',
-            // border: '1px solid grey',
             backgroundColor: 'none'
           }}
-          // eslint-disable-next-line react/jsx-props-no-spreading
           {...getHandleProps(id, {
             onMouseEnter: this.onMouseEnter,
             onMouseLeave: this.onMouseLeave
@@ -93,7 +91,6 @@ class Handle extends Component {
 }
 
 Handle.propTypes = {
-  // eslint-disable-next-line react/forbid-prop-types
   domain: PropType.array.isRequired,
   handle: PropType.shape({
     id: PropType.string.isRequired,

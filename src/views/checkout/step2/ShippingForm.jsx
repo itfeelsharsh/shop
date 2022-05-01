@@ -50,7 +50,6 @@ const ShippingForm = () => {
                 {meta.touched && meta.error ? (
                   <span className='label-input label-error'>{meta.error}</span>
                 ) : (
-                  // eslint-disable-next-line jsx-a11y/label-has-associated-control
                   <label
                     className='label-input'
                     htmlFor={field.name}

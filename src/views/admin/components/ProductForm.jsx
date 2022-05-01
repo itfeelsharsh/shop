@@ -11,8 +11,6 @@ import { useFileHandler } from 'hooks';
 import PropType from 'prop-types';
 import React from 'react';
 import * as Yup from 'yup';
-
-// Default brand names that I used. You can use what you want
 const brandOptions = [
   { value: 'No Brand', label: 'No brand' },
   { value: 'Harsh special ', label: 'Harsh special' },
@@ -84,15 +82,12 @@ const ProductForm = ({ product, onSubmit, isLoading }) => {
       onSubmit({
         ...form,
         quantity: 1,
-        // due to firebase function billing policy, let's add lowercase version
-        // of name here instead in firebase functions
         name_lower: form.name.toLowerCase(),
         dateAdded: new Date().getTime(),
         image: imageFile?.image?.file || product.imageUrl,
         imageCollection: imageFile.imageCollection
       });
     } else {
-      // eslint-disable-next-line no-alert
       alert('Product thumbnail image is required.');
     }
   };

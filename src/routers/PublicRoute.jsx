@@ -1,5 +1,4 @@
 /* eslint-disable react/forbid-prop-types */
-/* eslint-disable react/jsx-props-no-spreading */
 import { ADMIN_DASHBOARD, SIGNIN, SIGNUP } from 'constants/routes';
 import PropType from 'prop-types';
 import React from 'react';
@@ -11,8 +10,6 @@ const PublicRoute = ({
 }) => (
   <Route
     {...rest}
-    // eslint-disable-next-line consistent-return
-    render={(props) => {
       // eslint-disable-next-line react/prop-types
       const { from } = props.location.state || { from: { pathname: '/' } };
 
@@ -44,7 +41,6 @@ PublicRoute.propTypes = {
   role: PropType.string,
   component: PropType.func.isRequired,
   path: PropType.string,
-  // eslint-disable-next-line react/require-default-props
   rest: PropType.any
 };
 

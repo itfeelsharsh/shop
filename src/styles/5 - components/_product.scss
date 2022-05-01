@@ -54,9 +54,6 @@
   text-align: center;
   position: relative;
   background: $white;
-  // box-shadow: 0 10px 15px rgba(0, 0, 0, .05);
-  overflow: hidden;
-  // margin: auto;
   // animation: slide-up .3s ease;
 
   &:hover {
@@ -137,7 +134,6 @@
   width: 100%;
   height: 20px;
   margin: 0;
-  // white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis; 
 }
@@ -154,7 +150,6 @@
 }
 
 .product-card-button {
-  // text-transform: uppercase;
   position: absolute;
   bottom: -100%;
   font-size: $font-small;
@@ -186,8 +181,6 @@
     display: block;
   }
 }
-
-// PRODUCT MODAL -------------------------------------------------
 .product-view {
   margin: 0 5rem;
 
@@ -213,7 +206,6 @@
 
 .product-modal-image-wrapper {
   width: 40rem;
-  // height: 40rem;
   height: inherit;
   flex-grow: 1;
   position: relative;
@@ -262,7 +254,6 @@
 .product-modal-image-collection::-webkit-scrollbar-thumb {
   background-color: #1a1a1a;
   outline: 1px solid #f8f8f8;
-  // border-radius: .6rem;
 }
 
 .product-modal-image-collection::-webkit-scrollbar-track {
@@ -323,13 +314,9 @@
   }
 }
 
-// PRODUCT FORM --------------------
-
 .product-form {
   width: 100%;
   display: flex;
-  // grid-template-columns: repeat(3, 1fr);
-  // grid-gap: $s-size;
 }
 
 .product-form-field {
@@ -401,9 +388,6 @@
   height: 100%;
   object-fit: contain;
 }
-
-// PRODUCT SEARCH ------------------
-// 
 
 .product-search {
   width: 100%;
@@ -487,8 +471,6 @@
   border-bottom: 1px solid $border-color;
   margin-bottom: $s-size;
 }
-
-// ---------------------------- FEATURED PRODUCTS ----------------------------
 .display {
   margin: 5rem;
   margin-top: 10rem;

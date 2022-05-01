@@ -5,7 +5,7 @@
 
  - [Firebase](http://firebase.com/)
  - [Visual Studio Code](https://code.visualstudio.com/download)
- - Basic Knowledge of React JS, HTML, CSS, SAAS and JSON
+ - Basic Knowledge of React JS, HTML, CSS and JSON
 
 ### authors
 

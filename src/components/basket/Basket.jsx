@@ -118,7 +118,6 @@ const Basket = () => {
           )}
           {basket.map((product, i) => (
             <BasketItem
-              // eslint-disable-next-line react/no-array-index-key
               key={`${product.id}_${i}`}
               product={product}
               basket={basket}

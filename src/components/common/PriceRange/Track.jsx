@@ -16,7 +16,6 @@ const Track = ({
       left: `${source.percent}%`,
       width: `${target.percent - source.percent}%`
     }}
-    // eslint-disable-next-line react/jsx-props-no-spreading
     {...getTrackProps()}
   />
 );

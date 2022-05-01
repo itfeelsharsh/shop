@@ -4,7 +4,6 @@ import { useSelector } from 'react-redux';
 import firebase from 'services/firebase';
 
 const useProduct = (id) => {
-  // get and check if product exists in store
   const storeProduct = useSelector((state) => state.products.items.find((item) => item.id === id));
 
   const [product, setProduct] = useState(storeProduct);
