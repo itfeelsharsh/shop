@@ -13,16 +13,7 @@ const Footer = () => {
 
   return !visibleOnlyPath.includes(pathname) ? null : (
     <footer className='footer'>
-      <div className='footer-col-1'>
-        <strong>
-          <span>
-            Developed by
-            {' '}
-            <a href='https://github.com/itfeelsharsh'>Harsh</a>
-          </span>
-        </strong>
-        Images Copyright is to imagesbazzar.com, other rights to firebase google, site secured by cloudflare
-      </div>
+
       {/* <div className='footer-col-2'>
         <img alt='Footer logo' className='footer-logo' src={logo} />
         <h5>
