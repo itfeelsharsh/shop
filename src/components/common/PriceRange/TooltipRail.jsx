@@ -8,6 +8,7 @@ const railStyle = {
   height: 20,
   cursor: 'pointer',
   zIndex: 300
+  // border: '1px solid grey',
 };
 
 const railCenterStyle = {
@@ -75,6 +76,7 @@ class TooltipRail extends Component {
         ) : null}
         <div
           style={railStyle}
+          // eslint-disable-next-line react/jsx-props-no-spreading
           {...getRailProps({
             onMouseEnter: this.onMouseEnter,
             onMouseLeave: this.onMouseLeave

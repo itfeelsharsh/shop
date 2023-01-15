@@ -23,6 +23,9 @@
 }
 
 .checkout-items {
+  // display: flex;
+  // flex-wrap: wrap;
+  // justify-content: center;
 
   .basket-item {
     margin: .5rem 1rem;
@@ -211,6 +214,7 @@
   justify-content: space-between;
 
   @include mobile {
+    // flex-direction: column;
     padding: $m-size 0;
 
     button {

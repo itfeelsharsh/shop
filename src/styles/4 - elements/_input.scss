@@ -76,6 +76,7 @@ input[type=radio] + label:before {
   -webkit-appearance: none;
   background-color: $white;
   border: 2px solid $border-color-focus;
+  // box-shadow: 0 0 0 $white,  inset 0px -15px 10px -12px rgba(0, 0, 0, 0.05);
   padding: 10px;
   display: inline-block;
   position: relative;
@@ -123,10 +124,14 @@ input[type=radio]:checked + label:after {
 input[type=color] {
   padding: 0;
 }
+
+
+// override react-phone-input-2
 .react-tel-input input[type=tel] {
   @extend input;
   width: 100% !important;
   font-family: 'Tajawal' !important;
+  // margin-bottom: 1.2rem !important;
   font-size: $font-medium !important;
   border: 1px solid $border-color-focus !important;
 }
@@ -150,6 +155,7 @@ input[type=color] {
   padding: 10px $m-size !important;
   border: 1px solid $border-color-focus !important;
   font-size: $font-medium !important;
+  // margin-bottom: $s-size;
 }
 
 .input-group {

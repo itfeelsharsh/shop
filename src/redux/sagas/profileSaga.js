@@ -29,6 +29,9 @@ function* profileSaga({ type, payload }) {
         const { avatarFile, bannerFile } = payload.files;
 
         yield put(setLoading(true));
+
+        // if email & password exist && the email has been edited
+        // update the email
         if (email && password && email !== state.profile.email) {
           yield call(firebase.updateEmail, password, email);
         }

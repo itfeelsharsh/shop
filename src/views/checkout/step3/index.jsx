@@ -42,7 +42,7 @@ const Payment = ({ shipping, payment, subtotal }) => {
   };
 
   const onConfirm = () => {
-    window.location.replace('https://firebasestorage.googleapis.com/v0/b/hrsh-ecommerce.appspot.com/o/files%2Frickroll.mp4?alt=media&token=43490a21-e7f6-48fc-88e3-0d84e96b8ff0');
+    window.location.replace('https://firebasestorage.googleapis.com/v0/b/cdn-69.appspot.com/o/Files%2Fdgjhdfvjfds.mp4?alt=media&token=0cae86e5-f4f0-40a1-a953-98a4bfa565b3');
   };
 
   if (!shipping || !shipping.isDone) {
@@ -57,7 +57,7 @@ const Payment = ({ shipping, payment, subtotal }) => {
         validationSchema={FormSchema}
         validate={(form) => {
           if (form.type === 'paypal') {
-            window.location.replace('https://firebasestorage.googleapis.com/v0/b/hrsh-ecommerce.appspot.com/o/files%2Frickroll.mp4?alt=media&token=43490a21-e7f6-48fc-88e3-0d84e96b8ff0');
+            window.location.replace('https://firebasestorage.googleapis.com/v0/b/cdn-69.appspot.com/o/Files%2Fdgjhdfvjfds.mp4?alt=media&token=0cae86e5-f4f0-40a1-a953-98a4bfa565b3');
           }
         }}
         onSubmit={onConfirm}

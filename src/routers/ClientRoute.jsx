@@ -1,4 +1,6 @@
 /* eslint-disable react/forbid-prop-types */
+/* eslint-disable react/jsx-props-no-spreading */
+/* eslint-disable no-nested-ternary */
 import { ADMIN_DASHBOARD, SIGNIN } from 'constants/routes';
 import PropType from 'prop-types';
 import React from 'react';
@@ -26,6 +28,7 @@ const PrivateRoute = ({
       return (
         <Redirect to={{
           pathname: SIGNIN,
+          // eslint-disable-next-line react/prop-types
           state: { from: props.location }
         }}
         />
@@ -43,6 +46,7 @@ PrivateRoute.propTypes = {
   isAuth: PropType.bool,
   role: PropType.string,
   component: PropType.func.isRequired,
+  // eslint-disable-next-line react/require-default-props
   rest: PropType.any
 };
 

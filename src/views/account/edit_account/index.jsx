@@ -85,6 +85,7 @@ const EditProfile = () => {
   };
 
   const onSubmitUpdate = (form) => {
+    // check if data has changed
     const fieldsChanged = Object.keys(form).some((key) => profile[key] !== form[key]);
 
     if (fieldsChanged || (Boolean(imageFile.banner.file || imageFile.avatar.file))) {

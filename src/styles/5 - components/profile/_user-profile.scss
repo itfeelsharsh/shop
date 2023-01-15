@@ -8,8 +8,14 @@
 }
 
 .user-profile-block {
+  // width: 600px;
   width: 100%;
   height: auto;
+  // padding: $m-size;
+
+  // @include mobile {
+  //   padding: 0;
+  // }
 }
 
 .user-profile-banner-wrapper {
@@ -18,6 +24,9 @@
   position: relative;
   background: lighten($border-color, 3%);
   overflow: hidden;
+  // display: flex;
+  // justify-content: center;
+  // align-items: center;
 }
 
 .user-profile-banner {
@@ -50,6 +59,9 @@
   position: relative;
   background: $border-color;
   overflow: hidden;
+  // display: flex;
+  // justify-content: center;
+  // align-items: center;
 }
 
 .user-profile-img {

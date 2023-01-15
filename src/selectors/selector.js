@@ -1,4 +1,5 @@
 /* eslint-disable no-plusplus */
+/* eslint-disable no-else-return */
 export const selectFilter = (products, filter) => {
   if (!products || products.length === 0) return [];
 
@@ -9,6 +10,7 @@ export const selectFilter = (products, filter) => {
       ? (product.price >= filter.minPrice && product.price <= filter.maxPrice)
       : true;
     const matchKeyword = product.keywords ? product.keywords.includes(keyword) : true;
+    // const matchName = product.name ? product.name.toLowerCase().includes(keyword) : true;
     const matchDescription = product.description
       ? product.description.toLowerCase().includes(keyword)
       : true;
@@ -27,6 +29,8 @@ export const selectFilter = (products, filter) => {
     return a.price > b.price ? 1 : -1;
   });
 };
+
+// Select product with highest price
 export const selectMax = (products) => {
   if (!products || products.length === 0) return 0;
 
@@ -40,6 +44,8 @@ export const selectMax = (products) => {
 
   return Math.floor(high.price);
 };
+
+// Select product with lowest price
 export const selectMin = (products) => {
   if (!products || products.length === 0) return 0;
   let low = products[0];

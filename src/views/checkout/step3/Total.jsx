@@ -14,9 +14,10 @@ const Total = ({ isInternational, subtotal }) => {
   const dispatch = useDispatch();
 
   const onClickBack = () => {
+    // destructure to only select left fields omitting cardnumber and ccv
     const { cardnumber, ccv, ...rest } = values;
 
-    dispatch(setPaymentDetails({ ...rest }));
+    dispatch(setPaymentDetails({ ...rest })); // save payment details
     history.push(CHECKOUT_STEP_2);
   };
 

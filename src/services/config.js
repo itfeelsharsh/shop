@@ -1,11 +1,11 @@
 const firebaseConfig = {
-  apiKey: 'xxxxxxxxxxxxxx',
-  authDomain: 'xxxxxxxxxxxxxx',
-  projectId: 'xxxxxxxxxxxxxx',
-  storageBucket: 'xxxxxxxxxxxxxx',
-  messagingSenderId: 'xxxxxxxxxxxxxx',
-  appId: 'xxxxxxxxxxxxxx',
-  measurementId: 'xxxxxxxxxxxxxx'
+  apiKey: '',
+  authDomain: '',
+  projectId: '',
+  storageBucket: '',
+  messagingSenderId: '',
+  appId: '1:',
+  measurementId: ''
 };
 
 export default firebaseConfig;

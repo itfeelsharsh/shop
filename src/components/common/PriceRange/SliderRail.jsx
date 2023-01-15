@@ -9,6 +9,7 @@ const railOuterStyle = {
   height: 42,
   borderRadius: 7,
   cursor: 'pointer'
+  // border: '1px solid grey',
 };
 
 const railInnerStyle = {

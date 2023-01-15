@@ -24,6 +24,7 @@ const withCheckout = (Component) => withRouter((props) => {
   } if (state.isAuth && state.basket.length !== 0) {
     return (
       <Component
+        // eslint-disable-next-line react/jsx-props-no-spreading
         {...props}
         basket={state.basket}
         payment={state.payment}

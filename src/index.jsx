@@ -18,6 +18,8 @@ WebFont.load({
 
 const { store, persistor } = configureStore();
 const root = document.getElementById('app');
+
+// Render the preloader on initial load
 render(<Preloader />, root);
 
 firebase.auth.onAuthStateChanged((user) => {
@@ -26,6 +28,7 @@ firebase.auth.onAuthStateChanged((user) => {
   } else {
     store.dispatch(onAuthStateFail('Failed to authenticate'));
   }
+  // then render the app after checking the auth state
   render(<App store={store} persistor={persistor} />, root);
 });
 

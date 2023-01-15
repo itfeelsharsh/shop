@@ -53,6 +53,7 @@ Modal.propTypes = {
   isOpen: PropType.bool.isRequired,
   onRequestClose: PropType.func.isRequired,
   afterOpenModal: PropType.func,
+  // eslint-disable-next-line react/forbid-prop-types
   overrideStyle: PropType.object,
   children: PropType.oneOfType([
     PropType.arrayOf(PropType.node),

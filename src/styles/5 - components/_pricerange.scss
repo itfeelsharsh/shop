@@ -1,6 +1,7 @@
 .price-range {
   width: 100%;
   position: relative;
+  // box-shadow: inset 0 2px 5px rgba(0, 0, 0, .2);
 }
 
 .price-range-control {
@@ -49,3 +50,10 @@
 .price-range-price:nth-child(1) {
   flex-grow: 1;
 }
+
+// .range-slider svg,
+// .range-slider input[type=range] {
+//   position: absolute;
+//   left: 0;
+//   bottom: 0;
+// }

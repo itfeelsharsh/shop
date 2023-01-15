@@ -13,6 +13,8 @@ class Firebase {
     this.auth = app.auth();
   }
 
+  // AUTH ACTIONS ------------
+
   createAccount = (email, password) =>
     this.auth.createUserWithEmailAndPassword(email, password);
 
@@ -98,6 +100,8 @@ class Firebase {
   setAuthPersistence = () =>
     this.auth.setPersistence(app.auth.Auth.Persistence.LOCAL);
 
+  // // PRODUCT ACTIONS --------------
+
   getSingleProduct = (id) => this.db.collection('products').doc(id).get();
 
   getProducts = (lastRefKey) => {
@@ -180,8 +184,11 @@ class Firebase {
             .orderBy('dateAdded', 'desc')
             .where('keywords', 'array-contains-any', searchKey.split(' '))
             .limit(12);
+
+          // const totalResult = await totalQueryRef.get();
           const nameSnaps = await searchedNameRef.get();
           const keywordsSnaps = await searchedKeywordsRef.get();
+          // const total = totalResult.docs.length;
 
           clearTimeout(timeout);
           if (!didTimeout) {
@@ -201,6 +208,8 @@ class Firebase {
                 searchedKeywordsProducts.push({ id: doc.id, ...doc.data() });
               });
             }
+
+            // MERGE PRODUCTS
             const mergedProducts = [
               ...searchedNameProducts,
               ...searchedKeywordsProducts,

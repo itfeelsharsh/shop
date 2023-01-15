@@ -1,4 +1,8 @@
 // ---------------------------
+// 00 - VENDORS
+
+// ---------------------------
+// 01 - SETTINGS
 
 @import './1 - settings/breakpoints';
 @import './1 - settings/colors';
@@ -6,8 +10,17 @@
 @import './1 - settings/typography';
 @import './1 - settings/zindex';
 
+// ---------------------------
+// 02 - TOOLS
+
 @import './2 - tools/functions';
 @import './2 - tools/mixins';
+
+// ---------------------------
+// 03 - GENERIC
+
+// ---------------------------
+// 04 - ELEMENTS
 
 @import './4 - elements/base';
 @import './4 - elements/button';
@@ -16,6 +29,10 @@
 @import './4 - elements/select';
 @import './4 - elements/textarea';
 @import './4 - elements/label';
+
+
+// ---------------------------
+// 05 - COMPONENTS
 
 @import './5 - components/icons';
 @import './5 - components/navigation';
@@ -37,14 +54,31 @@
 @import './5 - components/pill';
 @import './5 - components/tooltip';
 @import './5 - components/color-chooser';
+
+// -- Admin components
 @import './5 - components/admin/grid';
 @import './5 - components/admin/product';
 @import './5 - components/sidenavigation';
+// @import './5 - components/admin/user';
+
+// -- Mobile components
+// @import './5 - components/mobile/bottom-navigation';
+@import './5 - components/mobile/mobile-navigation';
+
 // -- Profile components
 @import './5 - components/profile/user-nav';
 @import './5 - components/profile/user-profile';
 @import './5 - components/profile/user-tab';
 @import './5 - components/profile/editprofile';
+
+// -- Checkout components
+@import './5 - components/checkout/checkout';
+
+// -- 404
+@import './5 - components/404/page-not-found';
+
+
+
 // ---------------------------
 // 06 - UTILS
 

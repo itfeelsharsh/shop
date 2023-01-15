@@ -1,4 +1,5 @@
 /* eslint-disable react/forbid-prop-types */
+/* eslint-disable no-nested-ternary */
 import { ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { Boundary } from 'components/common';
 import { CHECKOUT_STEP_1, CHECKOUT_STEP_3 } from 'constants/routes';

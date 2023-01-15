@@ -43,6 +43,8 @@ const Navigation = () => {
   const onClickLink = (e) => {
     if (store.isAuthenticating) e.preventDefault();
   };
+
+  // disable the basket toggle to these pathnames
   const basketDisabledpathnames = [
     ROUTE.CHECKOUT_STEP_1,
     ROUTE.CHECKOUT_STEP_2,
@@ -57,6 +59,7 @@ const Navigation = () => {
   } if (window.screen.width <= 800) {
     return (
       <MobileNavigation
+        // eslint-disable-next-line react/jsx-props-no-spreading
         {...store}
         disabledPaths={basketDisabledpathnames}
         pathname={pathname}

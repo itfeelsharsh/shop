@@ -24,6 +24,7 @@ const SearchBar = () => {
 
   const onKeyUp = (e) => {
     if (e.keyCode === 13) {
+      // dispatch(setTextFilter(searchInput));
       e.target.blur();
       searchbarRef.current.classList.remove('is-open-recent-search');
 
@@ -54,6 +55,7 @@ const SearchBar = () => {
   };
 
   const onClickRecentSearch = (keyword) => {
+    // dispatch(setTextFilter(keyword));
     searchbarRef.current.classList.remove('is-open-recent-search');
     history.push(`/search/${keyword.trim().toLowerCase()}`);
   };

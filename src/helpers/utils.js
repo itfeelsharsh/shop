@@ -10,6 +10,8 @@ export const displayDate = (timestamp) => {
   const day = date.getDate();
   const monthIndex = date.getMonth();
   const year = date.getFullYear();
+
+  // return day + ' ' + monthNames[monthIndex] + ' ' + year;
   return `${monthNames[monthIndex]} ${day}, ${year}`;
 };
 
@@ -18,6 +20,8 @@ export const displayMoney = (n) => {
     style: 'currency',
     currency: 'INR'
   });
+  
+  // or use toLocaleString()
   return format.format(n);
 };
 
@@ -38,6 +42,7 @@ export const displayActionMessage = (msg, status = 'info') => {
     : status === 'success'
       ? 'toast-success'
       : 'toast-error'
+    // eslint-disable-next-line indent
     }`;
   span.className = 'toast-msg';
   span.textContent = msg;

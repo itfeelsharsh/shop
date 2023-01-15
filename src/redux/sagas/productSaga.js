@@ -55,6 +55,7 @@ function* productSaga({ type, payload }) {
           }));
           yield put(setRequestStatus(''));
         }
+        // yield put({ type: SET_LAST_REF_KEY, payload: result.lastKey });
         yield put(setLoading(false));
       } catch (e) {
         console.log(e);
@@ -142,6 +143,8 @@ function* productSaga({ type, payload }) {
             ...newUpdates,
             imageCollection: [{ id: new Date().getTime(), url: newUpdates.image }]
           };
+          // add image thumbnail to image collection from newUpdates to
+          // make sure you're adding the url not the file object.
         }
 
         yield call(firebase.editProduct, payload.id, newUpdates);
@@ -173,6 +176,7 @@ function* productSaga({ type, payload }) {
     case SEARCH_PRODUCT: {
       try {
         yield initRequest();
+        // clear search data
         yield put(clearSearchState());
 
         const state = yield select();

@@ -7,3 +7,5 @@ test('Should render App component', () => {
 
   expect(wrapper).toMatchSnapshot();
 });
+
+// More tests ...

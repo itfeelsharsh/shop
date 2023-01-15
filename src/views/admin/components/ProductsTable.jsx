@@ -27,6 +27,7 @@ const ProductsTable = ({ filteredProducts }) => (
     )}
     {filteredProducts.length === 0 ? new Array(10).fill({}).map((product, index) => (
       <ProductItem
+        // eslint-disable-next-line react/no-array-index-key
         key={`product-skeleton ${index}`}
         product={product}
       />
