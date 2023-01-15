@@ -10,7 +10,7 @@ const ProductList = (props) => {
   const {
     products, filteredProducts, isLoading, requestStatus, children
   } = props;
-  const [isFetching, setFetching] = useState(false);
+  const [isFetching, setFetching] = useState(false); 
   const dispatch = useDispatch();
 
   const fetchProducts = () => {

@@ -10,7 +10,7 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { setShippingDetails } from 'redux/actions/checkoutActions';
-import * as Yup from 'yup';
+import * as Yup from 'yup'; 
 import { StepTracker } from '../components';
 import withCheckout from '../hoc/withCheckout';
 import ShippingForm from './ShippingForm';

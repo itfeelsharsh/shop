@@ -14,7 +14,7 @@ import FiltersToggle from './FiltersToggle';
 import MobileNavigation from './MobileNavigation';
 import SearchBar from './SearchBar';
 
-const Navigation = () => {
+const Navigation = () => { 
   const navbar = useRef(null);
   const { pathname } = useLocation();
 

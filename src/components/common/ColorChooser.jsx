@@ -19,7 +19,7 @@ const ColorChooser = ({ availableColors, onSelectedColorChange }) => {
           role='presentation'
         />
       ))}
-    </div>
+    </div> 
   );
 };
 

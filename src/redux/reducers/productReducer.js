@@ -9,7 +9,7 @@ const initState = {
   lastRefKey: null,
   total: 0,
   items: []
-};
+}; 
 
 export default (state = {
   lastRefKey: null,

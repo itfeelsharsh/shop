@@ -13,7 +13,7 @@ const Shop = () => {
     filteredProducts: selectFilter(state.products.items, state.filter),
     products: state.products,
     requestStatus: state.app.requestStatus,
-    isLoading: state.app.loading
+    isLoading: state.app.loading 
   }), shallowEqual);
 
   return (

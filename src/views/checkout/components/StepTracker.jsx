@@ -14,7 +14,7 @@ const StepTracker = ({ current }) => {
       <ul className='checkout-header-menu'>
         <li className={`checkout-header-list ${className(1)}`}>
           <div className='checkout-header-item'>
-            <div className='checkout-header-icon'>
+            <div className='checkout-header-icon'> 
               <h4 className='checkout-header-step'>1</h4>
             </div>
             <h6 className='checkout-header-subtitle'>Order Summary</h6>

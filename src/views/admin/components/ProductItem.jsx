@@ -13,7 +13,7 @@ const ProductItem = ({ product }) => {
   const history = useHistory();
   const productRef = useRef(null);
 
-  const onClickEdit = () => {
+  const onClickEdit = () => { 
     history.push(`${EDIT_PRODUCT}/${product.id}`);
   };
 

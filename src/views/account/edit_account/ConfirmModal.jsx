@@ -10,7 +10,7 @@ const ConfirmModal = ({ onConfirmUpdate, modal }) => {
 
   return (
     <Modal
-      isOpen={modal.isOpenModal}
+      isOpen={modal.isOpenModal} 
       onRequestClose={modal.onCloseModal}
     >
       <div className='text-center padding-l'>

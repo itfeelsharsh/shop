@@ -14,7 +14,7 @@ const baseConfig = require('./base.config.js');
 module.exports = merge(baseConfig, {
   output: {
     filename: 'js/[name].[chunkhash].js',
-    chunkFilename: 'js/[id].[chunkhash].js',
+    chunkFilename: 'js/[id].[chunkhash].js', 
   },
   mode: 'production',
   devtool: 'source-map',

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import firebase from 'services/firebase';
 
-const useProduct = (id) => {
+const useProduct = (id) => { 
   // get and check if product exists in store
   const storeProduct = useSelector((state) => state.products.items.find((item) => item.id === id));
 

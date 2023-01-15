@@ -13,7 +13,7 @@ Badge.propTypes = {
   children: PropType.oneOfType([
     PropType.arrayOf(PropType.node),
     PropType.node
-  ]).isRequired
+  ]).isRequired 
 };
 
 export default Badge;

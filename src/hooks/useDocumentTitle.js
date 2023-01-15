@@ -7,7 +7,7 @@ const useDocumentTitle = (title) => {
     } else {
       document.title = 'hrsh - eCommerce React App';
     }
-  }, [title]);
+  }, [title]); 
 };
 
 export default useDocumentTitle;

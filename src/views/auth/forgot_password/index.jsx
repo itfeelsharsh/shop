@@ -68,7 +68,7 @@ const ForgotPassword = () => {
         &nbsp;
         {isSendingForgotPWRequest ? 'Sending Password Reset Email' : 'Send Password Reset Email'}
       </button>
-    </div>
+    </div> 
   );
 };
 

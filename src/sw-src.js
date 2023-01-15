@@ -15,7 +15,7 @@ registerRoute(
 		plugins: [new ExpirationPlugin({ maxEntries: 30 })]
 	}),
 	'GET'
-);
+); 
 
 // clean up old SW caches
 self.addEventListener('activate', function (event) {

@@ -16,7 +16,7 @@ const PageNotFound = ({ history }) => {
       >
         Go back
       </button>
-    </div>
+    </div> 
   );
 };
 

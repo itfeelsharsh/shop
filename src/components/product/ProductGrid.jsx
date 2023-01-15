@@ -9,7 +9,7 @@ const ProductGrid = ({ products }) => {
   return (
     <div className='product-grid'>
       {products.length === 0 ? new Array(12).fill({}).map((product, index) => (
-        <ProductItem
+        <ProductItem 
           // eslint-disable-next-line react/no-array-index-key
           key={`product-skeleton ${index}`}
           product={product}

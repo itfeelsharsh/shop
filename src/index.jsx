@@ -13,7 +13,7 @@ import firebase from './services/firebase';
 WebFont.load({
   google: {
     families: ['Tajawal']
-  }
+  } 
 });
 
 const { store, persistor } = configureStore();

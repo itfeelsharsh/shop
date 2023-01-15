@@ -12,7 +12,7 @@ export { default as CheckOutStep2 } from './checkout/step2';
 export { default as CheckOutStep3 } from './checkout/step3';
 export { default as PageNotFound } from './error/PageNotFound';
 export { default as FeaturedProducts } from './featured';
-export { default as Home } from './home';
+export { default as Home } from './home'; 
 export { default as RecommendedProducts } from './recommended';
 export { default as Search } from './search';
 export { default as Shop } from './shop';

@@ -17,7 +17,7 @@ const Filters = ({ closeModal }) => {
   const [field, setFilter] = useState({
     brand: filter.brand,
     minPrice: filter.minPrice,
-    maxPrice: filter.maxPrice,
+    maxPrice: filter.maxPrice, 
     sortBy: filter.sortBy
   });
   const dispatch = useDispatch();

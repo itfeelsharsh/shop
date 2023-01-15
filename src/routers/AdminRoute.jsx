@@ -10,7 +10,7 @@ const AdminRoute = ({
   isAuth, role, component: Component, ...rest
 }) => (
   <Route
-    {...rest}
+    {...rest} 
     component={(props) => (
       isAuth && role === 'ADMIN' ? (
         <>

@@ -7,7 +7,7 @@ class Handle extends Component {
 
     this.state = {
       mouseOver: false
-    };
+    }; 
   }
 
 

@@ -8,7 +8,7 @@ const initState = {
   loading: false,
   isAuthenticating: false,
   authStatus: null,
-  requestStatus: null,
+  requestStatus: null, 
   theme: 'light'
 };
 

@@ -5,7 +5,7 @@ import PropType from 'prop-types';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 
-const ProductsNavbar = (props) => {
+const ProductsNavbar = (props) => { 
   const { productsCount, totalProductsCount } = props;
   const history = useHistory();
 

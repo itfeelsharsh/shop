@@ -14,7 +14,7 @@ const BasketToggle = ({ children }) => {
     const toggle = e.target.closest('.basket-toggle');
     const closeToggle = e.target.closest('.basket-item-remove');
 
-    if (!closest && document.body.classList.contains('is-basket-open') && !toggle && !closeToggle) {
+    if (!closest && document.body.classList.contains('is-basket-open') &&  !toggle && !closeToggle) {
       document.body.classList.remove('is-basket-open');
     }
   });

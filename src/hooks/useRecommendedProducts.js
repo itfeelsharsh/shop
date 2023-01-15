@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import firebase from '../services/firebase';
 
 const useRecommendedProducts = (itemsCount) => {
-  const [recommendedProducts, setRecommendedProducts] = useState([]);
+  const [recommendedProducts, setRecommendedProducts] = useState([]); 
   const [isLoading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const didMount = useDidMount(true);

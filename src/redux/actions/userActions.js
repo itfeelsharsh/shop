@@ -10,7 +10,7 @@ export const registerUser = (user) => ({
   payload: user
 });
 
-export const getUser = (uid) => ({
+export const getUser = (uid) => ({ 
   type: GET_USER,
   payload: uid
 });

@@ -9,7 +9,7 @@ export const setShippingDetails = (details) => ({
 
 export const setPaymentDetails = (details) => ({
   type: SET_CHECKOUT_PAYMENT_DETAILS,
-  payload: details
+  payload: details 
 });
 
 export const resetCheckout = () => ({

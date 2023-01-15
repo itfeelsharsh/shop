@@ -41,5 +41,5 @@ Boundary.propTypes = {
     PropType.node
   ]).isRequired
 };
-
+ 
 export default Boundary;

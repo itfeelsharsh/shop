@@ -8,7 +8,7 @@ import profileReducer from './profileReducer';
 import userReducer from './userReducer';
 
 const rootReducer = {
-  products: productReducer,
+  products: productReducer, 
   basket: basketReducer,
   auth: authReducer,
   profile: profileReducer,

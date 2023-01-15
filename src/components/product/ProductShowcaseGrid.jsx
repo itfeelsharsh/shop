@@ -10,7 +10,7 @@ const ProductShowcase = ({ products, skeletonCount }) => (
         // eslint-disable-next-line react/no-array-index-key
         key={`product-skeleton ${index}`}
         product={product}
-      />
+      /> 
     )) : products.map((product) => (
       <FeaturedProduct
         key={product.id}

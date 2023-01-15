@@ -7,7 +7,7 @@ const useFeaturedProducts = (itemsCount) => {
   const [isLoading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const didMount = useDidMount(true);
-
+ 
   const fetchFeaturedProducts = async () => {
     try {
       setLoading(true);

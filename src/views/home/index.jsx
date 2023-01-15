@@ -14,7 +14,7 @@ const Home = () => {
   useDocumentTitle('shop hrsh | Home | purchase anything!!');
   useScrollTop();
 
-  const {
+  const { 
     featuredProducts,
     fetchFeaturedProducts,
     isLoading: isLoadingFeatured,

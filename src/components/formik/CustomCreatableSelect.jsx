@@ -10,7 +10,7 @@ const CustomCreatableSelect = (props) => {
     options, defaultValue, label, placeholder, isMulti, type, iid
   } = props;
   const { touched, error } = meta;
-  const { setValue } = helpers;
+  const { setValue } = helpers; 
 
   const handleChange = (newValue) => {
     if (Array.isArray(newValue)) {

@@ -6,7 +6,7 @@ import {
   SET_MIN_PRICE_FILTER, SET_TEXT_FILTER
 } from 'constants/constants';
 
-export const setTextFilter = (keyword) => ({
+export const setTextFilter = (keyword) => ({ 
   type: SET_TEXT_FILTER,
   payload: keyword
 });

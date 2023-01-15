@@ -9,7 +9,7 @@
     "react-webpack-boilerplate",
     "react-boilerplate"
   ],
-  "license": "MIT",
+  "license": "MIT", 
   "scripts": {
     "serve": "live-server dist/",
     "build": "cross-env NODE_ENV=production webpack --config webpack/prod.config.js",

@@ -17,7 +17,7 @@ const Error = ({ history }) => {
         Try Again
       </button>
     </div>
-
+ 
   );
 };
 

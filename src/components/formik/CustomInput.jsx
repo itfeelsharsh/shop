@@ -12,7 +12,7 @@ const CustomInput = ({
     ) : (
       <label className='label-input' htmlFor={field.name}>{label}</label>
     )}
-    <input
+    <input 
       type='text'
       id={field.name}
       className={`input-form ${touched[field.name] && errors[field.name] && 'input-error'}`}

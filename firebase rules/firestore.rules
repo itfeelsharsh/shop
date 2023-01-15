@@ -9,7 +9,7 @@ service cloud.firestore {
     
     match /products/{productId} {
       allow create,update,delete: if request.auth.uid != null;
-    	allow read: if true;
+    	allow read: if true; 
     }
   }
 }

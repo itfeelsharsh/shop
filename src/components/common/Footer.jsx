@@ -23,7 +23,7 @@ const Footer = () => {
         </strong>
         Images Copyright is to imagesbazzar.com, other rights to firebase google, site secured by cloudflare
       </div>
-      {/* <div className='footer-col-2'>
+      {/* <div className='footer-col-2'> 
         <img alt='Footer logo' className='footer-logo' src={logo} />
         <h5>
           &copy;&nbsp;

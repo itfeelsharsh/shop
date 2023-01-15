@@ -11,7 +11,7 @@ const Tick = ({ tick, count, format }) => (
         height: 5,
         backgroundColor: 'rgb(200,200,200)',
         left: `${tick.percent}%`
-      }}
+      }} 
     />
     <div
       style={{

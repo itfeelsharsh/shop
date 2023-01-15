@@ -22,7 +22,7 @@ import {
 } from '../actions/productActions';
 
 function* initRequest() {
-  yield put(setLoading(true));
+  yield put(setLoading(true)); 
   yield put(setRequestStatus(null));
 }
 

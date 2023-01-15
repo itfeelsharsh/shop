@@ -13,7 +13,7 @@ const Products = () => {
   useDocumentTitle('Product List | Shop Hrsh Admin');
   useScrollTop();
 
-  const store = useSelector((state) => ({
+  const store = useSelector((state) => ({ 
     filteredProducts: selectFilter(state.products.items, state.filter),
     requestStatus: state.app.requestStatus,
     isLoading: state.app.loading,

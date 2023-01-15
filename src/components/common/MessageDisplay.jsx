@@ -19,7 +19,7 @@ const MessageDisplay = ({
     )}
   </div>
 );
-
+ 
 MessageDisplay.defaultProps = {
   description: undefined,
   buttonLabel: 'Okay',

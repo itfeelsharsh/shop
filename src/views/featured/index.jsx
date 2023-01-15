@@ -16,7 +16,7 @@ const FeaturedProducts = () => {
   } = useFeaturedProducts();
 
   return (
-    <main className='content'>
+    <main className='content'> 
       <div className='featured'>
         <div className='banner'>
           <div className='banner-desc'>

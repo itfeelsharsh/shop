@@ -15,7 +15,7 @@ const RecommendedProducts = () => {
     error
   } = useRecommendedProducts();
 
-  return (
+  return ( 
     <main className='content'>
       <div className='featured'>
         <div className='banner'>

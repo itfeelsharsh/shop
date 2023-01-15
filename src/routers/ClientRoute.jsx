@@ -11,7 +11,7 @@ const PrivateRoute = ({
   isAuth, role, component: Component, ...rest
 }) => (
   <Route
-    {...rest}
+    {...rest} 
     component={(props) => {
       if (isAuth && role === 'USER') {
         return (

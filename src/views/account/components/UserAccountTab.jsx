@@ -9,7 +9,7 @@ import { withRouter } from 'react-router-dom';
 
 const UserProfile = (props) => {
   const profile = useSelector((state) => state.profile);
-
+ 
   return (
     <div className='user-profile'>
       <div className='user-profile-block'>

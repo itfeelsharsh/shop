@@ -18,7 +18,7 @@ const NoInternet = () => {
       </button>
     </div>
 
-  );
+  ); 
 };
 
 export default NoInternet;

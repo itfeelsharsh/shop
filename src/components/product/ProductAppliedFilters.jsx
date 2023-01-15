@@ -10,7 +10,7 @@ const ProductAppliedFilters = ({ filteredProductsCount }) => {
   const fields = ['brand', 'minPrice', 'maxPrice', 'sortBy', 'keyword'];
   const isFiltered = fields.some((key) => !!filter[key]);
   const dispatch = useDispatch();
-
+ 
   const onRemoveKeywordFilter = () => {
     dispatch(applyFilter({ keyword: '' }));
   };

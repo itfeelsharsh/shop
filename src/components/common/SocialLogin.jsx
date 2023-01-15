@@ -15,7 +15,7 @@ const SocialLogin = ({ isLoading }) => {
     dispatch(signInWithFacebook());
   };
 
-  const onSignInWithGithub = () => {
+  const onSignInWithGithub = () => { 
     dispatch(signInWithGithub());
   };
 

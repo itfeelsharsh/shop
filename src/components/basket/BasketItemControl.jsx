@@ -10,7 +10,7 @@ const BasketItemControl = ({ product }) => {
   const onAddQty = () => {
     if (product.quantity < product.maxQuantity) {
       dispatch(addQtyItem(product.id));
-    }
+    } 
   };
 
   const onMinusQty = () => {

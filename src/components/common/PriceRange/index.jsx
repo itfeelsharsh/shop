@@ -10,7 +10,7 @@ import Track from './Track';
 
 const sliderStyle = {
   position: 'relative',
-  width: '100%'
+  width: '100%' 
 };
 
 const PriceRange = ({

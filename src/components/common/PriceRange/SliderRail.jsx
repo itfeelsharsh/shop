@@ -14,7 +14,7 @@ const railOuterStyle = {
 
 const railInnerStyle = {
   position: 'absolute',
-  width: '100%',
+  width: '100%', 
   height: 14,
   transform: 'translate(0%, -50%)',
   borderRadius: 7,

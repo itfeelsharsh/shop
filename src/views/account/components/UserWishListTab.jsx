@@ -10,3 +10,4 @@ const UserWishListTab = () => (
 );
 
 export default UserWishListTab;
+ 

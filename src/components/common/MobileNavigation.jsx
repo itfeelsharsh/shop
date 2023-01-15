@@ -1,4 +1,4 @@
-import { BasketToggle } from 'components/basket';
+ import { BasketToggle } from 'components/basket';
 import { HOME, SIGNIN } from 'constants/routes';
 import PropType from 'prop-types';
 import React from 'react';
@@ -17,7 +17,7 @@ const Navigation = (props) => {
   const onClickLink = (e) => {
     if (isAuthenticating) e.preventDefault();
   };
-
+ 
   return (
     <nav className='mobile-navigation'>
       <div className='mobile-navigation-main'>

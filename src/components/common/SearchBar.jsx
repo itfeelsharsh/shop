@@ -18,7 +18,7 @@ const SearchBar = () => {
   const isMobile = window.screen.width <= 800;
 
   const onSearchChange = (e) => {
-    const val = e.target.value.trimStart();
+    const val = e.target.value.trimStart(); 
     setSearchInput(val);
   };
 

@@ -6,7 +6,7 @@ const useFileHandler = (initState) => {
   const [imageFile, setImageFile] = useState(initState);
   const [isFileLoading, setFileLoading] = useState(false);
 
-  const removeImage = ({ id, name }) => {
+  const removeImage = ({ id, name }) => { 
     const items = imageFile[name].filter((item) => item.id !== id);
 
     setImageFile({

@@ -9,7 +9,7 @@ const CustomTextarea = ({
   <div className='input-group'>
     {touched[field.name] && errors[field.name] ? (
       <span className='label-input label-error'>{errors[field.name]}</span>
-    ) : (
+    ) : ( 
       <label className='label-input' htmlFor={field.name}>{label}</label>
     )}
     <textarea

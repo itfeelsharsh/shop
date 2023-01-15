@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom';
 import { signIn } from 'redux/actions/authActions';
 import { setAuthenticating, setAuthStatus } from 'redux/actions/miscActions';
 import * as Yup from 'yup';
-
+ 
 const SignInSchema = Yup.object().shape({
   email: Yup.string()
     .email('Email is not valid.')

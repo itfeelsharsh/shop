@@ -4,7 +4,7 @@ const path = require('path');
 const DotEnv = require('dotenv');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-
+ 
 const baseConfig = require('./base.config.js');
 
 DotEnv.config({ path: '.env.dev' });

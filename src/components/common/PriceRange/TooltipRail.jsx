@@ -13,7 +13,7 @@ const railStyle = {
 
 const railCenterStyle = {
   position: 'absolute',
-  width: '100%',
+  width: '100%', 
   transform: 'translate(0%, -50%)',
   height: 14,
   borderRadius: 7,

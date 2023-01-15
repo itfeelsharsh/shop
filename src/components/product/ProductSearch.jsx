@@ -14,7 +14,7 @@ const ProductSearch = () => {
     products: state.products.items,
     isLoading: state.app.loading,
     productsLength: state.products.length
-  }));
+  })); 
   const dispatch = useDispatch();
   const searchInput = useRef(null);
   let input = '';

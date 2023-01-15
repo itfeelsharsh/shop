@@ -13,7 +13,7 @@ const UserTab = (props) => {
           {children.map((child) => (
             <li
               className={`user-tab-item ${child.props.index === activeTab ? 'user-tab-active' : ''}`}
-              key={child.props.label}
+              key={child.props.label} 
               role='presentation'
               onClick={() => onClickTabItem(child.props.index)}
             >

@@ -10,7 +10,7 @@ export const clearProfile = () => ({
   type: CLEAR_PROFILE
 });
 
-export const setProfile = (user) => ({
+export const setProfile = (user) => ({ 
   type: SET_PROFILE,
   payload: user
 });

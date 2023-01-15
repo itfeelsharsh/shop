@@ -7,7 +7,7 @@ export const setLoading = (bool = true) => ({
   payload: bool
 });
 
-export const setAuthenticating = (bool = true) => ({
+export const setAuthenticating = (bool = true) => ({ 
   type: IS_AUTHENTICATING,
   payload: bool
 });

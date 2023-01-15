@@ -8,7 +8,7 @@ const ShippingTotal = ({ subtotal }) => {
 
   return (
     <div className='checkout-total d-flex-end padding-right-m'>
-      <table>
+      <table> 
         <tbody>
           <tr>
             <td>

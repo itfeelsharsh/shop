@@ -5,7 +5,7 @@ import {
   SET_BASKET_ITEMS
 } from 'constants/constants';
 
-export const setBasketItems = (items = []) => ({
+export const setBasketItems = (items = []) => ({ 
   type: SET_BASKET_ITEMS,
   payload: items
 });

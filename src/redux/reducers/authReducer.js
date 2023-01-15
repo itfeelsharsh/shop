@@ -7,7 +7,7 @@ const initState = null;
 // provider: 'password'
 // };
 
-export default (state = initState, action) => {
+export default (state = initState, action) => { 
   switch (action.type) {
     case SIGNIN_SUCCESS:
       return {

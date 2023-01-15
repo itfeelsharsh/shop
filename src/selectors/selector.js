@@ -21,7 +21,7 @@ export const selectFilter = (products, filter) => {
     if (filter.sortBy === 'name-desc') {
       return a.name < b.name ? 1 : -1;
     } else if (filter.sortBy === 'name-asc') {
-      return a.name > b.name ? 1 : -1;
+      return a.name > b.name ? 1 : -1; 
     } else if (filter.sortBy === 'price-desc') {
       return a.price < b.price ? 1 : -1;
     }

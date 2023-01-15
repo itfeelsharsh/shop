@@ -12,7 +12,7 @@ import { signOut } from 'redux/actions/authActions';
 const UserNav = () => {
   const { profile, isAuthenticating } = useSelector((state) => ({
     profile: state.profile,
-    isAuthenticating: state.app.isAuthenticating
+    isAuthenticating: state.app.isAuthenticating 
   }));
   const userNav = useRef(null);
   const dispatch = useDispatch();

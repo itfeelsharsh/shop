@@ -10,7 +10,7 @@ const InputColor = (props) => {
   const [selectedColor, setSelectedColor] = React.useState('');
 
   const handleColorChange = (e) => {
-    const val = e.target.value;
+    const val = e.target.value; 
     setSelectedColor(val);
   };
 

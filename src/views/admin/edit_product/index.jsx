@@ -12,7 +12,7 @@ const EditProduct = ({ match }) => {
   useDocumentTitle('Edit Product | Shop Hrsh');
   useScrollTop();
   const { product, error, isLoading } = useProduct(match.params.id);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch(); 
 
   const onSubmitForm = (updates) => {
     dispatch(editProduct(product.id, updates));

@@ -13,7 +13,7 @@ const App = ({ store, persistor }) => (
         <AppRouter />
       </PersistGate>
     </Provider>
-  </StrictMode>
+  </StrictMode> 
 );
 
 App.propTypes = {

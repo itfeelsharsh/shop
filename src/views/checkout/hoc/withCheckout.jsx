@@ -11,7 +11,7 @@ const withCheckout = (Component) => withRouter((props) => {
     basket: store.basket,
     shipping: store.checkout.shipping,
     payment: store.checkout.payment,
-    profile: store.profile
+    profile: store.profile 
   }));
 
   const shippingFee = state.shipping.isInternational ? 50 : 0;

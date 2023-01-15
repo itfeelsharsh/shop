@@ -11,7 +11,7 @@ const UserOrdersTab = lazy(() => import('../components/UserOrdersTab'));
 const Loader = () => (
   <div className='loader' style={{ minHeight: '80vh' }}>
     <LoadingOutlined />
-    <h6>Loading ... </h6>
+    <h6>Loading ... </h6> 
   </div>
 );
 

@@ -13,7 +13,7 @@ import PayPalPayment from './PayPalPayment';
 import Total from './Total';
 
 const FormSchema = Yup.object().shape({
-  name: Yup.string()
+  name: Yup.string() 
     .min(4, 'Name should be at least 4 characters.')
     .required('Name is required'),
   cardnumber: Yup.string()

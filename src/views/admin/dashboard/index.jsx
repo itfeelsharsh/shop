@@ -10,6 +10,6 @@ const Dashboard = () => {
       <h2>Welcome to admin dashboard</h2>
     </div>
   );
-};
+}; 
 
 export default Dashboard;

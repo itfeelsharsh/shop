@@ -18,7 +18,7 @@ const Modal = ({
       position: 'fixed',
       padding: '50px 20px',
       transition: 'all .5s ease',
-      zIndex: 9999,
+      zIndex: 9999, 
       marginRight: '-50%',
       transform: 'translate(-50%, -50%)',
       boxShadow: '0 5px 10px rgba(0, 0, 0, .1)',

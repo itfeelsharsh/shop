@@ -12,7 +12,7 @@ const ShippingForm = () => {
           <div className='d-block checkout-field'>
             <Field
               name='fullname'
-              type='text'
+              type='text' 
               label='* Full Name'
               placeholder='Enter your full name'
               component={CustomInput}
@@ -73,7 +73,7 @@ const ShippingForm = () => {
                       &nbsp; International Shipping &nbsp;
                       <span className='text-subtle'>7-14 days</span>
                     </h5>
-                    <h4 className='margin-0'>$50.00</h4>
+                    <h4 className='margin-0'>₹500.00</h4>
                   </label>
                 </div>
               </div>

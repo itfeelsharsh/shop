@@ -12,7 +12,7 @@ const CreditPayment = () => {
   const checkboxContainerRef = useRef(null);
 
   const toggleCollapse = () => {
-    const cn = containerRef.current;
+    const cn = containerRef.current; 
     const cb = checkboxContainerRef.current;
     const cl = collapseContainerRef.current;
 

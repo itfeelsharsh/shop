@@ -6,7 +6,7 @@ export const signIn = (email, password) => ({
     email,
     password
   }
-});
+}); 
 
 export const signInWithGoogle = () => ({
   type: type.SIGNIN_WITH_GOOGLE

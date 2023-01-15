@@ -16,7 +16,7 @@ const FiltersToggle = ({ children }) => {
       >
         {children}
       </div>
-      <Modal
+      <Modal 
         isOpen={isOpenModal}
         onRequestClose={onCloseModal}
       >

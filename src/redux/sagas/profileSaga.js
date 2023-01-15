@@ -20,7 +20,7 @@ function* profileSaga({ type, payload }) {
       } catch (e) {
         console.log(e.message);
       }
-      break;
+      break; 
     }
     case UPDATE_PROFILE: {
       try {

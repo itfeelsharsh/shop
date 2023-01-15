@@ -12,7 +12,7 @@ const PayPalPayment = () => {
           <input
             checked={values.type === 'paypal'}
             id='modePayPal'
-            name='type'
+            name='type' 
             onChange={(e) => {
               if (e.target.checked) {
                 setValues({ ...values, type: 'paypal' });

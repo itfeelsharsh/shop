@@ -43,7 +43,7 @@ function* handleError(e) {
       yield put(setAuthStatus({ ...obj, message: e.message }));
       break;
   }
-}
+} 
 
 function* initRequest() {
   yield put(setAuthenticating());

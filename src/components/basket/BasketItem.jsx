@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom';
 import { removeFromBasket } from 'redux/actions/basketActions';
 
 const BasketItem = ({ product }) => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch(); 
   const onRemoveFromBasket = () => dispatch(removeFromBasket(product.id));
 
   return (

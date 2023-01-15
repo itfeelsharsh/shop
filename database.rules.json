@@ -9,7 +9,7 @@
         "fullname": {
           ".validate": "newData.isString()"
         },
-        "email": {
+        "email": { 
           ".validate": "newData.isString()"
         },
         "address": {  
