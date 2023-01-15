@@ -1,4 +1,4 @@
-
+### Note:  This is an edited version of [jgudo/ecommerce-react](https://github.com/jgudo/ecommerce-react) thanks to him for this wonderful project
 ## Acknowledgements
 
 ### requirements
