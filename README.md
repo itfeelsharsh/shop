@@ -1,1 +1,1 @@
-# KamiKoto - a fully functional shopping site with Admin System made using React js + Firebase
+# KamiKoto Admin - Admin Ststem For a fully functional shopping site with Admin System made using React js + Firebase
