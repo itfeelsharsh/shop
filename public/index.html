@@ -7,24 +7,47 @@
     <meta name="theme-color" content="#000000" />
     <meta
       name="description"
-      content="Welcome to KamiKoto, your go-to destination for exquisite Japanese stationery. Discover a curated collection of elegant notebooks, unique writing instruments, and charming accessories that inspire creativity and enhance your daily writing experience."
+      content="KamiKoto, your go-to destination for exquisite Japanese stationery. Discover a curated collection of elegant notebooks, unique writing instruments, and charming accessories that inspire creativity and enhance your daily writing experience."
     />
+    <meta name="author" content="itfeelsharsh.dev" />
+    <meta
+      property="og:title"
+      content="KamiKoto - Exquisite Japanese Stationery"
+    />
+    <meta
+      property="og:description"
+      content="KamiKoto, your go-to destination for exquisite Japanese stationery. Discover a curated collection of elegant notebooks, unique writing instruments, and charming accessories that inspire creativity and enhance your daily writing experience.."
+    />
+    <meta property="og:image" content="%PUBLIC_URL%/html-banner.png" />
+    <meta property="og:url" content="https://kamikoto.itfeelsharsh.dev" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="KamiKoto - Exquisite Japanese Stationery"
+    />
+    <meta
+      name="twitter:description"
+      content="Discover elegant notebooks, unique writing instruments, and charming accessories."
+    />
+    <meta name="twitter:image" content="%PUBLIC_URL%/html-banner.png" />
+
     <script>
       let resolution = `${window.screen.width}x${window.screen.height}`;
-    
+
       let localTime = new Date().toLocaleString();
       let timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    
+
       fetch(window.location.href, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           resolution: resolution,
           localTime: localTime,
-          timeZone: timeZone
-        })
+          timeZone: timeZone,
+        }),
       });
     </script>
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
@@ -33,18 +56,5 @@
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-
-    <!-- Banner Image -->
-    <div style="text-align: center; margin: 20px 0;">
-      <img src="%PUBLIC_URL%/html-banner.png" alt="KamiKoto Banner" style="max-width: 100%; height: auto;" />
-    </div>
-
-    <!-- Logo Image -->
-    <div style="text-align: center;">
-      <img src="%PUBLIC_URL%/kamikoto-logo-transparent-darkish-logo-for-better-visibility.png" alt="KamiKoto Logo" style="max-width: 200px; height: auto;" />
-    </div>
-
-    <!-- The HTML file serves as a template. The build step will place the bundled scripts into the <body> tag. -->
   </body>
 </html>
