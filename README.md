@@ -62,14 +62,44 @@ Set up Firebase Firestore by following these steps:
 
 2. Set Firestore rules for secure data access:
 
-    ```json
-    service cloud.firestore {
-      match /databases/{database}/documents {
-        match /{document=**} {
-          allow read, write: if request.auth != null;
-        }
-      }
+    ```js
+// Paste Below Given Code In Your Firebase Firestore Database Rules  
+
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    
+    match /users/{userId} {
+      allow read: if request.auth != null && (request.auth.uid == userId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userRole == 'Admin');
+      allow write: if request.auth != null && request.auth.uid == userId; 
     }
+
+    
+    match /products/{productId} {
+      allow read: if true; 
+      allow create, update, delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userRole == 'Admin'; 
+    }
+
+    
+    match /users/{userId}/cart/{cartItemId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId; 
+    }
+
+    
+    match /users/{userId}/orders/{orderId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId; 
+    }
+    
+    
+    match /products/{productId}/reviews/{reviewId} {
+      allow read: if true; 
+      allow create: if request.auth != null; 
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId; 
+    }
+  }
+}
     ```
 
 3. For **Admin Panel Access**, go to Firestore and add the following field to any user you want to give admin rights:
