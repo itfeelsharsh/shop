@@ -5,6 +5,8 @@ import { db } from '../firebase/config';
 import { collection, getDocs } from 'firebase/firestore';
 import { removeFromCart, updateQuantity } from '../redux/cartSlice';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+
 
 function Cart() {
   const cartItems = useSelector(state => state.cart.items);
@@ -38,6 +40,12 @@ function Cart() {
   const total = cartDetails.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
 
   return (
+    <motion.div
+    initial={{ opacity: 0, y: 50 }} 
+    animate={{ opacity: 1, y: 0 }} 
+    transition={{ duration: 0.6, ease: "easeInOut" }} 
+    className="container mx-auto px-4 py-8 bg-gray-50"
+  >
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-semibold mb-6 text-center text-gray-900">Your Cart</h1>
       {cartDetails.length === 0 ? (
@@ -67,6 +75,8 @@ function Cart() {
         </div>
       )}
     </div>
+    </motion.div>
+
   );
 }
 

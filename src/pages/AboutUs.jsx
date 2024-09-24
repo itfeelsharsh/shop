@@ -1,8 +1,16 @@
 
 import React from 'react';
+import { motion } from 'framer-motion';
+
 
 function AboutUs() {
   return (
+    <motion.div
+    initial={{ opacity: 0, y: 50 }} 
+    animate={{ opacity: 1, y: 0 }} 
+    transition={{ duration: 0.6, ease: "easeInOut" }} 
+    className="container mx-auto px-4 py-8 bg-gray-50"
+  >
     <div className="container mx-auto px-4 py-12">
       <h1 className="text-5xl font-bold mb-8 text-gray-900 text-center">About Us</h1>
       <p className="text-lg text-gray-700 mb-6 leading-relaxed">
@@ -18,6 +26,8 @@ function AboutUs() {
         Thank you for visiting our store. Whether you’re here for a specific item or to explore the world of Japanese stationery, we hope you find something that sparks joy in your everyday life!
       </p>
     </div>
+    </motion.div>
+
   );
 }
 

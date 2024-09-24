@@ -4,6 +4,7 @@ import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import countriesStatesData from '../../src/countriesStates.json'; 
 
 function Profile() {
   const [user] = useAuthState(auth);
@@ -22,6 +23,7 @@ function Profile() {
     },
     profilePic: ''
   });
+
   useEffect(() => {
     const fetchProfile = async () => {
       if (user) {
@@ -78,13 +80,10 @@ function Profile() {
     }
   };
 
-
-
   return (
     <div className="container mx-auto p-8 bg-white shadow-2xl rounded-2xl max-w-2xl transition-all duration-300 ease-in-out">
       <h1 className="text-4xl font-extrabold mb-6 text-gray-900">Your Profile</h1>
 
-      {/* Profile Picture Section */}
       <div className="flex items-center mb-6">
         <img 
           src={profile.profilePic || 'https://via.placeholder.com/150'} 
@@ -105,16 +104,18 @@ function Profile() {
         <input 
           type="text" 
           name="name" 
-          placeholder="Name" 
+          placeholder={profile.name || "Name (Placeholder)"} 
           value={profile.name}
           onChange={handleChange}
           required 
+          maxLength={50}
+
           className="p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all duration-200 shadow-md"
         />
         <input 
           type="email" 
           name="email" 
-          placeholder="Email" 
+          placeholder={profile.email || "Email (Placeholder)"} 
           value={profile.email}
           onChange={handleChange}
           required 
@@ -124,7 +125,7 @@ function Profile() {
         <input 
           type="text" 
           name="phone" 
-          placeholder="Contact No" 
+          placeholder={profile.phone || "Contact No (Placeholder)"} 
           value={profile.phone}
           onChange={handleChange}
           required 
@@ -135,7 +136,7 @@ function Profile() {
         <input 
           type="text" 
           name="address.houseNo" 
-          placeholder="House No" 
+          placeholder={profile.address.houseNo || "House No (Placeholder)"} 
           value={profile.address.houseNo}
           onChange={handleChange}
           required 
@@ -144,24 +145,56 @@ function Profile() {
         <input 
           type="text" 
           name="address.line1" 
-          placeholder="Line 1" 
+          placeholder={profile.address.line1 || "Line 1 (Placeholder)"} 
           value={profile.address.line1}
           onChange={handleChange}
           required 
+          maxLength={50} 
           className="p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all duration-200 shadow-md"
         />
         <input 
           type="text" 
           name="address.line2" 
-          placeholder="Line 2" 
+          placeholder={profile.address.line2 || "Line 2 (Placeholder)"} 
           value={profile.address.line2}
           onChange={handleChange}
+          maxLength={50}
           className="p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all duration-200 shadow-md"
         />
         <input 
           type="text" 
+          name="address.city" 
+          placeholder={profile.address.city || "City (Placeholder)"} 
+          value={profile.address.city}
+          onChange={handleChange}
+          required 
+          maxLength={50} 
+          className="p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all duration-200 shadow-md"
+        />
+        <select
+          name="address.country"
+          value={profile.address.country}
+          onChange={handleChange}
+          className="p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all duration-200 shadow-md"
+        >
+          {Object.keys(countriesStatesData.countries).map(country => (
+            <option key={country} value={country}>{country}</option>
+          ))}
+        </select>
+        <select
+          name="address.state"
+          value={profile.address.state}
+          onChange={handleChange}
+          className="p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all duration-200 shadow-md"
+        >
+          {countriesStatesData.countries[profile.address.country].map(state => (
+            <option key={state} value={state}>{state}</option>
+          ))}
+        </select>
+        <input 
+          type="text" 
           name="address.pin" 
-          placeholder="PIN Code" 
+          placeholder={profile.address.pin || "PIN Code (Placeholder)"} 
           value={profile.address.pin}
           onChange={handleChange}
           required 
@@ -170,8 +203,6 @@ function Profile() {
         
         <button type="submit" className="bg-blue-600 text-white font-bold py-3 rounded-lg shadow-lg hover:bg-blue-700 transition-all duration-200">Save Changes</button>
       </form>
-
-
 
       <ToastContainer position="top-center" autoClose={3000} hideProgressBar={false} closeOnClick draggable pauseOnHover />
     </div>

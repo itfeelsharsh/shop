@@ -12,6 +12,8 @@ import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
 import { setUser } from '../redux/userSlice';
 import ReCAPTCHA from 'react-google-recaptcha'; 
+import { motion } from 'framer-motion';
+
 
 function SignUp() {
   const [email, setEmail] = useState('');
@@ -90,6 +92,12 @@ function SignUp() {
   };
 
   return (
+    <motion.div
+    initial={{ opacity: 0, y: 50 }} 
+    animate={{ opacity: 1, y: 0 }} 
+    transition={{ duration: 0.6, ease: "easeInOut" }} 
+    className="container mx-auto px-4 py-8 bg-gray-50"
+  >
     <div className="flex justify-center items-center min-h-screen bg-gray-50 pt-20">
       <form
         onSubmit={handleSignUp}
@@ -161,6 +169,8 @@ function SignUp() {
         </p>
       </form>
     </div>
+    </motion.div>
+
   );
 }
 

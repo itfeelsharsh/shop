@@ -1,8 +1,16 @@
 
 import React from 'react';
+import { motion } from 'framer-motion';
+
 
 function TermsOfService() {
   return (
+    <motion.div
+    initial={{ opacity: 0, y: 50 }} 
+    animate={{ opacity: 1, y: 0 }} 
+    transition={{ duration: 0.6, ease: "easeInOut" }} 
+    className="container mx-auto px-4 py-8 bg-gray-50"
+  >
     <div className="container mx-auto px-4 py-12">
       <h1 className="text-5xl font-bold mb-8 text-gray-900 text-center">Terms of Service</h1>
       
@@ -50,6 +58,8 @@ function TermsOfService() {
         If you have any questions about these Terms of Service, please contact us through our <a href="/contact" className="text-blue-500 underline">Contact Us</a> page.
       </p>
     </div>
+    </motion.div>
+
   );
 }
 

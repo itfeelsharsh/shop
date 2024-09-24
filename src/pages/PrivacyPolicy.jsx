@@ -1,8 +1,16 @@
 
 import React from 'react';
+import { motion } from 'framer-motion';
+
 
 function PrivacyPolicy() {
   return (
+    <motion.div
+    initial={{ opacity: 0, y: 50 }} 
+    animate={{ opacity: 1, y: 0 }} 
+    transition={{ duration: 0.6, ease: "easeInOut" }} 
+    className="container mx-auto px-4 py-8 bg-gray-50"
+  >
     <div className="container mx-auto px-4 py-12">
       <h1 className="text-5xl font-bold mb-8 text-gray-900 text-center">Privacy Policy</h1>
       
@@ -41,6 +49,8 @@ function PrivacyPolicy() {
         If you have any questions or concerns about this Privacy Policy, please feel free to reach out to us through our <a href="/contact" className="text-blue-500 underline">Contact Us</a> page.
       </p>
     </div>
+    </motion.div>
+
   );
 }
 

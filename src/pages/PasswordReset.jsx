@@ -4,6 +4,8 @@ import { sendPasswordResetEmail } from 'firebase/auth';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import ReCAPTCHA from 'react-google-recaptcha'; 
+import { motion } from 'framer-motion';
+
 
 function PasswordReset() {
   const [email, setEmail] = useState('');
@@ -36,6 +38,12 @@ function PasswordReset() {
   };
 
   return (
+    <motion.div
+    initial={{ opacity: 0, y: 50 }} 
+    animate={{ opacity: 1, y: 0 }} 
+    transition={{ duration: 0.6, ease: "easeInOut" }} 
+    className="container mx-auto px-4 py-8 bg-gray-50"
+  >
     <div className="flex justify-center items-center h-screen bg-gray-100">
       <form
         onSubmit={handlePasswordReset}
@@ -73,6 +81,8 @@ function PasswordReset() {
         </p>
       </form>
     </div>
+    </motion.div>
+
   );
 }
 

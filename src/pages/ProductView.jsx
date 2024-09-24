@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addToCart } from '../redux/cartSlice';
 import { toast, ToastContainer } from 'react-toastify';
 import { Star, Truck, ShieldCheck, ArrowLeft } from 'lucide-react';
-import 'react-toastify/dist/ReactToastify.css'; 
+import 'react-toastify/dist/ReactToastify.css';
 
 function ProductView() {
   const { id } = useParams();
@@ -24,7 +24,7 @@ function ProductView() {
         if (docSnap.exists()) {
           const productData = { id: docSnap.id, ...docSnap.data() };
           setProduct(productData);
-          setActiveImage(productData.image); 
+          setActiveImage(productData.image);
         } else {
           toast.error("Product not found!");
         }
@@ -48,11 +48,14 @@ function ProductView() {
   };
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(price);
+    const priceStr = price.toString();
+    const [integerPart, decimalPart] = priceStr.split('.');
+
+    const lastThreeDigits = integerPart.slice(-3);
+    const otherDigits = integerPart.slice(0, -3);
+    const formattedInteger = otherDigits.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + (otherDigits ? "," : "") + lastThreeDigits;
+
+    return decimalPart ? `${formattedInteger}.${decimalPart}` : formattedInteger;
   };
 
   const handleImageClick = (image) => {
@@ -134,10 +137,10 @@ function ProductView() {
                 </div>
                 <p className="text-lg text-gray-700 mb-6">{product.description}</p>
                 <div className="mb-6">
-                  <span className="text-4xl font-bold text-blue-600">{formatPrice(product.price)}</span>
+                  <span className="text-4xl font-bold text-blue-600">₹{formatPrice(product.price)}</span>
                   {product.oldPrice && (
                     <span className="ml-4 text-xl text-gray-500 line-through">
-                      {formatPrice(product.oldPrice)}
+                      ₹{formatPrice(product.oldPrice)}
                     </span>
                   )}
                 </div>

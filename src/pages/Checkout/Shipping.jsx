@@ -1,19 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../../firebase/config';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
-
-const statesList = [
-  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
-  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", 
-  "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", 
-  "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", 
-  "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", 
-  "Uttar Pradesh", "Uttarakhand", "West Bengal", "Delhi", "Jammu and Kashmir", 
-  "Ladakh", "Chandigarh"
-];
+import countriesStatesData from '../../../src/countriesStates.json'; 
 
 function CheckoutShipping() {
   const [user, loadingAuth, errorAuth] = useAuthState(auth);
@@ -45,10 +35,12 @@ function CheckoutShipping() {
     fetchAddress();
   }, [user]);
 
-  
-
   const handleStateChange = (e) => {
     setAddress(prev => ({ ...prev, state: e.target.value }));
+  };
+
+  const handleCountryChange = (e) => {
+    setAddress(prev => ({ ...prev, country: e.target.value, state: '' })); 
   };
 
   const handleSubmit = async (e) => {
@@ -89,6 +81,18 @@ function CheckoutShipping() {
               className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 shadow-sm hover:shadow-md"
             />
           ))}
+          
+          <select 
+            value={address.country} 
+            onChange={handleCountryChange} 
+            className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 shadow-sm hover:shadow-md"
+            required
+          >
+            {Object.keys(countriesStatesData.countries).map((country, index) => (
+              <option key={index} value={country}>{country}</option>
+            ))}
+          </select>
+
           <select 
             value={address.state} 
             onChange={handleStateChange} 
@@ -96,10 +100,11 @@ function CheckoutShipping() {
             required
           >
             <option value="" disabled>Select State</option>
-            {statesList.map((state, index) => (
+            {countriesStatesData.countries[address.country].map((state, index) => (
               <option key={index} value={state}>{state}</option>
             ))}
           </select>
+          
           <button 
             type="submit" 
             className={`mt-4 w-full bg-blue-600 text-white py-3 rounded-lg font-semibold transition-all duration-200 ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}`}
