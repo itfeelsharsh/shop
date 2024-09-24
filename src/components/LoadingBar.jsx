@@ -1,12 +1,12 @@
-// src/components/LoadingBar.jsx
+
 import React, { useEffect, useState } from 'react';
 
 function LoadingBar() {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const duration = 5000; // Total duration of 5 seconds
-    const increment = 100 / (duration / 100); // Progress increment every 100ms to complete in 5 seconds
+    const duration = 5000; 
+    const increment = 100 / (duration / 100); 
 
     const timer = setInterval(() => {
       setProgress((prev) => {

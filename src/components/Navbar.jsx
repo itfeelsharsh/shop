@@ -1,12 +1,12 @@
 import React, { Fragment, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
-import { Bars3Icon, XMarkIcon, ShoppingCartIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon, ShoppingCartIcon } from '@heroicons/react/24/outline';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '../firebase/config';
 import { signOut } from 'firebase/auth';
 import { toast } from 'react-toastify';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { getDoc, doc } from 'firebase/firestore';
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
@@ -14,8 +14,6 @@ function classNames(...classes) {
 
 export default function Navbar() {
   const [user] = useAuthState(auth);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [, setResults] = useState([]);
   const [profilePic, setProfilePic] = useState('');
 
   useEffect(() => {
@@ -37,22 +35,6 @@ export default function Navbar() {
       toast.success("Successfully signed out!");
     } catch (error) {
       toast.error("Error signing out: " + (error.message || "Please try again."));
-    }
-  };
-
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!searchTerm) return;
-
-    const q = query(collection(db, 'yourCollectionName'), where('fieldToSearch', '==', searchTerm));
-
-    try {
-      const querySnapshot = await getDocs(q);
-      const resultsArray = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setResults(resultsArray);
-      setSearchTerm('');
-    } catch (error) {
-      toast.error("Error searching: " + error.message);
     }
   };
 
@@ -96,18 +78,6 @@ export default function Navbar() {
                 </div>
               </div>
               <div className="flex items-center">
-                <form onSubmit={handleSearch} className="relative hidden md:block">
-                  <input
-                    type="text"
-                    placeholder="Search..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 py-2 pl-10 pr-3 text-gray-900"
-                  />
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                    <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                  </div>
-                </form>
                 <Link to="/cart" className="ml-6">
                   <ShoppingCartIcon className="h-6 w-6 text-gray-300 hover:text-white" aria-hidden="true" />
                 </Link>
