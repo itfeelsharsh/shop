@@ -36,7 +36,7 @@ Welcome to KamiKoto, a beautifully crafted e-commerce platform offering a seamle
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/yourusername/kamikoto.git
+   git clone https://github.com/itfeelsharsh/kamikoto.git
    cd kamikoto
    ```
 
