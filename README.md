@@ -7,6 +7,7 @@ Welcome to KamiKoto, a beautifully crafted e-commerce platform offering a seamle
 ## 🌟 Features
 
 ### User Side:
+
 - **Sign In / Sign Up:** Create a new account or log in using email/password.
 - **Google / GitHub Authentication:** Sign in quickly using Google or GitHub accounts.
 - **Password Reset:** Securely reset forgotten passwords.
@@ -16,6 +17,7 @@ Welcome to KamiKoto, a beautifully crafted e-commerce platform offering a seamle
 - **Mobile Friendly:** Responsive design for a smooth shopping experience across all devices.
 
 ### Admin Side (Separate Repo: [shopAdmin](https://github.com/itfeelsharsh/shopAdmin)):
+
 - **Manage Users:** View user details (Profile Picture, Contact Info), ban users if necessary.
 - **Manage Products:** Add, edit, or delete products with detailed information such as:
   - Product Name
@@ -32,25 +34,28 @@ Welcome to KamiKoto, a beautifully crafted e-commerce platform offering a seamle
 ### Setup & Installation
 
 1. **Clone the Repository**
-    ```bash
-    git clone https://github.com/yourusername/kamikoto.git
-    cd kamikoto
-    ```
+
+   ```bash
+   git clone https://github.com/yourusername/kamikoto.git
+   cd kamikoto
+   ```
 
 2. **Install Dependencies**
-    ```bash
-    npm install
-    ```
+
+   ```bash
+   npm install
+   ```
 
 3. **Start the Development Server**
-    ```bash
-    npm start
-    ```
+
+   ```bash
+   npm start
+   ```
 
 4. **Firebase Configuration:**
-    - Add your Firebase project configuration in `firebase.js`.
-    - Set up Firestore Database and Authentication in [Firebase Console](https://console.firebase.google.com).
-    - Update Firestore security rules accordingly.
+   - Add your Firebase project configuration in `firebase.js`.
+   - Set up Firestore Database and Authentication in [Firebase Console](https://console.firebase.google.com).
+   - Update Firestore security rules accordingly.
 
 ---
 
@@ -58,51 +63,49 @@ Welcome to KamiKoto, a beautifully crafted e-commerce platform offering a seamle
 
 Set up Firebase Firestore by following these steps:
 
-1. Go to [Firebase Console](https://console.firebase.google.com) and enable **Firestore** and **Authentication**.
+1.  Go to [Firebase Console](https://console.firebase.google.com) and enable **Firestore** and **Authentication**.
 
-2. Set Firestore rules for secure data access:
+2.  Set Firestore rules for secure data access:
 
-    ```js
-// Paste Below Given Code In Your Firebase Firestore Database Rules  
+        ```js
+
+    rules_version = '2';
+    service cloud.firestore {
+    match /databases/{database}/documents {
+
+        match /users/{userId} {
+          allow read: if request.auth != null && (request.auth.uid == userId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userRole == 'Admin');
+          allow write: if request.auth != null && request.auth.uid == userId;
+        }
 
 
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    
-    
-    match /users/{userId} {
-      allow read: if request.auth != null && (request.auth.uid == userId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userRole == 'Admin');
-      allow write: if request.auth != null && request.auth.uid == userId; 
+        match /products/{productId} {
+          allow read: if true;
+          allow create, update, delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userRole == 'Admin';
+        }
+
+
+        match /users/{userId}/cart/{cartItemId} {
+          allow read, write: if request.auth != null && request.auth.uid == userId;
+        }
+
+
+        match /users/{userId}/orders/{orderId} {
+          allow read, write: if request.auth != null && request.auth.uid == userId;
+        }
+
+
+        match /products/{productId}/reviews/{reviewId} {
+          allow read: if true;
+          allow create: if request.auth != null;
+          allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+        }
+
     }
-
-    
-    match /products/{productId} {
-      allow read: if true; 
-      allow create, update, delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userRole == 'Admin'; 
     }
-
-    
-    match /users/{userId}/cart/{cartItemId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId; 
-    }
-
-    
-    match /users/{userId}/orders/{orderId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId; 
-    }
-    
-    
-    match /products/{productId}/reviews/{reviewId} {
-      allow read: if true; 
-      allow create: if request.auth != null; 
-      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId; 
-    }
-  }
-}
     ```
 
-3. For **Admin Panel Access**, go to Firestore and add the following field to any user you want to give admin rights:
+3.  For **Admin Panel Access**, go to Firestore and add the following field to any user you want to give admin rights:
 
     ```plaintext
     userRole : Admin
@@ -116,10 +119,10 @@ To use the Admin Panel ([shopAdmin](https://github.com/itfeelsharsh/shopAdmin)):
 
 1. Register as a normal user.
 2. In the Firestore Console, find the user in the `users` collection and update their role:
-   
-    ```plaintext
-    userRole : Admin (string)
-    ```
+
+   ```plaintext
+   userRole : Admin (string)
+   ```
 
 3. The user can now access the admin dashboard to manage products and users.
 
