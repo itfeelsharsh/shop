@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { auth, db } from '../firebase/config';
 import {
   createUserWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
   GithubAuthProvider,
-  FacebookAuthProvider,
 } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +20,7 @@ function SignUp() {
   const [profilePic, setProfilePic] = useState('');
   const [loading, setLoading] = useState(false);
   const [captchaVerified, setCaptchaVerified] = useState(false); 
+  const recaptchaRef = useRef(); 
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -50,6 +50,9 @@ function SignUp() {
     } catch (error) {
       console.error("Error signing up:", error);
       toast.error(error.message || "An error occurred. Please try again.");
+      
+      setCaptchaVerified(false);
+      recaptchaRef.current.reset(); 
     } finally {
       setLoading(false);
     }
@@ -87,7 +90,7 @@ function SignUp() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50 pt-20"> {/* Added pt-20 for top padding */}
+    <div className="flex justify-center items-center min-h-screen bg-gray-50 pt-20">
       <form
         onSubmit={handleSignUp}
         className="w-full max-w-md bg-white p-8 rounded-lg shadow-md"
@@ -127,6 +130,7 @@ function SignUp() {
         <ReCAPTCHA
           sitekey="6Lf63EoqAAAAAJLVIpWdZmg-pri-kVm-Lw2a2m5E" 
           onChange={handleCaptchaVerification}
+          ref={recaptchaRef} 
           className="mb-4"
         />
         <button
@@ -150,13 +154,6 @@ function SignUp() {
             disabled={!captchaVerified}
           >
             Sign up with Github
-          </button>
-          <button
-            onClick={() => handleSocialSignUp(new FacebookAuthProvider())}
-            className={`w-full bg-blue-700 text-white py-2 rounded-lg ${!captchaVerified ? 'opacity-50 cursor-not-allowed' : ''}`}
-            disabled={!captchaVerified}
-          >
-            Sign up with Facebook
           </button>
         </div>
         <p className="mt-4 text-center text-gray-600">

@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { auth, db } from "../firebase/config";
 import {
   signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
   GithubAuthProvider,
-  FacebookAuthProvider,
 } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +18,7 @@ function SignIn() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [captchaVerified, setCaptchaVerified] = useState(false); 
+  const recaptchaRef = useRef(); 
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -39,6 +39,9 @@ function SignIn() {
     } catch (error) {
       console.error("Error signing in:", error);
       toast.error(error.message || "An error occurred. Please try again.");
+      
+      setCaptchaVerified(false);
+      recaptchaRef.current.reset(); 
     } finally {
       setLoading(false);
     }
@@ -101,13 +104,12 @@ function SignIn() {
         <ReCAPTCHA
           sitekey="6Lf63EoqAAAAAJLVIpWdZmg-pri-kVm-Lw2a2m5E" 
           onChange={handleCaptchaVerification}
+          ref={recaptchaRef} 
           className="mb-4"
         />
         <button
           type="submit"
-          className={`w-full bg-blue-600 text-white py-2 rounded-lg font-semibold transition-all duration-200 ${
-            loading || !captchaVerified ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"
-          }`}
+          className={`w-full bg-blue-600 text-white py-2 rounded-lg font-semibold transition-all duration-200 ${loading || !captchaVerified ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"}`}
           disabled={loading || !captchaVerified}
         >
           {loading ? "Processing..." : "Sign In"}
@@ -126,13 +128,6 @@ function SignIn() {
             disabled={!captchaVerified}
           >
             Sign in with Github
-          </button>
-          <button
-            onClick={() => handleSocialSignIn(new FacebookAuthProvider())}
-            className={`w-full bg-blue-700 text-white py-2 rounded-lg ${!captchaVerified ? "opacity-50 cursor-not-allowed" : ""}`}
-            disabled={!captchaVerified}
-          >
-            Sign in with Facebook
           </button>
         </div>
         <p className="mt-4 text-center text-gray-600">
