@@ -67,7 +67,7 @@ Set up Firebase Firestore by following these steps:
 
 2.  Set Firestore rules for secure data access:
 
-        ```js
+        ```json
 
     rules_version = '2';
     service cloud.firestore {
