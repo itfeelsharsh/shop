@@ -12,9 +12,9 @@ function AboutUs() {
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-5xl font-bold mb-8 text-gray-900 text-center">About My Shopping App</h1>
         <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-          Welcome to my ReactJS + Firebase Shopping App! We’re here to give you a smooth and safe online shopping experience. Whether you’re on your phone or desktop, our app is built to handle all your shopping needs easy and fast.
+          Ilcome to my ReactJS + Firebase Shopping App! I’re here to give you a smooth and safe online shopping experience. Whether you’re on your phone or desktop, our app is built to handle all your shopping needs easy and fast.
         </p>
-        <p className="text-lg text-gray-700 mb-6 leading-relaxed">
+        <p className="text-lg texthttp://localhost:3000/-gray-700 mb-6 leading-relaxed">
           <h2>User Features:</h2>
           <ul className="list-disc list-inside mt-2">
             <li><strong>Sign In / Sign Up:</strong> Make a new account or log in with your email and password.</li>
@@ -43,10 +43,10 @@ function AboutUs() {
           </ul>
         </p>
         <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-          My mission is to use ReactJS and Firebase to build a strong and scalable shopping platform. We focus on user security, easy design, and full features to make sure both customers and admins have the best experience.
+          My mission is to use ReactJS and Firebase to build a strong and scalable shopping platform. I focus on user security, easy design, and full features to make sure both customers and admins have the best experience.
         </p>
         <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-          Thanks for checking out our app. Whether you’re a user looking for a great shopping time or an admin managing the site, we aim to provide tools and features that make your tasks simple and easy!
+          Thanks for checking out our app. Whether you’re a user looking for a great shopping time or an admin managing the site, I aim to provide tools and features that make your tasks simple and easy!
         </p>
       </div>
     </motion.div>
