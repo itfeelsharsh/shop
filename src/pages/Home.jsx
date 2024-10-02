@@ -32,7 +32,7 @@ function Home() {
   >
       {/* Banner Image */}
       <img
-        src="/banners/3.png"
+        src="/banners/3.webp"
         alt="KamiKoto Banner"
         className="w-full mb-6 mx-auto"
       />

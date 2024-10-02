@@ -1,20 +1,20 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { db } from '../firebase/config';
-import { collection, getDocs } from 'firebase/firestore';
-import ProductCard from '../components/ProductCard';
-import { Search } from 'lucide-react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState, useCallback } from "react";
+import { db } from "../firebase/config";
+import { collection, getDocs } from "firebase/firestore";
+import ProductCard from "../components/ProductCard";
+import { Search } from "lucide-react";
+import { motion } from "framer-motion";
 
 function Products() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [visibleCounts, setVisibleCounts] = useState({});
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, 'products'));
+        const querySnapshot = await getDocs(collection(db, "products"));
         const productsArray = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -22,7 +22,7 @@ function Products() {
         setProducts(productsArray);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error("Error fetching products:", error);
         setLoading(false);
       }
     };
@@ -30,16 +30,16 @@ function Products() {
   }, []);
 
   const categoriesOrder = [
-    'Notebooks and Journals',
-    'Pens and Pencils',
-    'Paper and Notepads',
-    'Planners and Calendars',
-    'Office Supplies',
-    'Art Supplies',
-    'Desk Accessories',
-    'Cards and Envelopes',
-    'Writing Accessories',
-    'Gift Wrap and Packaging',
+    "Notebooks and Journals",
+    "Pens and Pencils",
+    "Paper and Notepads",
+    "Planners and Calendars",
+    "Office Supplies",
+    "Art Supplies",
+    "Desk Accessories",
+    "Cards and Envelopes",
+    "Writing Accessories",
+    "Gift Wrap and Packaging",
   ];
 
   const categorizedProducts = categoriesOrder.map((category) => ({
@@ -47,7 +47,7 @@ function Products() {
     items: products.filter(
       (product) =>
         product.type === category &&
-        (searchTerm === '' ||
+        (searchTerm === "" ||
           product.name.toLowerCase().includes(searchTerm.toLowerCase()))
     ),
   }));
@@ -60,9 +60,9 @@ function Products() {
   }, []);
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
       minimumFractionDigits: 2,
     }).format(price);
   };
@@ -79,7 +79,7 @@ function Products() {
     <motion.div
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: 'easeInOut' }}
+      transition={{ duration: 0.6, ease: "easeInOut" }}
       className="container mx-auto px-4 py-8 bg-gray-50"
     >
       <h1 className="text-4xl font-bold mb-8 text-gray-900 text-center">
@@ -94,7 +94,10 @@ function Products() {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full p-4 pr-12 text-gray-900 border border-gray-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+        <Search
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+          size={20}
+        />
       </div>
 
       {categorizedProducts.map(({ category, items }, index) => {
@@ -109,7 +112,7 @@ function Products() {
           >
             <div className="relative h-50 overflow-hidden">
               <img
-                src={`/banners/products/${index + 1}.png`}
+                src={`/banners/products/${index + 1}.webp`}
                 alt={`${category} banner`}
                 className="w-full h-full object-cover transition-transform duration-300 transform hover:scale-105"
               />
@@ -128,9 +131,7 @@ function Products() {
                   />
                 ))}
               </div>
-              {!(
-                visibleCounts[category] >= items.length
-              ) && (
+              {!(visibleCounts[category] >= items.length) && (
                 <div className="text-center mt-6">
                   <button
                     className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
