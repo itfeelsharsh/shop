@@ -1,3 +1,6 @@
+# Admin Side (Separate Repo: [shopAdmin](https://github.com/itfeelsharsh/shopAdmin)):
+ (made with React + Firebase no server deployment required, can-be hosted on CloudFlare pages, Vercel, Netlify, Firebase Hosting Etc.)
+
 # KamiKoto - Exquisite Japanese Stationery E-Commerce Web App
 
 Welcome to KamiKoto, a beautifully crafted e-commerce platform offering a seamless shopping experience for exquisite Japanese stationery. This project is built using **React.js** and **Firebase**, delivering a delightful UI/UX and mobile-friendly experience for all users.
