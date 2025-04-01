@@ -11,6 +11,7 @@
     "@testing-library/user-event": "^13.5.0",
     "ajv": "^8.17.1",
     "axios": "^1.7.7",
+    "caniuse-lite": "^1.0.30001707",
     "dotenv": "^16.4.5",
     "firebase": "^10.13.2",
     "framer-motion": "^11.18.2",
@@ -54,6 +55,7 @@
     ]
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.12"

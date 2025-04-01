@@ -99,19 +99,6 @@ function Products() {
     }));
   }, [dispatch]);
 
-  /**
-   * Formats price to Indian Rupee format
-   * @param {number} price - The price to format
-   * @returns {string} Formatted price string
-   */
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      minimumFractionDigits: 2,
-    }).format(price);
-  };
-
   // Show loading spinner while fetching products
   if (loading) {
     return (
