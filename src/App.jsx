@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
@@ -13,12 +12,12 @@ import ProductView from "./pages/ProductView";
 import Cart from "./pages/Cart";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
-import Profile from "./pages/Profile";
-import CheckoutSummary from "./pages/Checkout/Summary";
-import CheckoutShipping from "./pages/Checkout/Shipping";
-import CheckoutPayment from "./pages/Checkout/Payment";
+import MyAccount from "./pages/Profile";
+import UnifiedCheckout from "./pages/Checkout/UnifiedCheckout";
 import Products from "./pages/Products";
 import LoadingBar from "./components/LoadingBar";
+import ScrollToTop from "./components/ScrollToTop";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { auth } from "./firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
 import { useDispatch } from "react-redux";
@@ -48,6 +47,7 @@ function App() {
 
   return (
     <Router>
+      <ScrollToTop />
       <ToastContainer
         position="top-center"
         autoClose={3000}
@@ -68,11 +68,13 @@ function App() {
             <Route path="/cart" element={<Cart />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signup" element={<SignUp />} />
-            <Route path="/password-reset" element={<PasswordReset />} /> {/* Add this route */}
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/checkout/summary" element={<CheckoutSummary />} />
-            <Route path="/checkout/shipping" element={<CheckoutShipping />} />
-            <Route path="/checkout/payment" element={<CheckoutPayment />} />
+            <Route path="/password-reset" element={<PasswordReset />} />
+            <Route path="/my-account" element={
+              <ProtectedRoute>
+                <MyAccount />
+              </ProtectedRoute>
+            } />
+            <Route path="/checkout" element={<UnifiedCheckout />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />

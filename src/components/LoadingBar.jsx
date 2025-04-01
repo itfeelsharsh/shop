@@ -1,52 +1,112 @@
-
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 
-function LoadingBar() {
-  const [progress, setProgress] = useState(0);
+const LoadingBar = ({ progress = 0, isIndeterminate = false }) => {
+  // Animation variants for the loading bar
+  const barVariants = {
+    initial: { 
+      scaleX: 0,
+      opacity: 0 
+    },
+    animate: { 
+      scaleX: isIndeterminate ? [0, 1, 1] : progress / 100,
+      opacity: 1,
+      transition: {
+        duration: isIndeterminate ? 1.5 : 0.5,
+        ease: isIndeterminate ? [0.4, 0, 0.2, 1] : "easeInOut",
+        repeat: isIndeterminate ? Infinity : 0,
+        repeatType: "loop"
+      }
+    }
+  };
 
-  useEffect(() => {
-    const duration = 5000; 
-    const increment = 100 / (duration / 100); 
+  // Animation variants for the loading pulse
+  const pulseVariants = {
+    initial: {
+      opacity: 0.3
+    },
+    animate: {
+      opacity: [0.3, 0.6, 0.3],
+      transition: {
+        duration: 1.5,
+        ease: "easeInOut",
+        repeat: Infinity
+      }
+    }
+  };
 
-    const timer = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(timer);
-          return 100;
-        }
-        return prev + increment;
-      });
-    }, 100);
-
-    return () => clearInterval(timer);
-  }, []);
+  // Animation variants for the shimmer effect
+  const shimmerVariants = {
+    initial: {
+      x: "-100%"
+    },
+    animate: {
+      x: "100%",
+      transition: {
+        repeat: Infinity,
+        repeatType: "loop",
+        duration: 1.5,
+        ease: "linear"
+      }
+    }
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
-      <img
-        src="/kamikoto-logo-with-name-tagline-dark-brown-bg.png"
-        alt="KamiKoto"
-        className="h-16 mb-8 opacity-80"
-        style={{
-          filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1))',
-          transition: 'opacity 1s ease-in-out',
-        }}
-      />
-      <div className="relative w-2/5 bg-gray-300 rounded-full h-3 overflow-hidden shadow-lg">
-        <div
-          className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-400 to-blue-600 shadow-md"
-          style={{
-            width: `${progress}%`,
-            transition: 'width 0.4s ease, background 0.4s ease',
-            borderRadius: 'inherit',
+    <div className="relative w-full">
+      {/* Background track */}
+      <motion.div
+        className="h-2 bg-gray-200 rounded-full overflow-hidden"
+        variants={pulseVariants}
+        initial="initial"
+        animate="animate"
+      >
+        {/* Progress bar */}
+        <motion.div
+          className="h-full bg-blue-600 rounded-full relative"
+          variants={barVariants}
+          initial="initial"
+          animate="animate"
+        >
+          {/* Shimmer effect */}
+          <motion.div
+            className="absolute inset-0 w-full h-full"
+            variants={shimmerVariants}
+            initial="initial"
+            animate="animate"
+          >
+            <div className="w-1/3 h-full bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+          </motion.div>
+        </motion.div>
+      </motion.div>
+
+      {/* Progress percentage */}
+      {!isIndeterminate && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute right-0 top-4 text-sm text-gray-600"
+        >
+          {Math.round(progress)}%
+        </motion.div>
+      )}
+
+      {/* Loading text for indeterminate state */}
+      {isIndeterminate && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{
+            duration: 1.5,
+            repeat: Infinity,
+            ease: "easeInOut"
           }}
-        ></div>
-      </div>
-      <div className="mt-4 text-sm text-gray-500">
-        {progress < 100 ? 'Loading...' : 'Complete'}
-      </div>
+          className="absolute left-0 top-4 text-sm text-gray-600"
+        >
+          Loading...
+        </motion.div>
+      )}
     </div>
   );
-}
+};
 
 export default LoadingBar;

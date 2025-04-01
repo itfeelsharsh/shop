@@ -8,7 +8,7 @@ import {
   GithubAuthProvider,
 } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
 import { setUser } from '../redux/userSlice';
@@ -24,7 +24,11 @@ function SignUp() {
   const [captchaVerified, setCaptchaVerified] = useState(false); 
   const recaptchaRef = useRef(); 
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
+  
+  // Get the redirect path from location state if exists
+  const from = location.state?.from?.pathname || "/";
 
   const handleSignUp = async (e) => {
     e.preventDefault();
@@ -48,7 +52,8 @@ function SignUp() {
 
       dispatch(setUser(user));
       toast.success("Sign up successful!");
-      navigate('/');
+      // Redirect to intended destination or home
+      navigate(from, { replace: true });
     } catch (error) {
       console.error("Error signing up:", error);
       toast.error(error.message || "An error occurred. Please try again.");
@@ -75,7 +80,8 @@ function SignUp() {
 
       dispatch(setUser(user));
       toast.success("Sign up successful!");
-      navigate('/');
+      // Redirect to intended destination or home
+      navigate(from, { replace: true });
     } catch (error) {
       console.error("Error with social sign up:", error);
       toast.error(error.message || "An error occurred.");
@@ -131,7 +137,7 @@ function SignUp() {
             className="w-full p-4 mb-6 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <ReCAPTCHA
-            sitekey="6Lf63EoqAAAAAJLVIpWdZmg-pri-kVm-Lw2a2m5E" 
+            sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY || "6LddLgYrAAAAAHVincfRV9vd1Qy_cyez6HHBmMuv"} 
             onChange={handleCaptchaVerification}
             ref={recaptchaRef} 
             className="mb-4"

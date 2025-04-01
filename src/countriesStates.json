@@ -2,7 +2,7 @@
     "countries": {
       "India": [
         "Andhra Pradesh",
-        "Arunachal Pradesh",
+        "Arunachal Pradesh", 
         "Assam",
         "Bihar",
         "Chhattisgarh",
@@ -33,7 +33,7 @@
       "Canada": [
         "Alberta",
         "British Columbia",
-        "Manitoba",
+        "Manitoba", 
         "New Brunswick",
         "Newfoundland and Labrador",
         "Nova Scotia",
@@ -137,7 +137,7 @@
       "United Kingdom": [
         "England",
         "Northern Ireland",
-        "Scotland",
+        "Scotland", 
         "Wales"
       ],
       "United States": [
@@ -191,7 +191,108 @@
         "West Virginia",
         "Wisconsin",
         "Wyoming"
+      ],
+      "Thailand": [
+        "Bangkok",
+        "Chiang Mai",
+        "Chiang Rai",
+        "Phuket",
+        "Krabi",
+        "Ayutthaya",
+        "Nonthaburi",
+        "Khon Kaen",
+        "Nakhon Ratchasima",
+        "Udon Thani"
+      ],
+      "Vietnam": [
+        "Hanoi",
+        "Ho Chi Minh City",
+        "Da Nang",
+        "Hai Phong",
+        "Can Tho",
+        "Bien Hoa",
+        "Hue",
+        "Nha Trang",
+        "Vung Tau",
+        "Qui Nhon"
+      ],
+      "Indonesia": [
+        "Jakarta",
+        "East Java",
+        "West Java",
+        "Central Java",
+        "North Sumatra",
+        "Bali",
+        "South Sulawesi",
+        "Banten",
+        "West Sumatra",
+        "Riau"
+      ],
+      "Philippines": [
+        "Metro Manila",
+        "Cebu",
+        "Davao",
+        "Calabarzon",
+        "Central Luzon",
+        "Western Visayas",
+        "Central Visayas",
+        "Eastern Visayas",
+        "Northern Mindanao",
+        "Bicol Region"
+      ],
+      "Spain": [
+        "Andalusia",
+        "Catalonia",
+        "Madrid",
+        "Valencia",
+        "Galicia",
+        "Castile and León",
+        "Basque Country",
+        "Castilla-La Mancha",
+        "Canary Islands",
+        "Aragon"
+      ],
+      "Sri Lanka": [
+        "Western Province",
+        "Central Province",
+        "Southern Province",
+        "Northern Province",
+        "Eastern Province",
+        "North Western Province",
+        "North Central Province",
+        "Uva Province",
+        "Sabaragamuwa Province"
+      ],
+      "Nepal": [
+        "Province No. 1",
+        "Madhesh Province",
+        "Bagmati Province",
+        "Gandaki Province",
+        "Lumbini Province",
+        "Karnali Province",
+        "Sudurpashchim Province"
+      ],
+      "Bhutan": [
+        "Bumthang",
+        "Chukha",
+        "Dagana",
+        "Gasa",
+        "Haa",
+        "Lhuntse",
+        "Mongar",
+        "Paro",
+        "Pemagatshel",
+        "Punakha",
+        "Samdrup Jongkhar",
+        "Samtse",
+        "Sarpang",
+        "Thimphu",
+        "Trashigang",
+        "Trashiyangtse",
+        "Trongsa",
+        "Tsirang",
+        "Wangdue Phodrang",
+        "Zhemgang"
       ]
     }
   }
-  

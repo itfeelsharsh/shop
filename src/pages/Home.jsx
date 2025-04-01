@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { db } from "../firebase/config";
 import { collection, getDocs } from "firebase/firestore";
 import ProductCard from "../components/ProductCard";
 import { Link } from "react-router-dom"; 
 import { motion } from "framer-motion"; 
+import { useDispatch } from "react-redux";
+import { addToCart } from "../redux/cartSlice";
 
 function Home() {
   const [products, setProducts] = useState([]);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -22,6 +25,17 @@ function Home() {
     };
     fetchProducts();
   }, []);
+
+  /**
+   * Handles adding a product to the cart
+   * @param {Object} product - The product to add to cart
+   */
+  const handleAddToCart = useCallback((product) => {
+    dispatch(addToCart({
+      productId: product.id,
+      quantity: 1
+    }));
+  }, [dispatch]);
 
   return (
     <motion.div
@@ -39,7 +53,11 @@ function Home() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductCard 
+            key={product.id} 
+            product={product} 
+            onAddToCart={handleAddToCart}
+          />
         ))}
       </div>
       <br /><br /><br />

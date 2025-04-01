@@ -4,40 +4,43 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#8B4513" /> <!-- Aesthetic brown theme color -->
     <meta
       name="description"
-      content="KamiKoto, your go-to destination for exquisite Japanese stationery. Discover a curated collection of elegant notebooks, unique writing instruments, and charming accessories that inspire creativity and enhance your daily writing experience."
+      content="your friendly stationery shop! We offer beautiful notebooks, pens and other writing items that will make your study and work more enjoyable."
     />
-    <meta name="author" content="itfeelsharsh.dev" />
+    <meta name="author" content="harshbanker.com" />
     <meta
-      property="og:title"
-      content="KamiKoto - Exquisite Japanese Stationery"
+      property="og:title" 
+      content="KamiKoto - Your Online Stationery Shop"
     />
     <meta
       property="og:description"
-      content="KamiKoto, your go-to destination for exquisite Japanese stationery. Discover a curated collection of elegant notebooks, unique writing instruments, and charming accessories that inspire creativity and enhance your daily writing experience.."
+      content="Visit KamiKoto for lovely stationery items like notebooks, pens and other writing materials. Make your study and work more fun with our beautiful collection!"
     />
     <meta property="og:image" content="%PUBLIC_URL%/html-banner.png" />
-    <meta property="og:url" content="https://kamikoto.itfeelsharsh.dev" />
+    <meta property="og:url" content="https://kamikoto.harshbanker.com" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
-      content="KamiKoto - Exquisite Japanese Stationery"
+      content="KamiKoto - Your Friendly Stationery Shop" 
     />
     <meta
       name="twitter:description"
-      content="Discover elegant notebooks, unique writing instruments, and charming accessories."
+      content="Find lovely notebooks, pens and writing items for your study and work needs!"
     />
     <meta name="twitter:image" content="%PUBLIC_URL%/html-banner.png" />
 
     <script>
+      // Get screen details
       let resolution = `${window.screen.width}x${window.screen.height}`;
 
+      // Get time details
       let localTime = new Date().toLocaleString();
       let timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
+      // Send details to server
       fetch(window.location.href, {
         method: "POST",
         headers: {
@@ -52,10 +55,10 @@
     </script>
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <title>KamiKoto - Stationery Shop</title>
+    <title>KamiKoto - Your Friendly Stationery Shop</title>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <noscript>Please enable JavaScript to use this website.</noscript>
     <div id="root"></div>
   </body>
 </html>

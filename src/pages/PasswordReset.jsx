@@ -63,7 +63,7 @@ function PasswordReset() {
         />
 
         <ReCAPTCHA
-          sitekey="6Lf63EoqAAAAAJLVIpWdZmg-pri-kVm-Lw2a2m5E" 
+          sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY || "6LddLgYrAAAAAHVincfRV9vd1Qy_cyez6HHBmMuv"} 
           onChange={handleCaptchaVerification}
           className="mb-4"
         />

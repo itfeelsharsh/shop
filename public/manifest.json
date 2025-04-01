@@ -1,25 +1,72 @@
 {
   "short_name": "KamiKoto",
-  "name": "KamiKoto",
+  "name": "KamiKoto - Your Online Stationery Shop",
+  "description": "Beautiful stationery items like notebooks, pens and other writing materials",
   "icons": [
     {
       "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "sizes": "64x64 32x32 24x24 16x16", 
+      "type": "image/x-icon",
+      "purpose": "any maskable"
     },
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512", 
+      "purpose": "any maskable"
     }
   ],
   "start_url": ".",
+  "scope": "/",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "orientation": "any",
+  "theme_color": "#8B4513",
+  "background_color": "#ffffff",
+  "prefer_related_applications": false,
+  "categories": ["shopping", "lifestyle"],
+  "screenshots": [
+    {
+      "src": "screenshots/home-app.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "platform": "narrow", 
+      "label": "Homepage of KamiKoto - Mobile View"
+    },
+    {
+      "src": "screenshots/acc-app.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "Product Catalog - Mobile View"  
+    },
+    {
+      "src": "screenshots/home-web.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Homepage of KamiKoto - Desktop View"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "View Cart",
+      "url": "/cart",
+      "description": "View your shopping cart"
+    },
+    {
+      "name": "My Account",
+      "url": "/my-account", 
+      "description": "View your account details"
+    }
+  ],
+  "related_applications": [],
+  "dir": "ltr",
+  "lang": "en",
+  "display_override": ["standalone", "fullscreen", "minimal-ui", "browser"]
 }
