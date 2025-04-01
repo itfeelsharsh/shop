@@ -3,11 +3,16 @@
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
     <meta name="theme-color" content="#8B4513" /> <!-- Aesthetic brown theme color -->
+    <!-- Prevent caching -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    
     <meta
       name="description"
-      content="your friendly stationery shop! We offer beautiful notebooks, pens and other writing items that will make your study and work more enjoyable."
+      content="your online stationery shop! We offer beautiful notebooks, pens and other writing items that will make your study and work more enjoyable."
     />
     <meta name="author" content="harshbanker.com" />
     <meta
@@ -19,7 +24,7 @@
       content="Visit KamiKoto for lovely stationery items like notebooks, pens and other writing materials. Make your study and work more fun with our beautiful collection!"
     />
     <meta property="og:image" content="%PUBLIC_URL%/html-banner.png" />
-    <meta property="og:url" content="https://kamikoto.harshbanker.com" />
+    <meta property="og:url" content="https://kamikoto.pages.dev" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta
@@ -31,30 +36,13 @@
       content="Find lovely notebooks, pens and writing items for your study and work needs!"
     />
     <meta name="twitter:image" content="%PUBLIC_URL%/html-banner.png" />
-
-    <script>
-      // Get screen details
-      let resolution = `${window.screen.width}x${window.screen.height}`;
-
-      // Get time details
-      let localTime = new Date().toLocaleString();
-      let timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-      // Send details to server
-      fetch(window.location.href, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          resolution: resolution,
-          localTime: localTime,
-          timeZone: timeZone,
-        }),
-      });
-    </script>
+    
+    <!-- Minimal PWA support without caching -->
+    <meta name="application-name" content="KamiKoto" />
+    <meta name="msapplication-TileColor" content="#8B4513" />
+    
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" crossorigin="use-credentials" />
     <title>KamiKoto - Your Friendly Stationery Shop</title>
   </head>
   <body>

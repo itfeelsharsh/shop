@@ -1,30 +1,30 @@
 {
   "short_name": "KamiKoto",
   "name": "KamiKoto - Your Online Stationery Shop",
-  "description": "Beautiful stationery items like notebooks, pens and other writing materials",
+  "description": "stationery items like notebooks, pens and other writing materials",
   "icons": [
     {
       "src": "favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16", 
       "type": "image/x-icon",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "logo192.png",
       "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
       "sizes": "512x512", 
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
   "scope": "/",
-  "display": "standalone",
+  "display": "browser",
   "orientation": "any",
   "theme_color": "#8B4513",
   "background_color": "#ffffff",
@@ -57,16 +57,18 @@
     {
       "name": "View Cart",
       "url": "/cart",
-      "description": "View your shopping cart"
+      "description": "View your shopping cart", 
+      "icons": [{ "src": "/icons/cart.png", "sizes": "192x192" }]
     },
     {
-      "name": "My Account",
-      "url": "/my-account", 
-      "description": "View your account details"
+      "name": "My Account", 
+      "url": "/my-account",
+      "description": "View your account details",
+      "icons": [{ "src": "/icons/account.png", "sizes": "192x192" }]
     }
   ],
   "related_applications": [],
   "dir": "ltr",
   "lang": "en",
-  "display_override": ["standalone", "fullscreen", "minimal-ui", "browser"]
+  "display_override": ["browser"]
 }
