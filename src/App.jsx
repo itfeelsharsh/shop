@@ -15,7 +15,7 @@ import SignUp from "./pages/SignUp";
 import MyAccount from "./pages/Profile";
 import UnifiedCheckout from "./pages/Checkout/UnifiedCheckout";
 import Products from "./pages/Products";
-import LoadingBar from "./components/LoadingBar";
+import LoadingScreen from "./components/LoadingScreen";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { auth } from "./firebase/config";
@@ -38,12 +38,15 @@ function App() {
       } else {
         dispatch(clearUser()); 
       }
-      setLoading(false);
+      
+      setTimeout(() => {
+        setLoading(false);
+      }, 1500);
     });
     return unsubscribe;
   }, [dispatch]);
 
-  if (loading) return <LoadingBar />;
+  if (loading) return <LoadingScreen message="Welcome to KamiKoto" showTips={true} />;
 
   return (
     <Router>

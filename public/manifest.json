@@ -7,24 +7,26 @@
       "src": "favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16", 
       "type": "image/x-icon",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
       "src": "logo192.png",
       "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
       "sizes": "512x512", 
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ],
+  "id": "/",
   "start_url": "/",
   "scope": "/",
-  "display": "browser",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "orientation": "any",
   "theme_color": "#8B4513",
   "background_color": "#ffffff",
@@ -69,6 +71,12 @@
   ],
   "related_applications": [],
   "dir": "ltr",
-  "lang": "en",
-  "display_override": ["browser"]
+  "lang": "en-IN",
+  "launch_handler": {
+    "client_mode": ["auto", "navigate"]
+  },
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "handle_links": "preferred"
 }
