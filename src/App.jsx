@@ -15,6 +15,7 @@ import SignUp from "./pages/SignUp";
 import MyAccount from "./pages/Profile";
 import UnifiedCheckout from "./pages/Checkout/UnifiedCheckout";
 import Products from "./pages/Products";
+import Wishlist from "./pages/Wishlist";
 import LoadingScreen from "./components/LoadingScreen";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -75,6 +76,11 @@ function App() {
             <Route path="/my-account" element={
               <ProtectedRoute>
                 <MyAccount />
+              </ProtectedRoute>
+            } />
+            <Route path="/wishlist" element={
+              <ProtectedRoute>
+                <Wishlist />
               </ProtectedRoute>
             } />
             <Route path="/checkout" element={<UnifiedCheckout />} />

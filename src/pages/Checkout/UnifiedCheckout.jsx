@@ -3,12 +3,15 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { auth, db } from '../../firebase/config';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
 import { collection, getDocs } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { clearCart } from '../../redux/cartSlice';
 import countriesStatesData from '../../countriesStates.json';
 import { ShoppingBag, Truck, CreditCard, CheckCircle, ChevronRight, ChevronLeft } from 'lucide-react';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import OrderConfirmation from '../../components/OrderConfirmation';
 
 // Import card logos
 import VisaLogo from '../../assets/visa.png';
@@ -49,6 +52,9 @@ function UnifiedCheckout() {
   const [upi, setUpi] = useState('');
   const [processingPayment, setProcessingPayment] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
+  
+  // Add state for order data and completion
+  const [completedOrder, setCompletedOrder] = useState(null);
   
   // Fetch products for cart
   useEffect(() => {
@@ -213,25 +219,68 @@ function UnifiedCheckout() {
         let paymentData = [...existingPaymentMethods];
         
         if (paymentMethod === 'Card') {
+          // Format and validate the card data
           const cardNumber = card.number.replace(/\s+/g, '');
           const cvv = card.cvv.trim();
           const expiry = card.expiry.trim();
           const cardType = card.type;
           
-          if (!paymentData.some(method => method.cardNumber === cardNumber)) {
-            paymentData.push({ cardNumber, cvv, expiry, type: cardType });
+          // Validate card number
+          if (!/^\d{12,}$/.test(cardNumber)) {
+            toast.error("Invalid card number. It should have at least 12 digits.");
+            return false;
           }
-        } else {
+          
+          // Validate CVV
+          if (!/^\d{3,4}$/.test(cvv)) {
+            toast.error("Invalid CVV. It should be 3 or 4 digits.");
+            return false;
+          }
+          
+          // Validate expiry date
+          if (!/^(0[1-9]|1[0-2])\/?([0-9]{2})$/.test(expiry)) {
+            toast.error("Invalid expiry date. Format should be MM/YY.");
+            return false;
+          }
+          
+          // Remove duplicate cards based on the last four digits
+          const lastFour = cardNumber.slice(-4);
+          paymentData = paymentData.filter(method => 
+            !method.cardNumber || method.cardNumber.slice(-4) !== lastFour
+          );
+          
+          // Add the new card
+          paymentData.push({ 
+            cardNumber, 
+            cvv, 
+            expiry, 
+            type: cardType 
+          });
+        } else if (paymentMethod === 'UPI') {
+          // Format and validate UPI ID
           const trimmedUpi = upi.trim();
-          if (!paymentData.some(method => method.upi === trimmedUpi)) {
-            paymentData.push({ upi: trimmedUpi });
+          
+          // Validate UPI ID format
+          if (!/@/.test(trimmedUpi)) {
+            toast.error("Invalid UPI ID. It should contain '@'.");
+            return false;
           }
+          
+          // Remove duplicate UPI IDs
+          paymentData = paymentData.filter(method => 
+            !method.upi || method.upi !== trimmedUpi
+          );
+          
+          // Add the new UPI ID
+          paymentData.push({ upi: trimmedUpi });
         }
         
+        // Update the user document with the new payment methods
         await updateDoc(userRef, { paymentMethods: paymentData });
         return true;
       } catch (error) {
         console.error("Error saving payment method:", error);
+        toast.error("Failed to save payment method.");
         return false;
       }
     }
@@ -249,25 +298,80 @@ function UnifiedCheckout() {
       await saveShippingAddress();
       
       // Save payment method
-      await savePaymentMethod();
+      const paymentMethodSaved = await savePaymentMethod();
+      if (!paymentMethodSaved) {
+        setProcessingPayment(false);
+        return;
+      }
+      
+      // Create order object
+      const orderId = Date.now().toString(); // Simple order ID generation
+      const orderData = {
+        orderId,
+        userId: user.uid,
+        userEmail: user.email,
+        userName: user.displayName || '',
+        orderDate: new Date().toISOString(),
+        items: cartDetails.map(item => ({
+          productId: item.productId,
+          name: item.product.name,
+          price: item.product.price,
+          quantity: item.quantity,
+          image: item.product.image,
+        })),
+        shipping: {
+          address: address,
+          method: "Standard Shipping",
+          cost: shipping
+        },
+        payment: {
+          method: paymentMethod,
+          details: paymentMethod === 'Card' ? {
+            cardType: card.type,
+            lastFour: card.number.slice(-4),
+          } : {
+            upiId: upi.split('@')[0] + '@xxxx' // Mask UPI ID for security
+          }
+        },
+        subtotal,
+        tax,
+        total,
+        status: "Placed", // Initial status is "Placed"
+        statusHistory: [
+          {
+            status: "Placed",
+            timestamp: new Date().toISOString(),
+            note: "Order placed successfully"
+          }
+        ],
+        tracking: {
+          code: null,
+          carrier: "IndiaPost",
+          url: null
+        }
+      };
+      
+      // Save order to Firestore
+      const orderRef = doc(db, "orders", orderId);
+      await setDoc(orderRef, orderData);
+      
+      // Add to user's orders collection
+      const userOrderRef = doc(db, "users", user.uid, "orders", orderId);
+      await setDoc(userOrderRef, { orderId, timestamp: new Date().toISOString() });
       
       // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Order complete
-      setOrderComplete(true);
-      
-      // Clear cart after successful order
       setTimeout(() => {
+        // Clear the cart
         dispatch(clearCart());
-        navigate('/');
-      }, 3000);
-      
-      return true;
+        
+        // Set completed order and show order confirmation
+        setCompletedOrder(orderData);
+        setOrderComplete(true);
+        setProcessingPayment(false);
+      }, 1500);
     } catch (error) {
       console.error("Error processing order:", error);
-      return false;
-    } finally {
+      toast.error("There was an error processing your order. Please try again.");
       setProcessingPayment(false);
     }
   };
@@ -368,6 +472,11 @@ function UnifiedCheckout() {
         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
       </div>
     );
+  }
+  
+  // If order is complete, show the order confirmation
+  if (orderComplete && completedOrder) {
+    return <OrderConfirmation order={completedOrder} />;
   }
   
   return (

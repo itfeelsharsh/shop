@@ -1,0 +1,244 @@
+/**
+ * Receipt PDF Styling for KamiKoto Stationery Shop
+ * 
+ * Enhanced styling for receipt PDFs with warm, elegant design
+ * Includes print-specific styles for optimal PDF output
+ */
+
+/* Base Receipt Container */
+.receipt-container {
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px;
+  background: white;
+  color: #333;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  line-height: 1.5;
+}
+
+/* Receipt Header with Logo and Order Info */
+.receipt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+/* Store Information */
+.store-info {
+  flex: 1;
+}
+
+.store-info h1 {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #8B4513; /* Warm brown color matching theme-color from index.html */
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.store-info p {
+  margin: 2px 0;
+  color: #555;
+  font-size: 14px;
+}
+
+/* Receipt Information */
+.receipt-info {
+  text-align: right;
+  flex: 1;
+}
+
+.receipt-info h2 {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.receipt-info p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.receipt-info p strong {
+  display: inline-block;
+  min-width: 100px;
+  color: #555;
+}
+
+/* Customer Information */
+.customer-info {
+  margin-bottom: 30px;
+  padding: 15px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border-left: 4px solid #8B4513; /* Warm brown color for left border */
+}
+
+.customer-info h3 {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #8B4513; /* Warm brown color */
+}
+
+.customer-info p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+/* Items Section */
+.items-section {
+  margin-bottom: 30px;
+}
+
+/* Items Table */
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.items-table th {
+  background: #8B4513; /* Warm brown color for table header */
+  color: white;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.items-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 14px;
+}
+
+.items-table tr:nth-child(even) td {
+  background: #f9f6f3; /* Light warm background for alternating rows */
+}
+
+.items-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Order Summary Section */
+.summary-section {
+  margin-bottom: 30px;
+  padding: 15px;
+  background: #f9f6f3; /* Light warm background */
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.summary-row:not(:last-child) {
+  border-bottom: 1px dashed #e5e7eb;
+}
+
+.summary-row.total {
+  font-weight: bold;
+  font-size: 18px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 2px solid #e5e7eb;
+  color: #8B4513; /* Warm brown color for total */
+}
+
+/* Payment Information */
+.payment-info {
+  margin-bottom: 30px;
+  padding: 15px;
+  background: #f9f6f3; /* Light warm background */
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.payment-info h3 {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #8B4513; /* Warm brown color */
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 8px;
+}
+
+.payment-info p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.payment-info p strong {
+  display: inline-block;
+  min-width: 120px;
+  color: #555;
+}
+
+/* Receipt Footer */
+.footer {
+  text-align: center;
+  padding-top: 20px;
+  border-top: 2px solid #f0f0f0;
+  color: #666;
+  font-size: 14px;
+}
+
+.footer p {
+  margin: 5px 0;
+}
+
+.footer p:first-child {
+  font-weight: bold;
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #8B4513; /* Warm brown color */
+}
+
+/* Print Specific Styles */
+@media print {
+  .receipt-container {
+    box-shadow: none;
+    padding: 0;
+    max-width: 100%;
+  }
+  
+  .items-table th {
+    background-color: #8B4513 !important; /* Ensure color prints in PDF */
+    color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .receipt-info h2, 
+  .store-info h1,
+  .customer-info h3,
+  .payment-info h3,
+  .summary-row.total,
+  .footer p:first-child {
+    color: #8B4513 !important; /* Ensure color prints in PDF */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .customer-info {
+    border-left-color: #8B4513 !important; /* Ensure color prints in PDF */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+} 

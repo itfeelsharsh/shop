@@ -6,6 +6,7 @@ import { useInView } from 'react-intersection-observer';
 import PropTypes from 'prop-types';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '../firebase/config';
+import WishlistButton from './WishlistButton';
 
 /**
  * NotificationModal Component
@@ -126,6 +127,7 @@ const NotificationModal = ({ isOpen, onClose, type, message }) => {
  * - Price formatting with original price display
  * - Stock status indicator
  * - Add to cart functionality with authentication check
+ * - Wishlist functionality for saving products
  * - Notification system for user feedback
  * 
  * @param {Object} product - The product data to display
@@ -232,6 +234,7 @@ function ProductCard({
    * @param {number} currentPrice - The current price
    * @returns {number} The discount percentage (rounded to nearest integer)
    */
+  // eslint-disable-next-line no-unused-vars
   const calculateDiscount = (originalPrice, currentPrice) => {
     if (!originalPrice || !currentPrice || isNaN(originalPrice) || isNaN(currentPrice)) {
       return 0;
@@ -264,6 +267,7 @@ function ProductCard({
   };
 
   // Badge animation variants for pop-in effect
+  // eslint-disable-next-line no-unused-vars
   const badgeVariants = {
     initial: { scale: 0 },
     animate: {
@@ -274,6 +278,62 @@ function ProductCard({
         damping: 25
       }
     }
+  };
+
+  /**
+   * Renders the product image and action buttons
+   * @returns {JSX.Element} Product image with overlay actions
+   */
+  const renderProductImage = () => {
+    return (
+      <div className="relative overflow-hidden rounded-t-xl h-48 md:h-56 group">
+        <img
+          src={product?.image}
+          alt={product?.name}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+        />
+        
+        {/* Action buttons overlay */}
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+          <div className="flex space-x-2">
+            <button
+              onClick={handleViewDetails}
+              className="bg-white text-gray-800 p-2 rounded-full hover:bg-gray-100 transition-all transform -translate-y-2 group-hover:translate-y-0"
+            >
+              <Eye size={18} />
+            </button>
+            
+            <button
+              onClick={handleAddToCart}
+              className="bg-white text-gray-800 p-2 rounded-full hover:bg-gray-100 transition-all transform -translate-y-2 group-hover:translate-y-0"
+            >
+              <ShoppingCart size={18} />
+            </button>
+            
+            <WishlistButton product={product} size="sm" className="transform -translate-y-2 group-hover:translate-y-0" />
+          </div>
+        </div>
+        
+        {/* Badges: New, Sale, Out of Stock */}
+        <div className="absolute top-2 left-2 flex flex-col space-y-1">
+          {product?.isNew && (
+            <span className="px-2 py-1 bg-green-500 text-white text-xs font-medium rounded">New</span>
+          )}
+          
+          {product?.originalPrice && product.originalPrice > product.price && (
+            <span className="px-2 py-1 bg-red-500 text-white text-xs font-medium rounded">
+              Sale
+            </span>
+          )}
+          
+          {!product?.stock && (
+            <span className="px-2 py-1 bg-gray-700 text-white text-xs font-medium rounded">
+              Out of Stock
+            </span>
+          )}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -303,59 +363,7 @@ function ProductCard({
         "
         onClick={handleViewDetails}
       >
-        {/* Product Badges - New Arrival and Discount */}
-        <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-          {product?.isNew && (
-            <motion.div
-              variants={badgeVariants}
-              initial="initial"
-              animate="animate"
-              className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg"
-            >
-              New Arrival
-            </motion.div>
-          )}
-          {(product?.originalPrice > product?.price) && (
-            <motion.div
-              variants={badgeVariants}
-              initial="initial"
-              animate="animate"
-              className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg"
-            >
-              {calculateDiscount(product?.originalPrice, product?.price)}% OFF
-            </motion.div>
-          )}
-        </div>
-
-        {/* Product Image with View Details Overlay */}
-        <div className="relative h-[240px] overflow-hidden bg-gray-50">
-          <motion.img
-            src={product?.image || '/placeholder-image.jpg'}
-            alt={product?.name || 'Product Image'}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-          />
-
-          {/* Overlay that appears on hover */}
-          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center">
-            <motion.div
-              className="bg-white text-blue-600 px-6 py-2 rounded-full font-medium flex items-center gap-2 shadow-lg"
-              initial={{ y: 20, opacity: 0 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              animate={{
-                y: 0,
-                opacity: 1,
-                transition: {
-                  delay: 0.1,
-                  duration: 0.2
-                }
-              }}
-            >
-              <Eye size={18} />
-              <span>View Details</span>
-            </motion.div>
-          </div>
-        </div>
+        {renderProductImage()}
 
         {/* Product Information Section */}
         <div className="flex flex-col flex-grow p-6">

@@ -7,7 +7,8 @@ import {
   InformationCircleIcon,
   PhoneIcon,
   UserCircleIcon,
-  ShoppingBagIcon
+  ShoppingBagIcon,
+  HeartIcon
 } from '@heroicons/react/24/outline';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '../firebase/config';
@@ -15,6 +16,7 @@ import { signOut } from 'firebase/auth';
 import { toast } from 'react-toastify';
 import { getDoc, doc } from 'firebase/firestore';
 import { useSelector } from 'react-redux';
+import logger from '../utils/logger';
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
@@ -66,11 +68,16 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  /**
+   * Handle user sign out with proper error handling and logging
+   */
   const handleSignOut = async () => {
     try {
+      logger.user.action("Sign out");
       await signOut(auth);
       toast.success("Successfully signed out!");
     } catch (error) {
+      logger.error("Sign out failed", error, "Auth");
       toast.error("Error signing out: " + (error.message || "Please try again."));
     }
   };
@@ -190,6 +197,20 @@ export default function Navbar() {
                         </Menu.Item>
                         <Menu.Item>
                           {({ active }) => (
+                            <Link
+                              to="/wishlist"
+                              className={classNames(
+                                active ? 'bg-gray-50' : '',
+                                'flex items-center px-4 py-2 text-sm text-gray-700'
+                              )}
+                            >
+                              <HeartIcon className="mr-3 h-5 w-5 text-gray-400" />
+                              My Wishlist
+                            </Link>
+                          )}
+                        </Menu.Item>
+                        <Menu.Item>
+                          {({ active }) => (
                             <button
                               onClick={handleSignOut}
                               className={classNames(
@@ -297,6 +318,17 @@ export default function Navbar() {
                   
                   <div>
                     <Link
+                      to="/wishlist"
+                      className="flex items-center px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <HeartIcon className="h-5 w-5 mr-3" />
+                      My Wishlist
+                    </Link>
+                  </div>
+                  
+                  <div>
+                    <Link
                       to="/my-account"
                       className="flex items-center px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                       onClick={() => setIsMobileMenuOpen(false)}
@@ -307,7 +339,11 @@ export default function Navbar() {
                   </div>
                   
                   <button
-                    onClick={handleSignOut}
+                    onClick={() => {
+                      handleSignOut();
+                      setIsMobileMenuOpen(false);
+                      logger.user.action("Sign out (mobile)");
+                    }}
                     className="w-full mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-md"
                   >
                     Sign out

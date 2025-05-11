@@ -7,6 +7,7 @@ import { addToCart } from '../redux/cartSlice';
 import { toast, ToastContainer } from 'react-toastify';
 import { Truck, ShieldCheck, ArrowLeft, Package2, ShoppingCart, ChevronDown, ChevronUp, Tag, Star } from 'lucide-react';
 import 'react-toastify/dist/ReactToastify.css';
+import WishlistButton from '../components/WishlistButton';
 
 /**
  * Product details page component
@@ -250,12 +251,17 @@ function ProductView() {
                 </div>
                 
                 {/* Add to Cart Button - Positioned high for mobile */}
-                <button
-                  onClick={handleAddToCart}
-                  className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md transition duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 mb-5"
-                >
-                  {loading ? "Processing..." : "Add to Cart"}
-                </button>
+                <div className="flex items-center space-x-4 mb-6">
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={!product.stock}
+                    className={`flex-1 py-3 px-6 rounded-lg text-white font-medium flex items-center justify-center space-x-2 ${product.stock ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}`}
+                  >
+                    <ShoppingCart size={20} />
+                    <span>{product.stock ? 'Add to Cart' : 'Out of Stock'}</span>
+                  </button>
+                  <WishlistButton product={product} size="lg" />
+                </div>
                 
                 {/* Shipping and Warranty Info - Important for purchase decisions */}
                 <div className="mb-4 space-y-3 bg-gray-50 p-3 rounded-lg">

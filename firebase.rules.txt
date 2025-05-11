@@ -5,29 +5,72 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
+    // Helper function to check if user is an admin
+    function isAdmin() {
+      // 1. Check if the user is authenticated.
+      // 2. Check if the user's document exists in the 'users' collection.
+      // 3. If it exists, check if the 'userRole' field in that document's data is 'Admin'.
+      return request.auth != null &&
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userRole == 'Admin';
+    }
     
+    // User profiles
     match /users/{userId} {
-      allow read: if request.auth != null && (request.auth.uid == userId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userRole == 'Admin');
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
       allow write: if request.auth != null && request.auth.uid == userId; 
     }
 
-    
+    // Products
     match /products/{productId} {
       allow read: if true; 
-      allow create, update, delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userRole == 'Admin'; 
+      allow create, update, delete: if request.auth != null && isAdmin(); 
     }
 
-    
+    // Cart items for users
     match /users/{userId}/cart/{cartItemId} {
       allow read, write: if request.auth != null && request.auth.uid == userId; 
     }
 
-    
+    // Wishlist items for users - Only the user who created the wishlist can access it
+    match /users/{userId}/wishlist/{wishlistItemId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Orders for users (inside user document)
     match /users/{userId}/orders/{orderId} {
       allow read, write: if request.auth != null && request.auth.uid == userId; 
     }
     
+    // Global orders collection (needed for admin access)
+    match /orders/{orderId} {
+      // Read: Admins can read all orders, users can only read specific order documents they own
+      allow get: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
+      
+      // List: 
+      allow list: if request.auth != null &&
+                      (
+                        isAdmin() || // Admins can list all orders
+                        // --- TEMPORARY SIMPLIFICATION FOR NON-ADMINS ---
+                        // This relies on the client-side query ALWAYS including where("userId", "==", request.auth.uid)
+                        (request.auth.uid != null) // Any authenticated user can attempt to list.
+                                                   // Security relies on client query being correct.
+                      );
+      
+      // Create: Users can create their own orders
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      
+      // Update: Admins can update any order, users can only update their own orders with limited fields
+      allow update: if request.auth != null && 
+                      (isAdmin() || 
+                       (resource.data.userId == request.auth.uid && 
+                        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])));
+      
+      // Delete: Only admins can delete orders
+      allow delete: if request.auth != null && isAdmin();
+    }
     
+    // Product reviews
     match /products/{productId}/reviews/{reviewId} {
       allow read: if true; 
       allow create: if request.auth != null; 

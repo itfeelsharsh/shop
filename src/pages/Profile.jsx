@@ -1,6 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { auth, db } from '../firebase/config';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, getDocs, query, orderBy, 
+// eslint-disable-next-line no-unused-vars
+limit, where, 
+// eslint-disable-next-line no-unused-vars
+deleteDoc } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -15,8 +19,32 @@ import {
   Camera, 
   AlertCircle, 
   CreditCard,
-  Trash2
+  Trash2,
+  Package,
+  ExternalLink,
+  CheckCircle
 } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useDispatch, 
+// eslint-disable-next-line no-unused-vars
+useSelector } from 'react-redux';
+// eslint-disable-next-line no-unused-vars
+import { setWishlistItems } from '../redux/wishlistSlice';
+import logger from '../utils/logger';
+import useWishlist from '../utils/useWishlist';
+
+/**
+ * Order status constants with associated colors for UI display
+ */
+const ORDER_STATUS = {
+  PLACED: { label: 'Placed', color: 'bg-yellow-100 text-yellow-800' },
+  APPROVED: { label: 'Approved', color: 'bg-blue-100 text-blue-800' },
+  PACKED: { label: 'Packed', color: 'bg-indigo-100 text-indigo-800' },
+  SHIPPED: { label: 'Shipped', color: 'bg-purple-100 text-purple-800' },
+  DELIVERED: { label: 'Delivered', color: 'bg-green-100 text-green-800' },
+  DECLINED: { label: 'Declined', color: 'bg-red-100 text-red-800' },
+  CANCELLED: { label: 'Cancelled', color: 'bg-gray-100 text-gray-800' }
+};
 
 /**
  * My Account page with multiple sections for profile management,
@@ -51,6 +79,18 @@ function MyAccount() {
     cardCVV: '',
     upiId: ''
   });
+  const [orders, setOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  // eslint-disable-next-line no-unused-vars
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const navigate = useNavigate();
+  // eslint-disable-next-line no-unused-vars
+  const dispatch = useDispatch();
+  const { 
+    wishlistItems: hookWishlistItems, 
+    loading: wishlistHookLoading,
+    removeFromWishlist: removeWishlistItem
+  } = useWishlist();
 
   useEffect(() => {
     /**
@@ -81,12 +121,18 @@ function MyAccount() {
             
             // Set payment methods
             setPaymentMethods(userData.paymentMethods || []);
+            
+            logger.firebase.read(`users/${user.uid}`, { 
+              name: userData.name,
+              email: userData.email
+            });
           } else {
             toast.warn("No profile data found. Please update your profile.");
+            logger.warn("No user profile data found", null, "Profile");
           }
         } catch (error) {
           toast.error("Error loading profile: " + error.message);
-          console.error("Error fetching profile:", error);
+          logger.firebase.error(`users/${user.uid}`, "getDoc", error);
         } finally {
           setLoading(false);
         }
@@ -95,6 +141,74 @@ function MyAccount() {
     
     fetchProfile();
   }, [user]);
+
+  /**
+   * Fetch user orders from Firestore
+   * Memoized with useCallback to prevent repeated calls and console spam
+   */
+  const fetchOrders = useCallback(async () => {
+    if (!user) return;
+    
+    // Check if we've already fetched orders to prevent repeated calls
+    if (orders.length > 0 && !ordersLoading) return;
+    
+    logger.user.action("View Orders", { userId: user.uid });
+
+    try {
+      setOrdersLoading(true);
+      
+      // Get all orders for this user
+      const ordersQuery = query(
+        collection(db, "orders"),
+        where("userId", "==", user.uid),
+        orderBy("orderDate", "desc")
+      );
+      
+      const ordersSnapshot = await getDocs(ordersQuery);
+      const ordersData = [];
+      
+      ordersSnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.userId === user.uid) {
+          ordersData.push({
+            id: doc.id,
+            ...data
+          });
+        }
+      });
+      
+      setOrders(ordersData);
+      logger.firebase.read("orders", { count: ordersData.length });
+    } catch (error) {
+      logger.firebase.error("orders", "getDocs", error);
+      toast.error("Error loading orders: " + error.message);
+    } finally {
+      setOrdersLoading(false);
+    }
+  }, [user, orders.length, ordersLoading]);
+
+  /**
+   * Fetch user wishlist items from Firebase
+   * This is now handled by the useWishlist hook 
+   * and this function is kept for tab activation only
+   * Memoized with useCallback to prevent repeated calls
+   */
+  const fetchWishlist = useCallback(async () => {
+    if (!user) return;
+    
+    // Only log once per tab activation
+    logger.user.action("View Wishlist", { userId: user.uid });
+    // The actual fetching is handled by the useWishlist hook
+  }, [user]);
+
+  // Fetch orders when the orders tab is activated
+  useEffect(() => {
+    if (activeTab === 'orders') {
+      fetchOrders();
+    } else if (activeTab === 'wishlist') {
+      fetchWishlist();
+    }
+  }, [activeTab, user, fetchOrders, fetchWishlist]);
 
   /**
    * Handle input field changes
@@ -247,6 +361,32 @@ function MyAccount() {
     } finally {
       setSaveLoading(false);
     }
+  };
+
+  /**
+   * Removes a product from the wishlist
+   * @param {string} productId - ID of the product to remove
+   */
+  const handleRemoveFromWishlist = async (productId) => {
+    await removeWishlistItem(productId);
+  };
+
+  /**
+   * Format price with Indian currency format
+   * @param {number} price - Price to format
+   * @returns {string} Formatted price string
+   */
+  const formatPrice = (price) => {
+    if (!price) return "₹0";
+    
+    const priceStr = price.toString();
+    const [integerPart, decimalPart] = priceStr.split('.');
+
+    const lastThreeDigits = integerPart.slice(-3);
+    const otherDigits = integerPart.slice(0, -3);
+    const formattedInteger = otherDigits.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + (otherDigits ? "," : "") + lastThreeDigits;
+
+    return `₹${decimalPart ? `${formattedInteger}.${decimalPart}` : formattedInteger}`;
   };
 
   if (loading) {
@@ -525,6 +665,161 @@ function MyAccount() {
               </motion.div>
             )}
             
+            {/* Orders Tab */}
+            {activeTab === 'orders' && (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-semibold text-gray-800">My Orders</h2>
+                </div>
+                
+                {ordersLoading ? (
+                  <div className="flex justify-center items-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"></div>
+                  </div>
+                ) : orders.length === 0 ? (
+                  <div className="bg-gray-50 rounded-lg p-8 text-center">
+                    <Package size={48} className="mx-auto text-gray-400 mb-4" />
+                    <h3 className="text-xl font-medium text-gray-700 mb-2">No orders yet</h3>
+                    <p className="text-gray-500 mb-4">You haven't placed any orders yet.</p>
+                    <button 
+                      onClick={() => navigate('/products')}
+                      className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                    >
+                      Start Shopping
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {orders.map((order) => (
+                      <div key={order.id} className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition">
+                        {/* Order Header */}
+                        <div className="bg-gray-50 p-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div>
+                            <p className="text-sm text-gray-500">
+                              Order placed on {new Date(order.orderDate).toLocaleDateString('en-IN', { 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric' 
+                              })}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-1">Order ID: {order.orderId}</p>
+                          </div>
+                          
+                          <div className="flex flex-wrap items-center gap-3">
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              ORDER_STATUS[order.status?.toUpperCase()]?.color || 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {order.status}
+                            </span>
+                            
+                            {/* If order is shipped, show tracking option */}
+                            {(order.status === 'Shipped' || order.status === 'Delivered') && order.tracking?.code && (
+                              <button
+                                onClick={() => setActiveTab('track')}
+                                className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center"
+                              >
+                                <Truck size={14} className="mr-1" />
+                                Track Package
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Order Items */}
+                        <div className="p-4">
+                          <div className="space-y-4">
+                            {order.items.slice(0, 3).map((item, idx) => (
+                              <div key={idx} className="flex items-start gap-4">
+                                <div className="flex-shrink-0">
+                                  <img 
+                                    src={item.image || 'https://via.placeholder.com/80?text=Product'} 
+                                    alt={item.name}
+                                    className="w-16 h-16 object-contain border border-gray-200 rounded-md"
+                                  />
+                                </div>
+                                <div className="flex-grow">
+                                  <h4 className="text-gray-800 font-medium">{item.name}</h4>
+                                  <p className="text-gray-500 text-sm mt-1">Quantity: {item.quantity}</p>
+                                  <p className="text-gray-700 font-medium mt-1">
+                                    ₹{typeof item.price === 'number' ? item.price.toFixed(2) : '0.00'}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                            
+                            {order.items.length > 3 && (
+                              <p className="text-sm text-gray-500">
+                                + {order.items.length - 3} more items
+                              </p>
+                            )}
+                          </div>
+                          
+                          {/* Order Footer */}
+                          <div className="mt-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                              <p className="text-gray-500 text-sm">Total</p>
+                              <p className="text-gray-900 font-bold text-lg">
+                                ₹{typeof order.total === 'number' ? order.total.toFixed(2) : '0.00'}
+                              </p>
+                            </div>
+                            
+                            {/* Order Status Messages */}
+                            <div className="text-sm">
+                              {order.status === 'Placed' && (
+                                <div className="flex items-center text-yellow-600">
+                                  <AlertCircle size={16} className="mr-1" />
+                                  <span>Your order has been placed and is pending approval</span>
+                                </div>
+                              )}
+                              
+                              {order.status === 'Approved' && (
+                                <div className="flex items-center text-blue-600">
+                                  <Package size={16} className="mr-1" />
+                                  <span>Your order has been approved and is being processed</span>
+                                </div>
+                              )}
+                              
+                              {order.status === 'Packed' && (
+                                <div className="flex items-center text-indigo-600">
+                                  <Package size={16} className="mr-1" />
+                                  <span>Your order has been packed and will ship soon</span>
+                                </div>
+                              )}
+                              
+                              {order.status === 'Shipped' && (
+                                <div className="flex items-center text-purple-600">
+                                  <Truck size={16} className="mr-1" />
+                                  <span>Your order is on the way</span>
+                                </div>
+                              )}
+                              
+                              {order.status === 'Delivered' && (
+                                <div className="flex items-center text-green-600">
+                                  <CheckCircle size={16} className="mr-1" />
+                                  <span>Your order has been delivered</span>
+                                </div>
+                              )}
+                              
+                              {order.status === 'Declined' && (
+                                <div className="flex items-center text-red-600">
+                                  <AlertCircle size={16} className="mr-1" />
+                                  <span>Your order has been declined</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            )}
+            
             {/* Payment Methods Tab */}
             {activeTab === 'payment' && (
               <motion.div 
@@ -733,64 +1028,134 @@ function MyAccount() {
               </motion.div>
             )}
             
-            {/* Orders Tab */}
-            {activeTab === 'orders' && (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="flex flex-col items-center justify-center py-12"
-              >
-                <div className="max-w-md text-center">
-                  <div className="bg-blue-50 rounded-full p-6 inline-block mb-6">
-                    <ShoppingBag size={48} className="text-blue-600" />
-                  </div>
-                  
-                  <h3 className="text-2xl font-semibold text-gray-900 mb-4">Your Order History</h3>
-                  <p className="text-gray-600 mb-6">
-                    View and track all your past and current orders in one place.
-                  </p>
-                  
-                  <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-8 text-left">
-                    <div className="flex items-start">
-                      <AlertCircle className="text-blue-600 mr-3 h-5 w-5 mt-0.5" />
-                      <div>
-                        <p className="text-blue-800 font-medium">Coming Soon</p>
-                        <p className="text-blue-700 text-sm mt-1">We're currently building this feature. Check back soon for your complete order history.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-            
             {/* Track Shipment Tab */}
             {activeTab === 'track' && (
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="flex flex-col items-center justify-center py-12"
               >
-                <div className="max-w-md text-center">
-                  <div className="bg-blue-50 rounded-full p-6 inline-block mb-6">
-                    <Truck size={48} className="text-blue-600" />
-                  </div>
-                  
-                  <h3 className="text-2xl font-semibold text-gray-900 mb-4">Track Your Shipments</h3>
-                  <p className="text-gray-600 mb-6">
-                    Stay updated with the real-time status of your orders and track their journey to your doorstep.
-                  </p>
-                  
-                  <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-8 text-left">
-                    <div className="flex items-start">
-                      <AlertCircle className="text-blue-600 mr-3 h-5 w-5 mt-0.5" />
-                      <div>
-                        <p className="text-blue-800 font-medium">Coming Soon</p>
-                        <p className="text-blue-700 text-sm mt-1">We're working on this feature to help you track your shipments with ease. Check back soon!</p>
-                      </div>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-semibold text-gray-800">Track Your Shipment</h2>
+                </div>
+                
+                <div className="bg-blue-50 rounded-lg p-5 mb-8 border border-blue-100">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="text-blue-600 mt-0.5 flex-shrink-0" size={20} />
+                    <div>
+                      <h3 className="font-medium text-blue-800">Track with India Post</h3>
+                      <p className="text-blue-700 text-sm mt-1">
+                        We use India Post for all our shipments. You can track your package using the tracking ID provided in your shipped orders.
+                      </p>
                     </div>
                   </div>
+                </div>
+                
+                {/* Orders with tracking */}
+                <div className="space-y-6">
+                  <h3 className="text-lg font-medium text-gray-800 mb-4">Your Shipped Orders</h3>
+                  
+                  {ordersLoading ? (
+                    <div className="flex justify-center items-center py-8">
+                      <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-blue-500"></div>
+                    </div>
+                  ) : (
+                    <>
+                      {orders.filter(order => 
+                        (order.status === 'Shipped' || order.status === 'Delivered') && 
+                        order.tracking?.code
+                      ).length === 0 ? (
+                        <div className="bg-gray-50 rounded-lg p-6 text-center">
+                          <Truck size={36} className="mx-auto text-gray-400 mb-3" />
+                          <h4 className="text-gray-700 font-medium mb-1">No trackable shipments</h4>
+                          <p className="text-gray-500 text-sm">You don't have any shipped orders with tracking information yet.</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {orders
+                            .filter(order => 
+                              (order.status === 'Shipped' || order.status === 'Delivered') && 
+                              order.tracking?.code
+                            )
+                            .map(order => (
+                              <div key={order.id} className="border border-gray-200 rounded-lg p-5 hover:shadow-sm transition">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                                  <div>
+                                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                                      order.status === 'Shipped' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'
+                                    }`}>
+                                      {order.status}
+                                    </span>
+                                    <p className="text-sm text-gray-500 mt-2">
+                                      Order placed on {new Date(order.orderDate).toLocaleDateString('en-IN', { 
+                                        year: 'numeric', 
+                                        month: 'long', 
+                                        day: 'numeric' 
+                                      })}
+                                    </p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-sm text-gray-500">Order ID</p>
+                                    <p className="text-gray-700 font-medium">{order.orderId}</p>
+                                  </div>
+                                </div>
+                                
+                                <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200">
+                                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                                    <div className="flex-grow">
+                                      <h4 className="text-gray-700 font-medium">Tracking Number</h4>
+                                      <p className="font-mono text-gray-800 mt-1">{order.tracking.code}</p>
+                                      <p className="text-sm text-gray-500 mt-1">Carrier: {order.tracking.carrier}</p>
+                                    </div>
+                                    <a 
+                                      href={`https://www.indiapost.gov.in/_layouts/15/dop.portal.tracking/trackconsignment.aspx`} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center"
+                                    >
+                                      Track <ExternalLink size={14} className="ml-1" />
+                                    </a>
+                                  </div>
+                                </div>
+                                
+                                <div className="text-sm text-gray-700">
+                                  <p className="mb-2">To track your package:</p>
+                                  <ol className="list-decimal pl-5 space-y-1">
+                                    <li>Click the "Track" button above</li>
+                                    <li>Enter your tracking number on the India Post website</li>
+                                    <li>Click "Track" to see the current status of your shipment</li>
+                                  </ol>
+                                </div>
+                              </div>
+                            ))
+                          }
+                        </div>
+                      )}
+                      
+                      {/* Manual tracking option */}
+                      <div className="mt-8 pt-6 border-t border-gray-200">
+                        <h3 className="text-lg font-medium text-gray-800 mb-4">Track Another Shipment</h3>
+                        <div className="bg-white rounded-lg border border-gray-200 p-5">
+                          <p className="text-gray-600 mb-4">Enter a tracking number to check its status:</p>
+                          <div className="flex gap-3">
+                            <input
+                              type="text"
+                              placeholder="Enter tracking number"
+                              className="flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <a 
+                              href="https://www.indiapost.gov.in/_layouts/15/dop.portal.tracking/trackconsignment.aspx" 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
+                            >
+                              Track
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -801,28 +1166,103 @@ function MyAccount() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="flex flex-col items-center justify-center py-12"
               >
-                <div className="max-w-md text-center">
-                  <div className="bg-red-50 rounded-full p-6 inline-block mb-6">
-                    <Heart size={48} className="text-red-500" />
-                  </div>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-semibold text-gray-800">Your Wishlist</h2>
                   
-                  <h3 className="text-2xl font-semibold text-gray-900 mb-4">Your Wishlist</h3>
-                  <p className="text-gray-600 mb-6">
-                    Save your favorite items for later and never lose track of products you love.
-                  </p>
-                  
-                  <div className="bg-red-50 border border-red-100 rounded-lg p-4 mb-8 text-left">
-                    <div className="flex items-start">
-                      <AlertCircle className="text-red-500 mr-3 h-5 w-5 mt-0.5" />
-                      <div>
-                        <p className="text-red-800 font-medium">Coming Soon</p>
-                        <p className="text-red-700 text-sm mt-1">We're building this feature to help you keep track of all your favorite products. Check back soon!</p>
-                      </div>
-                    </div>
-                  </div>
+                  <Link
+                    to="/wishlist"
+                    className="text-blue-600 hover:text-blue-700 transition-colors text-sm font-medium flex items-center"
+                  >
+                    <ExternalLink size={14} className="mr-1" />
+                    View Full Wishlist
+                  </Link>
                 </div>
+                
+                {wishlistHookLoading ? (
+                  <div className="flex justify-center items-center py-12">
+                    <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-blue-500"></div>
+                  </div>
+                ) : (
+                  <>
+                    {hookWishlistItems.length === 0 ? (
+                      <div className="bg-gray-50 rounded-lg p-8 text-center">
+                        <Heart size={48} className="mx-auto text-gray-300 mb-4" />
+                        <h3 className="text-xl font-medium text-gray-700 mb-2">Your wishlist is empty</h3>
+                        <p className="text-gray-500 mb-6">You haven't added any products to your wishlist yet.</p>
+                        <Link 
+                          to="/products" 
+                          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center"
+                        >
+                          Explore Products
+                        </Link>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {hookWishlistItems.slice(0, 6).map(item => (
+                          <div 
+                            key={item.id}
+                            className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                          >
+                            <Link to={`/product/${item.id}`} className="block">
+                              <div className="h-36 overflow-hidden">
+                                <img 
+                                  src={item.image} 
+                                  alt={item.name} 
+                                  className="w-full h-full object-cover transition-transform hover:scale-105"
+                                />
+                              </div>
+                            </Link>
+                            
+                            <div className="p-4">
+                              <Link to={`/product/${item.id}`} className="block mb-2">
+                                <h3 className="font-medium text-gray-800 line-clamp-1">{item.name}</h3>
+                              </Link>
+                              
+                              <div className="flex justify-between items-center mb-3">
+                                <span className="font-bold text-gray-900">{formatPrice(item.price)}</span>
+                                {item.originalPrice && item.originalPrice > item.price && (
+                                  <span className="text-sm text-gray-500 line-through">
+                                    {formatPrice(item.originalPrice)}
+                                  </span>
+                                )}
+                              </div>
+                              
+                              <div className="flex space-x-2">
+                                <Link
+                                  to={`/product/${item.id}`}
+                                  className="flex-grow py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center text-sm"
+                                >
+                                  View Details
+                                </Link>
+                                
+                                <button
+                                  onClick={() => handleRemoveFromWishlist(item.id)}
+                                  className="p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200"
+                                  aria-label="Remove from wishlist"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {hookWishlistItems.length > 6 && (
+                      <div className="mt-6 text-center">
+                        <Link
+                          to="/wishlist"
+                          className="text-blue-600 hover:text-blue-700 transition-colors text-sm font-medium inline-flex items-center"
+                        >
+                          View all {hookWishlistItems.length} items in your wishlist
+                          <ExternalLink size={14} className="ml-1" />
+                        </Link>
+                      </div>
+                    )}
+                  </>
+                )}
               </motion.div>
             )}
           </div>
