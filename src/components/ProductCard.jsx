@@ -359,6 +359,15 @@ function ProductCard({
 
         {/* Product Information Section */}
         <div className="flex flex-col flex-grow p-6">
+          {/* Brand Display - Added for fancy brand name display */}
+          {product?.brand && (
+            <div className="mb-2">
+              <span className="text-xs uppercase tracking-wider bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent font-bold">
+                {product.brand}
+              </span>
+            </div>
+          )}
+          
           {/* Product Title, Description & Category */}
           <div className="flex-grow">
             <h3 className="text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-2">

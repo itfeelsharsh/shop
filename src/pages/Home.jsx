@@ -64,7 +64,7 @@ function Home() {
       <div className="block md:hidden mb-6 text-center">
         <Link to="/products">
           <button className="animate-pulse bg-blue-600 text-white py-4 px-8 rounded-full shadow-lg transform transition duration-500 hover:scale-105">
-            Explore More Products
+            Explore Our Complete Collection
           </button>
         </Link>
       </div>

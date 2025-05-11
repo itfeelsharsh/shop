@@ -1,6 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+/**
+ * Simple product card component for product listings
+ * 
+ * @param {Object} props
+ * @param {Object} props.product - The product data to display
+ * @returns {JSX.Element} ProductCard component
+ */
 function ProductCard({ product }) {
   /**
    * Format the price with Indian currency format
@@ -22,6 +29,16 @@ function ProductCard({ product }) {
   return (
     <div className="border rounded shadow-lg p-4 flex flex-col">
       <img src={product.image} alt={product.name} className="h-40 object-contain mb-4" />
+      
+      {/* Brand display */}
+      {product.brand && (
+        <div className="mb-1">
+          <span className="text-xs uppercase tracking-wider font-semibold text-blue-600">
+            {product.brand}
+          </span>
+        </div>
+      )}
+      
       <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
       <p className="text-gray-700 flex-grow mb-4">{product.description.substring(0, 100)}...</p>
       <div className="mt-auto flex justify-between items-center">

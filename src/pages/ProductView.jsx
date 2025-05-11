@@ -5,9 +5,16 @@ import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart } from '../redux/cartSlice';
 import { toast, ToastContainer } from 'react-toastify';
-import { Truck, ShieldCheck, ArrowLeft, Package2, ShoppingCart } from 'lucide-react';
+import { Truck, ShieldCheck, ArrowLeft, Package2, ShoppingCart, ChevronDown, ChevronUp, Tag, Star } from 'lucide-react';
 import 'react-toastify/dist/ReactToastify.css';
 
+/**
+ * Product details page component
+ * Shows complete information about a single product
+ * Optimized for both desktop and mobile viewing
+ * 
+ * @returns {JSX.Element} ProductView component
+ */
 function ProductView() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
@@ -15,6 +22,7 @@ function ProductView() {
   const [activeImage, setActiveImage] = useState(null);
   const [similarProducts, setSimilarProducts] = useState([]);
   const [loadingSimilar, setLoadingSimilar] = useState(true);
+  const [showDescription, setShowDescription] = useState(false); // For collapsible description on mobile
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user?.currentUser);
 
@@ -74,6 +82,10 @@ function ProductView() {
     fetchProduct();
   }, [id]);
 
+  /**
+   * Adds the current product to the cart
+   * Shows error message if user is not logged in
+   */
   const handleAddToCart = () => {
     if (!user) {
       toast.error("You must be logged in to add items to your cart.");
@@ -98,6 +110,11 @@ function ProductView() {
     }));
   };
 
+  /**
+   * Formats price with Indian currency format
+   * @param {number} price - Price to format
+   * @returns {string} Formatted price string
+   */
   const formatPrice = (price) => {
     const priceStr = price.toString();
     const [integerPart, decimalPart] = priceStr.split('.');
@@ -109,8 +126,19 @@ function ProductView() {
     return decimalPart ? `${formattedInteger}.${decimalPart}` : formattedInteger;
   };
 
+  /**
+   * Updates the active product image
+   * @param {string} image - URL of the image to display
+   */
   const handleImageClick = (image) => {
     setActiveImage(image);
+  };
+
+  /**
+   * Toggles product description visibility on mobile
+   */
+  const toggleDescription = () => {
+    setShowDescription(!showDescription);
   };
 
   if (loading) {
@@ -145,10 +173,10 @@ function ProductView() {
                 <img
                   src={activeImage}
                   alt={product.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
               </div>
-              <div className="flex mt-4 space-x-4">
+              <div className="flex mt-4 space-x-4 overflow-x-auto pb-2">
                 {product.image && (
                   <img
                     src={product.image}
@@ -176,42 +204,89 @@ function ProductView() {
               </div>
             </div>
 
-            {/* Product Details Section */}
-            <div className="lg:w-1/2 p-8 flex flex-col justify-between">
-              <div>
-                <h1 className="text-4xl font-bold mb-4 text-gray-900">{product.name}</h1>
+            {/* Product Details Section - Restructured for mobile */}
+            <div className="lg:w-1/2 p-6 flex flex-col justify-between">
+              <div className="flex flex-col">
+                {/* Product Name */}
+                <h1 className="text-3xl font-bold mb-2 text-gray-900">{product.name}</h1>
+                
+                {/* Product Type/Category Badge */}
                 {product.type && (
-                  <div className="mb-4">
+                  <div className="mb-3 flex items-center">
+                    <Tag size={16} className="mr-2 text-blue-600" />
                     <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
                       {product.type}
                     </span>
                   </div>
                 )}
-                <p className="text-lg text-gray-700 mb-6">{product.description}</p>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold text-blue-600">₹{formatPrice(product.price)}</span>
+                
+                {/* Brand Information if available */}
+                {product.brand && (
+                  <div className="mb-3">
+                    <div className="flex items-center">
+                      <div className="mr-2 w-10 h-10 flex items-center justify-center bg-gray-100 rounded-full">
+                        <span className="text-sm font-bold text-gray-700">
+                          {product.brand.charAt(0)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 text-xs block">Brand</span>
+                        <span className="font-semibold text-base bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                          {product.brand}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Price Section - Positioned high for mobile */}
+                <div className="mb-5 flex items-center">
+                  <span className="text-3xl font-bold text-blue-600">₹{formatPrice(product.price)}</span>
                   {product.oldPrice && (
                     <span className="ml-4 text-xl text-gray-500 line-through">
                       ₹{formatPrice(product.oldPrice)}
                     </span>
                   )}
                 </div>
-              </div>
-              <div>
+                
+                {/* Add to Cart Button - Positioned high for mobile */}
                 <button
                   onClick={handleAddToCart}
-                  className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md transition duration-200 hover:bg-blue-700 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                  className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md transition duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 mb-5"
                 >
                   {loading ? "Processing..." : "Add to Cart"}
                 </button>
-                <div className="mt-6 space-y-4">
+                
+                {/* Shipping and Warranty Info - Important for purchase decisions */}
+                <div className="mb-4 space-y-3 bg-gray-50 p-3 rounded-lg">
                   <div className="flex items-center text-gray-700">
-                    <Truck className="mr-2" size={20} />
+                    <Truck className="mr-2 text-blue-600 flex-shrink-0" size={20} />
                     <span>Free shipping on orders over ₹1,000 across India</span>
                   </div>
                   <div className="flex items-center text-gray-700">
-                    <ShieldCheck className="mr-2" size={20} />
+                    <ShieldCheck className="mr-2 text-blue-600 flex-shrink-0" size={20} />
                     <span>Warranty as per the manufacturer</span>
+                  </div>
+                </div>
+                
+                {/* Collapsible Description Section */}
+                <div className="border-t pt-4 mt-2">
+                  <button 
+                    onClick={toggleDescription}
+                    className="flex justify-between items-center w-full text-left font-medium text-gray-900 mb-2"
+                  >
+                    <span className="flex items-center">
+                      <Star className="mr-2 text-blue-600" size={18} />
+                      Product Description
+                    </span>
+                    {showDescription ? 
+                      <ChevronUp size={20} className="text-gray-500" /> :
+                      <ChevronDown size={20} className="text-gray-500" />
+                    }
+                  </button>
+                  
+                  <div className={`transition-all duration-300 overflow-hidden ${showDescription ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0 md:max-h-screen md:opacity-100'}`}>
+                    <p className="text-gray-700">{product.description}</p>
                   </div>
                 </div>
               </div>
@@ -224,7 +299,9 @@ function ProductView() {
           <div className="mt-16 mb-12">
             <div className="flex items-center mb-8">
               <Package2 className="mr-3 text-blue-600" size={24} />
-              <h2 className="text-2xl font-bold text-gray-900">Similar Products</h2>
+              <h2 className="text-2xl font-bold text-gray-900">
+                More {product.type || 'Products'} You Might Like
+              </h2>
             </div>
             
             {loadingSimilar ? (
