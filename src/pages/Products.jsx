@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { db } from "../firebase/config";
 import { collection, getDocs } from "firebase/firestore";
 import ProductCard from "../components/ProductCard";
@@ -15,6 +15,7 @@ import { addToCart } from "../redux/cartSlice";
  * - Provides search functionality
  * - Implements "load more" pagination per category
  * - Uses animations for enhanced user experience
+ * - Includes performance optimizations for authenticated users
  */
 function Products() {
   // State management
@@ -26,30 +27,56 @@ function Products() {
 
   /**
    * Fetch all products from Firestore on component mount
+   * Uses caching to minimize database reads and improve performance
    */
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        // Check for cached product data
+        const cachedProducts = sessionStorage.getItem('products_cache');
+        const lastFetchTime = sessionStorage.getItem('products_fetch_time');
+        const now = Date.now();
+        
+        // Use cache if available and less than 5 minutes old
+        if (cachedProducts && lastFetchTime && (now - parseInt(lastFetchTime)) < 5 * 60 * 1000) {
+          setProducts(JSON.parse(cachedProducts));
+          setLoading(false);
+          return;
+        }
+        
+        // Fetch from database if cache is missing or outdated
         const querySnapshot = await getDocs(collection(db, "products"));
         const productsArray = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
+        
+        // Update state and cache the results
         setProducts(productsArray);
-        setLoading(false);
+        sessionStorage.setItem('products_cache', JSON.stringify(productsArray));
+        sessionStorage.setItem('products_fetch_time', now.toString());
+        
       } catch (error) {
         console.error("Error fetching products:", error);
+      } finally {
         setLoading(false);
       }
     };
+    
     fetchProducts();
+    
+    // Cleanup function to avoid memory leaks
+    return () => {
+      // Any cleanup code if needed
+    };
   }, []);
 
   /**
    * Predefined category order for consistent display
    * Categories are displayed in this exact order regardless of data order
+   * Memoized to prevent recreation on every render
    */
-  const categoriesOrder = [
+  const categoriesOrder = useMemo(() => [
     "Notebooks and Journals",
     "Pens and Pencils",
     "Paper and Notepads",
@@ -60,21 +87,24 @@ function Products() {
     "Cards and Envelopes",
     "Writing Accessories",
     "Gift Wrap and Packaging",
-  ];
+  ], []);
 
   /**
    * Filter and organize products by category
    * Applies search filter if search term exists
+   * Memoized to prevent recalculation on every render
    */
-  const categorizedProducts = categoriesOrder.map((category) => ({
-    category,
-    items: products.filter(
-      (product) =>
-        product.type === category &&
-        (searchTerm === "" ||
-          product.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    ),
-  }));
+  const categorizedProducts = useMemo(() => {
+    return categoriesOrder.map((category) => ({
+      category,
+      items: products.filter(
+        (product) =>
+          product.type === category &&
+          (searchTerm === "" ||
+            product.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      ),
+    }));
+  }, [products, searchTerm, categoriesOrder]);
 
   /**
    * Handles loading more products for a specific category
@@ -151,9 +181,10 @@ function Products() {
             {/* Category Banner */}
             <div className="relative h-50 overflow-hidden">
               <img
-                src={`/banners/products/${index + 1}.webp`}
+                src={`/banners/products/${(index % 3) + 1}.webp`}
                 alt={`${category} banner`}
                 className="w-full h-full object-cover transition-transform duration-300 transform hover:scale-105"
+                loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-50"></div>
               <h2 className="absolute bottom-4 left-4 text-2xl font-bold text-white capitalize">

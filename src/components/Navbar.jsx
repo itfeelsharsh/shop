@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect } from 'react';
+import React, { Fragment, useState, useEffect, useCallback, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, Transition } from '@headlessui/react';
 import {
@@ -18,6 +18,11 @@ import { getDoc, doc } from 'firebase/firestore';
 import { useSelector } from 'react-redux';
 import logger from '../utils/logger';
 
+/**
+ * Utility function to combine CSS classes conditionally
+ * @param  {...string} classes - CSS class names to combine
+ * @returns {string} - Combined class names
+ */
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
@@ -26,27 +31,71 @@ export default function Navbar() {
   const [user] = useAuthState(auth);
   const [profilePic, setProfilePic] = useState('');
   const [userName, setUserName] = useState('User');
+  const [profileLoading, setProfileLoading] = useState(false);
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Get cart items from Redux store
   const cartItems = useSelector(state => state.cart.items);
-  const cartItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+  
+  // Use useMemo to avoid recalculating on every render
+  const cartItemCount = useMemo(() => {
+    return cartItems.reduce((total, item) => total + item.quantity, 0);
+  }, [cartItems]);
+
+  /**
+   * Fetches user profile data from Firestore
+   * Uses caching mechanism to avoid redundant fetches
+   * Has proper error handling to prevent app crashes
+   */
+  const fetchProfileData = useCallback(async () => {
+    // Skip if user not authenticated or if already loading
+    if (!user || profileLoading) return;
+    
+    // Use cached profile data from sessionStorage if available
+    const cachedProfile = sessionStorage.getItem(`profile_${user.uid}`);
+    if (cachedProfile) {
+      try {
+        const profileData = JSON.parse(cachedProfile);
+        setProfilePic(profileData.profilePic || 'https://via.placeholder.com/40');
+        setUserName(profileData.name || 'User');
+        return;
+      } catch (error) {
+        // If parse fails, proceed with fetch
+        logger.error("Failed to parse cached profile", error, "Navbar");
+      }
+    }
+    
+    try {
+      setProfileLoading(true);
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        // Cache the profile data
+        sessionStorage.setItem(`profile_${user.uid}`, JSON.stringify({
+          profilePic: userData.profilePic || 'https://via.placeholder.com/40',
+          name: userData.name || 'User'
+        }));
+        
+        setProfilePic(userData.profilePic || 'https://via.placeholder.com/40');
+        setUserName(userData.name || 'User');
+      }
+    } catch (error) {
+      logger.error("Failed to fetch profile data", error, "Navbar");
+      // Use default values on error
+      setProfilePic('https://via.placeholder.com/40');
+      setUserName('User');
+    } finally {
+      setProfileLoading(false);
+    }
+  }, [user, profileLoading]);
 
   useEffect(() => {
-    const fetchProfileData = async () => {
-      if (user) {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          setProfilePic(userData.profilePic || 'https://via.placeholder.com/40');
-          setUserName(userData.name || 'User');
-        }
-      }
-    };
-    fetchProfileData();
-  }, [user]);
+    if (user) {
+      fetchProfileData();
+    }
+  }, [user, fetchProfileData]);
 
   useEffect(() => {
     let ticking = false;

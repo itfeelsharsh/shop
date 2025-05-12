@@ -7,6 +7,7 @@
  * - Includes timestamps
  * - Can be disabled in production
  * - Has conditional logging based on environment
+ * - Performance optimized to minimize impact on UI
  */
 
 // Environment detection
@@ -16,9 +17,12 @@ const isTest = process.env.NODE_ENV === 'test';
 // Default logging settings
 const config = {
   enabled: isDevelopment || isTest,
-  level: 'info', // 'debug', 'info', 'warn', 'error'
+  level: isDevelopment ? 'info' : 'error', // Only log errors in production
   prefix: '🛍️ SHOP',
-  groupCollapsed: true
+  groupCollapsed: true,
+  // Throttle logs to reduce performance impact
+  throttleTime: 500, // ms between logs of the same type
+  maxLogsPerMinute: 60 // Prevent log flooding
 };
 
 // Log levels with their respective emoji and priorities
@@ -28,6 +32,41 @@ const LOG_LEVELS = {
   warn: { priority: 2, emoji: '⚠️', color: '#FFA500', method: 'warn' },
   error: { priority: 3, emoji: '❌', color: '#FF0000', method: 'error' },
   critical: { priority: 4, emoji: '🔥', color: '#8B0000', method: 'error' }
+};
+
+// Tracking for throttling
+const lastLogTime = {};
+let logsThisMinute = 0;
+let lastMinuteReset = Date.now();
+
+/**
+ * Check if logging should be throttled
+ * @param {string} key - Unique identifier for this log type
+ * @returns {boolean} True if the log should be throttled
+ */
+const shouldThrottle = (key) => {
+  const now = Date.now();
+  
+  // Reset counter every minute
+  if (now - lastMinuteReset > 60000) {
+    logsThisMinute = 0;
+    lastMinuteReset = now;
+  }
+  
+  // Check if we've hit the max logs per minute
+  if (logsThisMinute >= config.maxLogsPerMinute) {
+    return true;
+  }
+  
+  // Throttle logs of the same type
+  if (lastLogTime[key] && now - lastLogTime[key] < config.throttleTime) {
+    return true;
+  }
+  
+  // Update tracking
+  lastLogTime[key] = now;
+  logsThisMinute++;
+  return false;
 };
 
 /**
@@ -68,28 +107,37 @@ const createLogger = (level) => {
     // Skip if current log level is lower priority than configured minimum
     if (logLevel.priority < configLevel.priority) return;
     
+    // Create a unique key for this log type
+    const logKey = `${level}-${component || 'general'}-${message}`;
+    
+    // Skip if being throttled
+    if (shouldThrottle(logKey)) return;
+    
     const logParts = formatLog(level, message, component);
     
-    if (data) {
-      if (config.groupCollapsed && level !== 'error' && level !== 'critical') {
-        console.groupCollapsed(...logParts);
-        if (typeof data === 'object') {
-          console.dir(data);
+    // Use requestAnimationFrame to avoid blocking the main thread
+    window.requestAnimationFrame(() => {
+      if (data) {
+        if (config.groupCollapsed && level !== 'error' && level !== 'critical') {
+          console.groupCollapsed(...logParts);
+          if (typeof data === 'object') {
+            console.dir(data);
+          } else {
+            console.log(data);
+          }
+          console.groupEnd();
         } else {
-          console.log(data);
+          console[logLevel.method](...logParts);
+          if (typeof data === 'object') {
+            console.dir(data);
+          } else {
+            console.log(data);
+          }
         }
-        console.groupEnd();
       } else {
         console[logLevel.method](...logParts);
-        if (typeof data === 'object') {
-          console.dir(data);
-        } else {
-          console.log(data);
-        }
       }
-    } else {
-      console[logLevel.method](...logParts);
-    }
+    });
   };
 };
 
@@ -103,41 +151,60 @@ const createApiLogger = () => {
     request: (url, method, data) => {
       if (!config.enabled) return;
       
+      // Skip if being throttled
+      const logKey = `api-request-${method}-${url}`;
+      if (shouldThrottle(logKey)) return;
+      
       const logParts = formatLog('info', `API Request: ${method} ${url}`, 'API');
       
-      if (config.groupCollapsed) {
-        console.groupCollapsed(...logParts);
-        if (data) console.log('Request Data:', data);
-        console.groupEnd();
-      } else {
-        console.info(...logParts);
-        if (data) console.log('Request Data:', data);
-      }
+      window.requestAnimationFrame(() => {
+        if (config.groupCollapsed) {
+          console.groupCollapsed(...logParts);
+          if (data) console.log('Request Data:', data);
+          console.groupEnd();
+        } else {
+          console.info(...logParts);
+          if (data) console.log('Request Data:', data);
+        }
+      });
     },
     
     response: (url, method, status, data, time) => {
       if (!config.enabled) return;
       
+      // Only log errors in production
+      if (!isDevelopment && status < 400) return;
+      
       const level = status >= 400 ? 'error' : 'info';
+      
+      // Skip if being throttled
+      const logKey = `api-response-${method}-${url}-${status}`;
+      if (shouldThrottle(logKey)) return;
+      
       const logLevel = LOG_LEVELS[level];
       const logParts = formatLog(level, `API Response: ${method} ${url} (${status}) - ${time}ms`, 'API');
       
-      if (config.groupCollapsed && status < 400) {
-        console.groupCollapsed(...logParts);
-        if (data) console.log('Response Data:', data);
-        console.groupEnd();
-      } else {
-        console[logLevel.method](...logParts);
-        if (data) console.log('Response Data:', data);
-      }
+      window.requestAnimationFrame(() => {
+        if (config.groupCollapsed && status < 400) {
+          console.groupCollapsed(...logParts);
+          if (data) console.log('Response Data:', data);
+          console.groupEnd();
+        } else {
+          console[logLevel.method](...logParts);
+          if (data) console.log('Response Data:', data);
+        }
+      });
     },
     
     error: (url, method, error) => {
       if (!config.enabled) return;
       
       const logParts = formatLog('error', `API Error: ${method} ${url}`, 'API');
-      console.error(...logParts);
-      console.error(error);
+      
+      window.requestAnimationFrame(() => {
+        console.error(...logParts);
+        console.error(error);
+      });
     }
   };
 };
@@ -148,41 +215,56 @@ const createApiLogger = () => {
 const createFirebaseLogger = () => {
   return {
     read: (path, data = null) => {
-      if (!config.enabled) return;
+      if (!config.enabled || !isDevelopment) return; // Skip in production
+      
+      // Skip if being throttled
+      const logKey = `firebase-read-${path}`;
+      if (shouldThrottle(logKey)) return;
       
       const logParts = formatLog('info', `Firebase Read: ${path}`, 'Firebase');
       
-      if (config.groupCollapsed) {
-        console.groupCollapsed(...logParts);
-        if (data) console.log('Data:', data);
-        console.groupEnd();
-      } else {
-        console.info(...logParts);
-        if (data) console.log('Data:', data);
-      }
+      window.requestAnimationFrame(() => {
+        if (config.groupCollapsed) {
+          console.groupCollapsed(...logParts);
+          if (data) console.log('Data:', data);
+          console.groupEnd();
+        } else {
+          console.info(...logParts);
+          if (data) console.log('Data:', data);
+        }
+      });
     },
     
     write: (path, operation, data = null) => {
-      if (!config.enabled) return;
+      if (!config.enabled || !isDevelopment) return; // Skip in production
+      
+      // Skip if being throttled
+      const logKey = `firebase-write-${operation}-${path}`;
+      if (shouldThrottle(logKey)) return;
       
       const logParts = formatLog('info', `Firebase ${operation}: ${path}`, 'Firebase');
       
-      if (config.groupCollapsed) {
-        console.groupCollapsed(...logParts);
-        if (data) console.log('Data:', data);
-        console.groupEnd();
-      } else {
-        console.info(...logParts);
-        if (data) console.log('Data:', data);
-      }
+      window.requestAnimationFrame(() => {
+        if (config.groupCollapsed) {
+          console.groupCollapsed(...logParts);
+          if (data) console.log('Data:', data);
+          console.groupEnd();
+        } else {
+          console.info(...logParts);
+          if (data) console.log('Data:', data);
+        }
+      });
     },
     
     error: (path, operation, error) => {
       if (!config.enabled) return;
       
       const logParts = formatLog('error', `Firebase Error (${operation}): ${path}`, 'Firebase');
-      console.error(...logParts);
-      console.error(error);
+      
+      window.requestAnimationFrame(() => {
+        console.error(...logParts);
+        console.error(error);
+      });
     }
   };
 };
@@ -193,18 +275,24 @@ const createFirebaseLogger = () => {
 const createUserLogger = () => {
   return {
     action: (action, details = null) => {
-      if (!config.enabled) return;
+      if (!config.enabled || !isDevelopment) return; // Skip in production
+      
+      // Skip if being throttled
+      const logKey = `user-action-${action}`;
+      if (shouldThrottle(logKey)) return;
       
       const logParts = formatLog('info', `User Action: ${action}`, 'User');
       
-      if (config.groupCollapsed && details) {
-        console.groupCollapsed(...logParts);
-        console.log('Details:', details);
-        console.groupEnd();
-      } else {
-        console.info(...logParts);
-        if (details) console.log('Details:', details);
-      }
+      window.requestAnimationFrame(() => {
+        if (config.groupCollapsed && details) {
+          console.groupCollapsed(...logParts);
+          console.log('Details:', details);
+          console.groupEnd();
+        } else {
+          console.info(...logParts);
+          if (details) console.log('Details:', details);
+        }
+      });
     }
   };
 };
@@ -232,7 +320,7 @@ const logger = {
   },
   
   enable: () => {
-    config.enabled = true;
+    config.enabled = isDevelopment || isTest;
   }
 };
 

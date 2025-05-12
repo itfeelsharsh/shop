@@ -145,12 +145,13 @@ export const createReceiptTemplate = (order, containerId) => {
     <div class="receipt-container">
       <div class="receipt-header">
         <div class="store-info">
-          <img src="${logoImage}" alt="KamiKoto Logo" style="width: 180px; margin-bottom: 10px;" />
-          <h1>KamiKoto</h1>
-          <p>Your Friendly Stationery Shop</p>
-          <p>Premium Notebooks, Pens & Writing Items</p>
-          <p>New Delhi, India</p>
-          <p>support@kamikoto.com | +91 8800123456</p>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <img src="${logoImage}" alt="KamiKoto Logo" style="width: 40px; height: 40px;" />
+            <h1 style="font-size: 24px; margin: 0; transform: translateY(-2px);">KamiKoto</h1>
+          </div>
+          <p>North Sentinel Island, A&N Islands, India</p>
+          <p>please.help.me@kamikoto.nsl</p>
+          <p>+91 1800-69-69-69-69</p>
         </div>
         <div class="receipt-info">
           <h2>PAYMENT RECEIPT</h2>
@@ -236,12 +237,7 @@ export const createReceiptTemplate = (order, containerId) => {
         ` : ''}
       </div>
       
-      <div class="footer">
-        <p>Thank you for your purchase!</p>
-        <p>Make your study and work more enjoyable with our beautiful stationery items.</p>
-        <p>support@kamikoto.com | +91 8800123456</p>
-        <p>© ${new Date().getFullYear()} KamiKoto. All rights reserved.</p>
-      </div>
+
     </div>
   `;
   

@@ -1118,6 +1118,132 @@ function MyAccount() {
                                   </div>
                                 </div>
                                 
+                                {/* Status History Section */}
+                                <div className="mt-6 mb-4">
+                                  <h4 className="text-gray-700 font-medium mb-3 flex items-center">
+                                    <svg 
+                                      className="w-5 h-5 mr-2 text-gray-600" 
+                                      fill="none" 
+                                      stroke="currentColor" 
+                                      viewBox="0 0 24 24" 
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path 
+                                        strokeLinecap="round" 
+                                        strokeLinejoin="round" 
+                                        strokeWidth={2} 
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" 
+                                      />
+                                    </svg>
+                                    Status History
+                                  </h4>
+                                  
+                                  {order.statusHistory && order.statusHistory.length > 0 ? (
+                                    <div className="relative">
+                                      {/* Timeline Line */}
+                                      <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                                      
+                                      {/* Status Events */}
+                                      <div className="space-y-6">
+                                        {order.statusHistory.map((history, index) => (
+                                          <motion.div 
+                                            key={index} 
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ duration: 0.3, delay: index * 0.1 }}
+                                            className="flex items-start relative pl-8"
+                                          >
+                                            {/* Status Dot */}
+                                            <motion.div 
+                                              initial={{ scale: 0 }}
+                                              animate={{ scale: 1 }}
+                                              transition={{ duration: 0.3, delay: index * 0.1 + 0.2 }}
+                                              className={`absolute left-0 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center z-10 ${
+                                                ORDER_STATUS[history.status?.toUpperCase()]?.color?.split(' ')[0] || 'bg-gray-400'
+                                              }`}
+                                            >
+                                              {history.status === 'Placed' && (
+                                                <svg className="w-3 h-3 text-yellow-800" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                  <path fillRule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 100-12 6 6 0 000 12z" clipRule="evenodd" />
+                                                </svg>
+                                              )}
+                                              {history.status === 'Approved' && (
+                                                <svg className="w-3 h-3 text-blue-800" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                              )}
+                                              {history.status === 'Packed' && (
+                                                <svg className="w-3 h-3 text-indigo-800" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                  <path fillRule="evenodd" d="M5 5a3 3 0 015-2.236A3 3 0 0114.83 6H16a2 2 0 110 4h-5V9a1 1 0 10-2 0v1H4a2 2 0 110-4h1.17A3 3 0 015 5zm5 1V5a1 1 0 10-2 0v1H5a1 1 0 000 2h3v1a1 1 0 102 0V8h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                                                </svg>
+                                              )}
+                                              {history.status === 'Shipped' && (
+                                                <svg className="w-3 h-3 text-purple-800" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                  <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                                                  <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1v-1h5a1 1 0 001-1v-4a1 1 0 00-.293-.707l-3-3A1 1 0 0013 5H3z" />
+                                                </svg>
+                                              )}
+                                              {history.status === 'Delivered' && (
+                                                <svg className="w-3 h-3 text-green-800" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                </svg>
+                                              )}
+                                              {history.status === 'Declined' && (
+                                                <svg className="w-3 h-3 text-red-800" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                                </svg>
+                                              )}
+                                              {history.status === 'Cancelled' && (
+                                                <svg className="w-3 h-3 text-gray-800" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                                </svg>
+                                              )}
+                                            </motion.div>
+                                            
+                                            <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm w-full">
+                                              <div className="flex justify-between items-start mb-1">
+                                                <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                  ORDER_STATUS[history.status?.toUpperCase()]?.color || 'bg-gray-100 text-gray-800'
+                                                }`}>
+                                                  {history.status}
+                                                </span>
+                                                <motion.span 
+                                                  initial={{ opacity: 0 }}
+                                                  animate={{ opacity: 1 }}
+                                                  transition={{ duration: 0.5, delay: index * 0.1 + 0.3 }}
+                                                  className="text-xs text-gray-500"
+                                                >
+                                                  {new Date(history.timestamp).toLocaleDateString('en-IN', { 
+                                                    year: 'numeric', 
+                                                    month: 'short', 
+                                                    day: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                  })}
+                                                </motion.span>
+                                              </div>
+                                              {history.note && (
+                                                <motion.p 
+                                                  initial={{ opacity: 0 }}
+                                                  animate={{ opacity: 1 }}
+                                                  transition={{ duration: 0.5, delay: index * 0.1 + 0.4 }}
+                                                  className="text-sm text-gray-600 mt-1"
+                                                >
+                                                  {history.note}
+                                                </motion.p>
+                                              )}
+                                            </div>
+                                          </motion.div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="bg-gray-50 rounded-lg p-4 text-center border border-gray-200">
+                                      <p className="text-gray-500 text-sm">No status history available for this order</p>
+                                    </div>
+                                  )}
+                                </div>
+                                
                                 <div className="text-sm text-gray-700">
                                   <p className="mb-2">To track your package:</p>
                                   <ol className="list-decimal pl-5 space-y-1">
@@ -1132,28 +1258,7 @@ function MyAccount() {
                         </div>
                       )}
                       
-                      {/* Manual tracking option */}
-                      <div className="mt-8 pt-6 border-t border-gray-200">
-                        <h3 className="text-lg font-medium text-gray-800 mb-4">Track Another Shipment</h3>
-                        <div className="bg-white rounded-lg border border-gray-200 p-5">
-                          <p className="text-gray-600 mb-4">Enter a tracking number to check its status:</p>
-                          <div className="flex gap-3">
-                            <input
-                              type="text"
-                              placeholder="Enter tracking number"
-                              className="flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                            <a 
-                              href="https://www.indiapost.gov.in/_layouts/15/dop.portal.tracking/trackconsignment.aspx" 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
-                            >
-                              Track
-                            </a>
-                          </div>
-                        </div>
-                      </div>
+                    
                     </>
                   )}
                 </div>

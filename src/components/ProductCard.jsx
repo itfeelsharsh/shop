@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Eye, X } from 'lucide-react';
@@ -20,7 +20,7 @@ import WishlistButton from './WishlistButton';
  * @param {string} props.type - Type of notification (success, error, warning)
  * @param {string} props.message - Notification message to display
  */
-const NotificationModal = ({ isOpen, onClose, type, message }) => {
+const NotificationModal = memo(({ isOpen, onClose, type, message }) => {
   const navigate = useNavigate();
   
   // Animation variants for the modal
@@ -112,7 +112,10 @@ const NotificationModal = ({ isOpen, onClose, type, message }) => {
       )}
     </AnimatePresence>
   );
-};
+});
+
+// Add display name for debugging
+NotificationModal.displayName = 'NotificationModal';
 
 /**
  * ProductCard Component
@@ -133,7 +136,7 @@ const NotificationModal = ({ isOpen, onClose, type, message }) => {
  * @param {Object} product - The product data to display
  * @param {Function} onAddToCart - Function to call when adding to cart
  */
-function ProductCard({ 
+const ProductCard = memo(function ProductCard({ 
   product, 
   onAddToCart = () => {
     console.warn('onAddToCart handler is not provided to ProductCard component');
@@ -478,7 +481,7 @@ function ProductCard({
       />
     </>
   );
-}
+});
 
 // PropTypes validation for component props
 ProductCard.propTypes = {
