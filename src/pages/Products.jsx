@@ -61,20 +61,42 @@ function Products() {
         }
         
         // Fetch from database if cache is missing, outdated, or auth state changed
+        console.log("Fetching fresh products data...", { authStateKey, isAuthenticated: !!user });
         const querySnapshot = await getDocs(collection(db, "products"));
-        const productsArray = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
         
-        // Update state and cache the results
-        setProducts(productsArray);
-        sessionStorage.setItem('products_cache', JSON.stringify(productsArray));
-        sessionStorage.setItem('products_fetch_time', now.toString());
+        // Check if querySnapshot exists and has docs
+        if (querySnapshot && querySnapshot.docs) {
+          const productsArray = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          
+          // Update state and cache the results
+          setProducts(productsArray);
+          sessionStorage.setItem('products_cache', JSON.stringify(productsArray));
+          sessionStorage.setItem('products_fetch_time', now.toString());
+          console.log(`Successfully fetched ${productsArray.length} products`);
+        } else {
+          // Handle case where querySnapshot is invalid
+          console.error("Query snapshot is invalid", querySnapshot);
+          throw new Error("Failed to get valid product data");
+        }
         
       } catch (error) {
         console.error("Error fetching products:", error);
+        
+        // Fallback to cached data if available when fetch fails
+        const cachedProducts = sessionStorage.getItem('products_cache');
+        if (cachedProducts) {
+          console.log("Using cached products as fallback after fetch error");
+          setProducts(JSON.parse(cachedProducts));
+        } else {
+          // If no cache available, set empty array to avoid infinite loading
+          console.log("No cache available for fallback, showing empty products list");
+          setProducts([]);
+        }
       } finally {
+        // Always set loading to false, regardless of success/failure
         setLoading(false);
       }
     };
@@ -106,14 +128,26 @@ function Products() {
   ], []);
 
   /**
-   * Filter and organize products by category
+   * Generate categorized products for display
    * Applies search filter if search term exists
+   * Ensures price values are properly converted to numbers
    * Memoized to prevent recalculation on every render
    */
   const categorizedProducts = useMemo(() => {
+    // Process product data to ensure consistent data types
+    const processedProducts = products.map(product => ({
+      ...product,
+      // Ensure price is a number
+      price: typeof product.price === 'string' ? parseFloat(product.price) : product.price,
+      // Ensure originalPrice is a number if it exists
+      originalPrice: product.originalPrice ? 
+        (typeof product.originalPrice === 'string' ? parseFloat(product.originalPrice) : product.originalPrice) 
+        : null
+    }));
+
     return categoriesOrder.map((category) => ({
       category,
-      items: products.filter(
+      items: processedProducts.filter(
         (product) =>
           product.type === category &&
           (searchTerm === "" ||

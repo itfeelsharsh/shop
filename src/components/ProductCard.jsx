@@ -137,7 +137,7 @@ NotificationModal.displayName = 'NotificationModal';
  * @param {Function} onAddToCart - Function to call when adding to cart
  */
 const ProductCard = memo(function ProductCard({ 
-  product, 
+  product = {}, 
   onAddToCart = () => {
     console.warn('onAddToCart handler is not provided to ProductCard component');
   }
@@ -215,19 +215,25 @@ const ProductCard = memo(function ProductCard({
    * Format price with Indian currency format
    * Handles edge cases for undefined or invalid prices
    * 
-   * @param {number} price - The price to format
+   * @param {number|string} price - The price to format
    * @returns {string} The formatted price
    */
   const formatPrice = (price) => {
     // Return '₹0.00' if price is undefined, null, or not a number
-    if (!price || isNaN(price)) return '₹0.00';
+    if (!price) return '₹0.00';
+    
+    // Convert string to number if needed
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    
+    // Handle NaN after conversion
+    if (isNaN(numPrice)) return '₹0.00';
     
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
-    }).format(Number(price));
+    }).format(numPrice);
   };
 
   /**
@@ -489,22 +495,14 @@ ProductCard.propTypes = {
     id: PropTypes.string,
     name: PropTypes.string,
     description: PropTypes.string,
-    price: PropTypes.number,
-    originalPrice: PropTypes.number,
+    price: PropTypes.oneOfType([PropTypes.number, PropTypes.string]), // Accept both number and string
+    originalPrice: PropTypes.oneOfType([PropTypes.number, PropTypes.string]), // Accept both number and string
     image: PropTypes.string,
     stock: PropTypes.number,
     isNew: PropTypes.bool,
     type: PropTypes.string,
   }),
   onAddToCart: PropTypes.func
-};
-
-// Default props
-ProductCard.defaultProps = {
-  product: {},
-  onAddToCart: () => {
-    console.warn('onAddToCart handler is not provided to ProductCard component');
-  }
 };
 
 export default ProductCard;
