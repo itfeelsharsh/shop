@@ -6,6 +6,8 @@ import { Search } from "lucide-react";
 import { motion } from "framer-motion";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../firebase/config";
 
 /**
  * Products component displays a complete product catalog with category sections
@@ -24,6 +26,7 @@ function Products() {
   const [visibleCounts, setVisibleCounts] = useState({}); // Track number of visible products per category
   const [searchTerm, setSearchTerm] = useState(""); // User search input
   const dispatch = useDispatch(); // Redux dispatch for cart actions
+  const [user] = useAuthState(auth); // Get authenticated user
 
   /**
    * Fetch all products from Firestore on component mount
@@ -37,14 +40,27 @@ function Products() {
         const lastFetchTime = sessionStorage.getItem('products_fetch_time');
         const now = Date.now();
         
-        // Use cache if available and less than 5 minutes old
-        if (cachedProducts && lastFetchTime && (now - parseInt(lastFetchTime)) < 5 * 60 * 1000) {
+        // Clear cache if user authentication state changes
+        // This ensures we're not using potentially stale data
+        const authStateKey = user ? `auth_${user.uid}` : 'no_auth';
+        const lastAuthState = sessionStorage.getItem('last_auth_state');
+        
+        // Determine if we need to bypass cache due to auth state change
+        const authStateChanged = lastAuthState !== authStateKey;
+        
+        // Update the authentication state tracker
+        sessionStorage.setItem('last_auth_state', authStateKey);
+        
+        // Use cache if available, less than 5 minutes old, and auth state hasn't changed
+        if (cachedProducts && lastFetchTime && 
+            (now - parseInt(lastFetchTime)) < 5 * 60 * 1000 && 
+            !authStateChanged) {
           setProducts(JSON.parse(cachedProducts));
           setLoading(false);
           return;
         }
         
-        // Fetch from database if cache is missing or outdated
+        // Fetch from database if cache is missing, outdated, or auth state changed
         const querySnapshot = await getDocs(collection(db, "products"));
         const productsArray = querySnapshot.docs.map((doc) => ({
           id: doc.id,
@@ -69,7 +85,7 @@ function Products() {
     return () => {
       // Any cleanup code if needed
     };
-  }, []);
+  }, [user]); // Add user dependency to re-fetch when auth state changes
 
   /**
    * Predefined category order for consistent display
