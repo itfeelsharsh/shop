@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import { m } from 'framer-motion';
 import { Bell, X } from 'react-feather';
 
 /**
