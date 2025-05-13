@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "include": [
+    "/*"
+  ],
+  "exclude": [
+    "/static/*",
+    "/manifest.json",
+    "/robots.txt",
+    "/favicon.ico"
+  ],
+  "enablePrerenderFlag": true
+} 

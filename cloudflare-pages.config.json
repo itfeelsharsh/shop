@@ -1,0 +1,33 @@
+{
+  "auto_minify": {
+    "html": true,
+    "css": true,
+    "js": true
+  },
+  "minify": {
+    "html": true,
+    "css": true,
+    "js": true
+  },
+  "cache": {
+    "preload_fonts": true
+  },
+  "images": {
+    "compress": true,
+    "quality": 85
+  },
+  "optimization": {
+    "brotli": true,
+    "zopfli": true,
+    "mobile": true
+  },
+  "prerender": {
+    "enabled": true,
+    "crawl": true,
+    "cache": true,
+    "paths": [
+      "/",
+      "/product/*"
+    ]
+  }
+} 
