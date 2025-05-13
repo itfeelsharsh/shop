@@ -64,7 +64,7 @@ const LoadingScreen = ({
 
   return (
     <div 
-      className="fixed inset-0 flex flex-col items-center justify-center z-50"
+      className="fixed inset-0 flex flex-col items-center justify-center z-50 loading-screen"
       style={{ backgroundColor }}
     >
       {/* Logo */}

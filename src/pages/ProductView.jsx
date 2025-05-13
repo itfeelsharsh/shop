@@ -8,7 +8,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import { Truck, ShieldCheck, ArrowLeft, Package2, ShoppingCart, ChevronDown, ChevronUp, Tag, Star, Globe, AlertTriangle, Info, Award } from 'lucide-react';
 import 'react-toastify/dist/ReactToastify.css';
 import WishlistButton from '../components/WishlistButton';
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 
 /**
  * Product details page component
@@ -32,6 +32,16 @@ function ProductView() {
   const user = useSelector((state) => state.user?.currentUser);
 
   useEffect(() => {
+    /**
+     * Signals to prerendering services that the page content is ready
+     * This is important for social media crawlers
+     */
+    const signalPrerender = () => {
+      if (window.prerenderReady !== undefined) {
+        window.prerenderReady = true;
+      }
+    };
+
     const fetchProduct = async () => {
       try {
         // With the new system, the URL parameter is directly the document ID
@@ -45,12 +55,19 @@ function ProductView() {
           
           // After fetching the product, fetch similar products
           await fetchSimilarProducts(productData);
+          
+          // Signal that the page is ready for prerendering
+          signalPrerender();
         } else {
           toast.error("Product not found!");
+          // Even in error state, signal prerender to avoid timeout
+          signalPrerender();
         }
       } catch (error) {
         console.error("Error fetching product:", error);
         toast.error("An error occurred while fetching the product.");
+        // Signal prerender even on error
+        signalPrerender();
       } finally {
         setLoading(false);
       }
@@ -87,6 +104,14 @@ function ProductView() {
     };
     
     fetchProduct();
+    
+    // Return cleanup function
+    return () => {
+      // Reset prerender status when component unmounts
+      if (window.prerenderReady !== undefined) {
+        window.prerenderReady = false;
+      }
+    };
   }, [id]);
 
   /**

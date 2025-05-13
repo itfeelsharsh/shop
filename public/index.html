@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
     <meta name="theme-color" content="#8B4513" /> <!-- Aesthetic brown theme color -->
     
-    
+    <!-- Prerender status detection -->
+    <meta name="prerender-status-code" content="200">
     
     <!-- Performance optimization - preconnect to origins -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -21,6 +22,73 @@
     <!-- Preload critical assets -->
     <link rel="preload" href="%PUBLIC_URL%/logo192.png" as="image" />
     
+    <!-- Bot Detection Script - Helps serve proper content to social media crawlers -->
+    <script type="text/javascript">
+      /**
+       * Detects if the current visitor is a social media crawler/bot
+       * Modifies page behavior for optimal social media preview generation
+       * 
+       * @returns {boolean} True if visitor is a bot, false otherwise
+       */
+      function detectBot() {
+        const botPatterns = [
+          'googlebot', 'bingbot', 'yandex', 'baiduspider', 'twitterbot',
+          'facebookexternalhit', 'linkedinbot', 'discordbot', 'slackbot',
+          'telegrambot', 'whatsapp', 'line-podcast', 'skype', 'pinterest',
+          'bot', 'spider', 'crawl'
+        ];
+        
+        const userAgent = navigator.userAgent.toLowerCase();
+        for (const pattern of botPatterns) {
+          if (userAgent.indexOf(pattern) !== -1) return true;
+        }
+        
+        return false;
+      }
+      
+      /**
+       * Sets up the page for optimal bot crawling
+       * Disables animations and transitions for bots
+       * Ensures critical content is immediately visible
+       */
+      function setupForBots() {
+        // Create a style element to inject bot-specific CSS
+        const style = document.createElement('style');
+        style.type = 'text/css';
+        style.innerHTML = `
+          /* Disable animations and transitions for bots */
+          * {
+            animation: none !important;
+            transition: none !important;
+            opacity: 1 !important;
+          }
+          
+          /* Hide loading screens for bots */
+          .loading-screen { 
+            display: none !important;
+          }
+          
+          /* Ensure content is visible immediately */
+          #root {
+            display: block !important;
+            opacity: 1 !important;
+          }
+        `;
+        
+        // Add the styles to the head
+        document.head.appendChild(style);
+        
+        // Mark page as ready for prerendering immediately
+        window.prerenderReady = true;
+      }
+      
+      // Execute bot detection and setup
+      if (detectBot()) {
+        setupForBots();
+      }
+    </script>
+    
+    <!-- Default Meta Tags (overridden by product-specific tags when available) -->
     <meta
       name="description"
       content="your online stationery shop! We offer beautiful notebooks, pens and other writing items that will make your study and work more enjoyable."
@@ -29,24 +97,29 @@
     <meta
       property="og:title" 
       content="KamiKoto - Your Online Stationery Shop"
+      data-react-helmet="true"
     />
     <meta
       property="og:description"
       content="Visit KamiKoto for stationery items like notebooks, pens and other writing materials. Make your study and work more fun with our beautiful collection!"
+      data-react-helmet="true"
     />
-    <meta property="og:image" content="%PUBLIC_URL%/html-banner.png" />
-    <meta property="og:url" content="https://kamikoto.pages.dev" />
+    <meta property="og:image" content="%PUBLIC_URL%/html-banner.png" data-react-helmet="true" />
+    <meta property="og:url" content="https://kamikoto.pages.dev" data-react-helmet="true" />
+    <meta property="og:type" content="website" data-react-helmet="true" />
 
-    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:card" content="summary_large_image" data-react-helmet="true" />
     <meta
       name="twitter:title"
       content="KamiKoto - Your Friendly Stationery Shop" 
+      data-react-helmet="true"
     />
     <meta
       name="twitter:description"
       content="Find lovely notebooks, pens and writing items for your study and work needs!"
+      data-react-helmet="true"
     />
-    <meta name="twitter:image" content="%PUBLIC_URL%/html-banner.png" />
+    <meta name="twitter:image" content="%PUBLIC_URL%/html-banner.png" data-react-helmet="true" />
     
     <!-- PWA support -->
     <meta name="application-name" content="KamiKoto" />
@@ -77,6 +150,12 @@
         flex-direction: column;
       }
     </style>
+    
+    <!-- Prerender.io or similar service support -->
+    <script>
+      // This script helps prerendering services detect when page is fully loaded
+      window.prerenderReady = false;
+    </script>
   </head>
   <body>
     <noscript>Please enable JavaScript to use this website.</noscript>

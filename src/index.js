@@ -1,21 +1,40 @@
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, hydrateRoot } from 'react-dom/client';
 import './index.css';
 import App from './App';
 import store from './redux/store';
 import { Provider } from 'react-redux';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 
-// Replace ReactDOM.render with createRoot API for React 18
-const container = document.getElementById('root');
-const root = createRoot(container);
-root.render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <App />
-    </Provider>
-  </React.StrictMode>
-);
+/**
+ * Main application entry point with hydration support for react-snap prerendering
+ * This setup ensures proper handling of both client-side rendering and
+ * server-side/prerendered content hydration
+ */
+const rootElement = document.getElementById('root');
+
+// Check if the content was prerendered (react-snap)
+if (rootElement.hasChildNodes()) {
+  // If prerendered, hydrate the existing content rather than replacing it
+  hydrateRoot(
+    rootElement,
+    <React.StrictMode>
+      <Provider store={store}>
+        <App />
+      </Provider>
+    </React.StrictMode>
+  );
+} else {
+  // Normal client-side rendering
+  const root = createRoot(rootElement);
+  root.render(
+    <React.StrictMode>
+      <Provider store={store}>
+        <App />
+      </Provider>
+    </React.StrictMode>
+  );
+}
 
 // Register service worker for PWA functionality
 // This enables offline capabilities and app-like experience
