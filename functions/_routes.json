@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "routes": [
+    {
+      "pattern": "/product/:id",
+      "script": "product/[id]"
+    },
+    {
+      "pattern": "/product/:id/",
+      "script": "product/[id]"
+    },
+    {
+      "pattern": "/*",
+      "script": "social-bot"
+    }
+  ]
+} 

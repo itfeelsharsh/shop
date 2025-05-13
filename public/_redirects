@@ -1,2 +1,5 @@
 # Redirect all routes to index.html for SPA
 /* /index.html 200 
+
+# SPA fallback
+/* /index.html 200 

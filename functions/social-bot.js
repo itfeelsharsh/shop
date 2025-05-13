@@ -1,31 +1,33 @@
 /**
- * Cloudflare Worker script for handling social media crawlers
- * This worker detects bots and provides pre-rendered content for proper embeds
- */
-
-addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request));
-});
-
-/**
- * Main request handler that detects bots and serves appropriate content
+ * Cloudflare Pages Function for handling social media crawlers
+ * This function detects bots and modifies the response for proper embeds
+ * 
  * @param {Request} request - The incoming request
+ * @param {Object} env - Environment variables
+ * @param {Object} ctx - Context object
  * @returns {Response} - The response to be sent
  */
-async function handleRequest(request) {
+export async function onRequest(context) {
+  const { request } = context;
+  
   // Get the user agent from the request
   const userAgent = request.headers.get('User-Agent') || '';
   const url = new URL(request.url);
+  
+  // If it's not a product page, just pass through
+  if (!url.pathname.startsWith('/product/')) {
+    return context.next();
+  }
   
   // Check if it's a social media crawler or bot
   const isSocialBot = detectBot(userAgent);
   
   // If it's a product page and a social bot, handle specially
-  if (url.pathname.startsWith('/product/') && isSocialBot) {
+  if (isSocialBot) {
     // Get the product ID from the URL
     const productId = url.pathname.split('/').pop();
     
-    // For bots, we'll fetch the actual HTML and modify the meta tags directly
+    // For bots, we'll fetch the actual HTML and modify it
     const response = await fetch(request);
     const originalHtml = await response.text();
     
@@ -54,8 +56,8 @@ async function handleRequest(request) {
     });
   }
   
-  // For all other requests, pass through to the original response
-  return fetch(request);
+  // For all other requests, pass through
+  return context.next();
 }
 
 /**
