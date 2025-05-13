@@ -2,22 +2,32 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { db } from '../firebase/config';
 import { collection, getDocs } from 'firebase/firestore';
-import { removeFromCart, updateQuantity } from '../redux/cartSlice';
+import { removeFromCart, updateQuantity, applyCoupon, removeCoupon } from '../redux/cartSlice';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShoppingBag, Trash2, Plus, Minus, ChevronRight } from 'lucide-react';
+import { ShoppingBag, Trash2, Plus, Minus, ChevronRight, X, Tag } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import taxmedaddyImg from '../assets/taxmedaddy.png';
+import CouponService from '../utils/couponService';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '../firebase/config';
+import { toast } from 'react-toastify';
 
 /**
  * Cart component that displays cart items and popular products recommendation
+ * Enhanced with coupon functionality for discounts
  */
 function Cart() {
   const cartItems = useSelector(state => state.cart.items);
+  const appliedCoupon = useSelector(state => state.cart.coupon);
   const dispatch = useDispatch();
   const [products, setProducts] = useState([]);
   const [popularProducts, setPopularProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [couponCode, setCouponCode] = useState('');
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
+  const [couponError, setCouponError] = useState('');
+  const [user] = useAuthState(auth);
 
   useEffect(() => {
     /**
@@ -66,17 +76,68 @@ function Cart() {
   };
 
   /**
-   * Handles adding a popular product to cart
-   * @param {Object} product - The product to add to cart
+   * Handles validating and applying a coupon code
+   * @param {Event} e - Form submit event
    */
-  const handleAddToCart = (product) => {
-    dispatch({
-      type: 'cart/addToCart',
-      payload: {
-        productId: product.id,
-        quantity: 1
+  const handleApplyCoupon = async (e) => {
+    e.preventDefault();
+    
+    if (!couponCode.trim()) {
+      setCouponError("Please enter a coupon code");
+      return;
+    }
+    
+    if (!user) {
+      setCouponError("Please sign in to apply a coupon");
+      return;
+    }
+    
+    setValidatingCoupon(true);
+    setCouponError('');
+    
+    try {
+      // Pass cart items to validateCoupon for product-specific validation
+      const result = await CouponService.validateCoupon(
+        couponCode, 
+        cartDetails,  // Pass full cart details for product-specific validation
+        subtotal,
+        user.uid
+      );
+      
+      if (result.valid) {
+        // Apply the coupon to cart state
+        dispatch(applyCoupon({
+          code: result.coupon.code,
+          discountAmount: result.discountAmount,
+          couponId: result.coupon.id,
+          discountType: result.coupon.discountType,
+          discountValue: result.coupon.discountValue,
+          isProductSpecific: result.isProductSpecific,
+          applicableProducts: result.isProductSpecific ? result.eligibleProductIds : [],
+          appliedToCartItems: result.isProductSpecific ? result.appliedToCartItems : []
+        }));
+        
+        // Clear the input field
+        setCouponCode('');
+        
+        // Show success message
+        toast.success(result.message);
+      } else {
+        setCouponError(result.message);
       }
-    });
+    } catch (error) {
+      console.error("Error validating coupon:", error);
+      setCouponError("An error occurred. Please try again.");
+    } finally {
+      setValidatingCoupon(false);
+    }
+  };
+  
+  /**
+   * Handles removing an applied coupon
+   */
+  const handleRemoveCoupon = () => {
+    dispatch(removeCoupon());
   };
 
   // Match cart items with product details
@@ -89,7 +150,12 @@ function Cart() {
   const subtotal = cartDetails.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
   const tax = subtotal * 0.18; // 18% GST
   const shipping = subtotal > 1000 ? 0 : 120; // Free shipping over ₹1000
-  const total = subtotal + tax + shipping;
+  
+  // Apply coupon discount if available
+  const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+  
+  // Calculate final total
+  const total = subtotal + tax + shipping - discountAmount;
 
   /**
    * Format price with Indian currency format
@@ -170,6 +236,15 @@ function Cart() {
                         <h3 className="text-lg font-medium text-gray-900">{item.product.name}</h3>
                         <p className="text-sm text-gray-500 mt-1">{item.product.type}</p>
                         <p className="text-blue-600 font-semibold mt-2">{formatPrice(item.product.price)}</p>
+                        
+                        {/* Show coupon eligibility badge if a product-specific coupon is applied */}
+                        {appliedCoupon && appliedCoupon.isProductSpecific && 
+                         appliedCoupon.appliedToCartItems && 
+                         appliedCoupon.appliedToCartItems.includes(item.productId) && (
+                          <span className="inline-block mt-2 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                            Coupon applied
+                          </span>
+                        )}
                       </div>
                       
                       {/* Quantity Controls */}
@@ -218,6 +293,64 @@ function Cart() {
               <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-6">
                 <h2 className="text-xl font-semibold text-gray-800 mb-6">Order Summary</h2>
                 
+                {/* Coupon Form */}
+                <div className="border rounded-lg p-4 mb-6">
+                  <h3 className="font-medium text-gray-700 mb-2 flex items-center">
+                    <Tag size={18} className="mr-2" />
+                    Apply Coupon
+                  </h3>
+                  
+                  {!appliedCoupon ? (
+                    <form onSubmit={handleApplyCoupon} className="flex flex-col">
+                      <div className="flex">
+                        <input
+                          type="text"
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                          placeholder="Enter coupon code"
+                          className="flex-1 border rounded-l p-2 focus:outline-none focus:ring-2 focus:ring-blue-300 text-sm"
+                        />
+                        <button
+                          type="submit"
+                          disabled={validatingCoupon}
+                          className={`px-4 py-2 rounded-r text-white font-medium text-sm ${
+                            validatingCoupon ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'
+                          }`}
+                        >
+                          {validatingCoupon ? "Checking..." : "Apply"}
+                        </button>
+                      </div>
+                      {couponError && <p className="text-sm text-red-500 mt-2">{couponError}</p>}
+                    </form>
+                  ) : (
+                    <div className="bg-green-50 p-3 rounded-lg">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="font-bold text-gray-800">{appliedCoupon.code}</p>
+                          <p className="text-sm text-green-700">
+                            {appliedCoupon.discountType === 'percentage' 
+                              ? `${appliedCoupon.discountValue}% off`
+                              : `₹${appliedCoupon.discountValue} off`
+                            }
+                            {appliedCoupon.isProductSpecific ? ' on eligible items' : ''}
+                          </p>
+                          {appliedCoupon.isProductSpecific && (
+                            <p className="text-xs text-gray-600 mt-1">
+                              Applied to {appliedCoupon.appliedToCartItems?.length} item{appliedCoupon.appliedToCartItems?.length !== 1 ? 's' : ''} in cart
+                            </p>
+                          )}
+                        </div>
+                        <button 
+                          onClick={handleRemoveCoupon}
+                          className="text-gray-500 hover:text-red-500 p-1 rounded-full"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal</span>
@@ -243,6 +376,13 @@ function Cart() {
                     <span>Shipping</span>
                     <span>{shipping === 0 ? 'Free' : formatPrice(shipping)}</span>
                   </div>
+                  
+                  {appliedCoupon && (
+                    <div className="flex justify-between text-green-600 font-medium">
+                      <span>Discount</span>
+                      <span>-{formatPrice(discountAmount)}</span>
+                    </div>
+                  )}
                   
                   {subtotal > 1000 && (
                     <div className="bg-green-50 text-green-800 p-3 rounded-lg text-sm">
@@ -280,22 +420,11 @@ function Cart() {
         )}
         
         {/* Popular Products Recommendation */}
-        <div className="mt-20">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Popular Products</h2>
-            <Link to="/products" className="text-blue-600 hover:text-blue-800 flex items-center transition-colors">
-              <span>View All</span>
-              <ChevronRight size={18} className="ml-1" />
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">You might also like</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {popularProducts.slice(0, 4).map(product => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                onAddToCart={handleAddToCart} 
-              />
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
         </div>

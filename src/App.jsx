@@ -25,6 +25,7 @@ import { useDispatch } from "react-redux";
 import { setUser, clearUser } from "./redux/userSlice";
 import "react-toastify/dist/ReactToastify.css";
 import PasswordReset from './pages/PasswordReset'; 
+import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 
 
 function App() {
@@ -50,49 +51,70 @@ function App() {
   if (loading) return <LoadingScreen message="Welcome to KamiKoto" showTips={true} />;
 
   return (
-    <Router>
-      <ScrollToTop />
-      <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        hideProgressBar={false}
-        closeOnClick
-        draggable
-        pauseOnHover
-      />
+    <GoogleReCaptchaProvider
+      reCaptchaKey="6LdQtjcrAAAAAB-gw9QaVLt8zIUTcvWAjCmlVwDs"
+      scriptProps={{
+        async: true, // Async load to improve page load time
+        defer: true,
+        appendTo: 'head',
+      }}
+      language="en"
+      useRecaptchaNet={true} // Use recaptcha.net instead of google.com (helps in certain countries)
+      useEnterprise={false} // Set to true if using enterprise version
+      scriptLoadingTimeout={10000} // 10 seconds timeout (adjust as needed)
+    >
+      <Router>
+        <ScrollToTop />
+        <ToastContainer
+          position="top-center"
+          autoClose={3000}
+          hideProgressBar={false}
+          closeOnClick
+          draggable
+          pauseOnHover
+        />
 
-      <div className="flex flex-col min-h-screen">
-        <Navbar />
+        <div className="flex flex-col min-h-screen">
+          <Navbar />
 
-        <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/product/:id" element={<ProductView />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/signin" element={<SignIn />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/password-reset" element={<PasswordReset />} />
-            <Route path="/my-account" element={
-              <ProtectedRoute>
-                <MyAccount />
-              </ProtectedRoute>
-            } />
-            <Route path="/wishlist" element={
-              <ProtectedRoute>
-                <Wishlist />
-              </ProtectedRoute>
-            } />
-            <Route path="/checkout" element={<UnifiedCheckout />} />
-            <Route path="/about" element={<AboutUs />} />
-            <Route path="/contact" element={<ContactUs />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/terms-of-service" element={<TermsOfService />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </Router>
+          <main className="flex-grow">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/product/:id" element={<ProductView />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/signin" element={<SignIn />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="/password-reset" element={<PasswordReset />} />
+              
+              {/* My Account routes */}
+              <Route path="/my-account" element={
+                <ProtectedRoute>
+                  <MyAccount />
+                </ProtectedRoute>
+              } />
+              <Route path="/my-account/:section" element={
+                <ProtectedRoute>
+                  <MyAccount />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/wishlist" element={
+                <ProtectedRoute>
+                  <Wishlist />
+                </ProtectedRoute>
+              } />
+              <Route path="/checkout" element={<UnifiedCheckout />} />
+              <Route path="/about" element={<AboutUs />} />
+              <Route path="/contact" element={<ContactUs />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
+      </Router>
+    </GoogleReCaptchaProvider>
   );
 }
 

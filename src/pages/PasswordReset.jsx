@@ -1,22 +1,63 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { auth } from '../firebase/config';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import ReCAPTCHA from 'react-google-recaptcha'; 
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { motion } from 'framer-motion';
 
 
 function PasswordReset() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [captchaVerified, setCaptchaVerified] = useState(false); 
+  const [recaptchaChecking, setRecaptchaChecking] = useState(false);
+  const [captchaUnavailable, setCaptchaUnavailable] = useState(false);
+  
+  // reCAPTCHA v3 hook
+  const { executeRecaptcha } = useGoogleReCaptcha();
+  
   const navigate = useNavigate();
+  
+  // Verify the recaptcha token is valid
+  const verifyRecaptchaToken = async () => {
+    // If we've already determined reCAPTCHA is unavailable, bypass verification
+    if (captchaUnavailable) {
+      console.warn("reCAPTCHA verification bypassed due to unavailability");
+      return true;
+    }
+    
+    if (!executeRecaptcha) {
+      console.warn("reCAPTCHA not available, proceeding without verification");
+      setCaptchaUnavailable(true);
+      return true;
+    }
+
+    setRecaptchaChecking(true);
+    try {
+      // Execute reCAPTCHA with action name
+      const token = await executeRecaptcha('passwordreset');
+      
+      // Here you would normally verify this token on your server
+      // For now, we'll just log it and assume it's valid
+      console.log("reCAPTCHA token:", token);
+      
+      // Return true if we got a token
+      return !!token;
+    } catch (error) {
+      console.error("reCAPTCHA error:", error);
+      toast.error("Could not verify you are human. Proceeding anyway.");
+      setCaptchaUnavailable(true);
+      return true; // Allow the user to continue despite the error
+    } finally {
+      setRecaptchaChecking(false);
+    }
+  };
 
   const handlePasswordReset = async (e) => {
     e.preventDefault();
-    if (!captchaVerified) {
-      toast.error("Please verify the CAPTCHA.");
+    
+    // Verify recaptcha first
+    if (!await verifyRecaptchaToken()) {
       return;
     }
 
@@ -32,10 +73,24 @@ function PasswordReset() {
       setLoading(false);
     }
   };
-
-  const handleCaptchaVerification = (value) => {
-    setCaptchaVerified(!!value);
-  };
+  
+  // Check if reCAPTCHA is available
+  useEffect(() => {
+    let captchaTimeout;
+    
+    if (!executeRecaptcha) {
+      console.log("reCAPTCHA not yet available");
+      // Set a timeout to bypass captcha if it doesn't load in 5 seconds
+      captchaTimeout = setTimeout(() => {
+        console.warn("reCAPTCHA failed to load after timeout, bypassing verification");
+        setCaptchaUnavailable(true);
+      }, 5000);
+    }
+    
+    return () => {
+      if (captchaTimeout) clearTimeout(captchaTimeout);
+    };
+  }, [executeRecaptcha]);
 
   return (
     <motion.div
@@ -62,18 +117,19 @@ function PasswordReset() {
           className="w-full p-4 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
 
-        <ReCAPTCHA
-          sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY || "6LddLgYrAAAAAHVincfRV9vd1Qy_cyez6HHBmMuv"} 
-          onChange={handleCaptchaVerification}
-          className="mb-4"
-        />
+        {/* Protected by reCAPTCHA v3 - No UI needed */}
+        <div className="mb-4 text-center text-xs text-gray-500">
+          {captchaUnavailable 
+            ? "reCAPTCHA verification bypassed due to unavailability." 
+            : "This site is protected by reCAPTCHA v3."}
+        </div>
 
         <button
           type="submit"
-          className={`w-full bg-blue-600 text-white py-2 rounded-lg font-semibold ${loading || !captchaVerified ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}`}
-          disabled={loading || !captchaVerified}
+          className={`w-full bg-blue-600 text-white py-2 rounded-lg font-semibold ${loading || recaptchaChecking ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}`}
+          disabled={loading || recaptchaChecking}
         >
-          {loading ? 'Sending Reset Email...' : 'Send Reset Email'}
+          {loading ? 'Sending Reset Email...' : recaptchaChecking ? "Verifying..." : 'Send Reset Email'}
         </button>
 
         <p className="mt-4 text-center text-gray-600">

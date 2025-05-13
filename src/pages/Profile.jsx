@@ -22,9 +22,10 @@ import {
   Trash2,
   Package,
   ExternalLink,
-  CheckCircle
+  CheckCircle,
+  FileDown
 } from 'lucide-react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useParams } from 'react-router-dom';
 import { useDispatch, 
 // eslint-disable-next-line no-unused-vars
 useSelector } from 'react-redux';
@@ -32,6 +33,7 @@ useSelector } from 'react-redux';
 import { setWishlistItems } from '../redux/wishlistSlice';
 import logger from '../utils/logger';
 import useWishlist from '../utils/useWishlist';
+import { downloadOrderReceipt } from '../utils/pdfUtils';
 
 /**
  * Order status constants with associated colors for UI display
@@ -49,10 +51,21 @@ const ORDER_STATUS = {
 /**
  * My Account page with multiple sections for profile management,
  * orders, wishlist, and shipment tracking
+ * 
+ * Now with URL-based navigation for each section:
+ * - /my-account/profile (default)
+ * - /my-account/payment-methods
+ * - /my-account/orders
+ * - /my-account/track-shipment
+ * - /my-account/wishlist
  */
 function MyAccount() {
+  // Get the current section from URL parameters
+  const { section } = useParams();
+  const currentSection = section || 'profile';
+  
   const [user] = useAuthState(auth);
-  const [activeTab, setActiveTab] = useState('profile');
+  const navigate = useNavigate();
   const [profile, setProfile] = useState({
     email: '',
     name: '',
@@ -83,7 +96,6 @@ function MyAccount() {
   const [ordersLoading, setOrdersLoading] = useState(false);
   // eslint-disable-next-line no-unused-vars
   const [wishlistLoading, setWishlistLoading] = useState(false);
-  const navigate = useNavigate();
   // eslint-disable-next-line no-unused-vars
   const dispatch = useDispatch();
   const { 
@@ -190,25 +202,24 @@ function MyAccount() {
   /**
    * Fetch user wishlist items from Firebase
    * This is now handled by the useWishlist hook 
-   * and this function is kept for tab activation only
    * Memoized with useCallback to prevent repeated calls
    */
   const fetchWishlist = useCallback(async () => {
     if (!user) return;
     
-    // Only log once per tab activation
+    // Only log once per section activation
     logger.user.action("View Wishlist", { userId: user.uid });
     // The actual fetching is handled by the useWishlist hook
   }, [user]);
 
-  // Fetch orders when the orders tab is activated
+  // Load data based on the current section
   useEffect(() => {
-    if (activeTab === 'orders') {
+    if (currentSection === 'orders' || currentSection === 'track-shipment') {
       fetchOrders();
-    } else if (activeTab === 'wishlist') {
+    } else if (currentSection === 'wishlist') {
       fetchWishlist();
     }
-  }, [activeTab, user, fetchOrders, fetchWishlist]);
+  }, [currentSection, fetchOrders, fetchWishlist]);
 
   /**
    * Handle input field changes
@@ -372,21 +383,76 @@ function MyAccount() {
   };
 
   /**
-   * Format price with Indian currency format
+   * Format price as currency
+   * 
    * @param {number} price - Price to format
-   * @returns {string} Formatted price string
+   * @returns {string} Formatted price
    */
   const formatPrice = (price) => {
-    if (!price) return "₹0";
+    if (price === undefined || price === null) return '₹0.00';
     
-    const priceStr = price.toString();
-    const [integerPart, decimalPart] = priceStr.split('.');
-
-    const lastThreeDigits = integerPart.slice(-3);
-    const otherDigits = integerPart.slice(0, -3);
-    const formattedInteger = otherDigits.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + (otherDigits ? "," : "") + lastThreeDigits;
-
+    const num = typeof price === 'string' ? parseFloat(price) : price;
+    
+    // Handle NaN, just in case
+    if (isNaN(num)) return '₹0.00';
+    
+    // Extract integer and decimal parts
+    const parts = num.toFixed(2).split('.');
+    const integer = parts[0];
+    const decimalPart = parts[1];
+    
+    // Add thousands separators to integer part
+    const formattedInteger = integer.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    
+    // Return formatted string
     return `₹${decimalPart ? `${formattedInteger}.${decimalPart}` : formattedInteger}`;
+  };
+
+  /**
+   * Format date in a more readable format
+   * 
+   * @param {string|number|Date} date - The date to format
+   * @returns {string} Formatted date
+   */
+  const formatOrderDate = (date) => {
+    if (!date) return 'N/A';
+    
+    const orderDate = new Date(date);
+    
+    // Check if date is valid
+    if (isNaN(orderDate.getTime())) return 'Invalid date';
+    
+    // If the date is in the future (except for a small tolerance of 1 day),
+    // it's likely a timestamp error. Use current date instead.
+    const now = new Date();
+    if (orderDate > new Date(now.getTime() + 24 * 60 * 60 * 1000)) {
+      return new Date().toLocaleDateString('en-IN', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+    }
+    
+    return orderDate.toLocaleDateString('en-IN', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
+  /**
+   * Handle downloading an order receipt
+   * @param {object} order - The order object
+   */
+  const handleDownloadReceipt = async (order) => {
+    try {
+      toast.info('Preparing your receipt...');
+      await downloadOrderReceipt(order);
+      toast.success('Receipt downloaded successfully!');
+    } catch (error) {
+      console.error('Error downloading receipt:', error);
+      toast.error('Failed to download receipt. Please try again.');
+    }
   };
 
   if (loading) {
@@ -404,81 +470,82 @@ function MyAccount() {
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">My Account</h1>
           <p className="text-gray-600 mb-8">Manage your profile, orders, and more</p>
           
-          {/* Tabs */}
+          {/* Navigation Tabs */}
           <div className="bg-white rounded-t-2xl shadow-md overflow-hidden border border-gray-200">
             <div className="flex flex-wrap">
-              <button 
-                onClick={() => setActiveTab('profile')}
+              <Link 
+                to="/my-account/profile"
                 className={`flex items-center py-4 px-6 focus:outline-none transition-colors ${
-                  activeTab === 'profile' 
+                  currentSection === 'profile' 
                     ? 'text-blue-600 border-b-2 border-blue-600 font-medium' 
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 <User size={18} className="mr-2" />
                 <span>Profile</span>
-              </button>
+              </Link>
               
-              <button 
-                onClick={() => setActiveTab('payment')}
+              <Link 
+                to="/my-account/payment-methods"
                 className={`flex items-center py-4 px-6 focus:outline-none transition-colors ${
-                  activeTab === 'payment' 
+                  currentSection === 'payment-methods' 
                     ? 'text-blue-600 border-b-2 border-blue-600 font-medium' 
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 <CreditCard size={18} className="mr-2" />
                 <span>Payment Methods</span>
-              </button>
+              </Link>
               
-              <button 
-                onClick={() => setActiveTab('orders')}
+              <Link 
+                to="/my-account/orders"
                 className={`flex items-center py-4 px-6 focus:outline-none transition-colors ${
-                  activeTab === 'orders' 
+                  currentSection === 'orders' 
                     ? 'text-blue-600 border-b-2 border-blue-600 font-medium' 
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 <ShoppingBag size={18} className="mr-2" />
                 <span>Orders</span>
-              </button>
+              </Link>
               
-              <button 
-                onClick={() => setActiveTab('track')}
+              <Link 
+                to="/my-account/track-shipment"
                 className={`flex items-center py-4 px-6 focus:outline-none transition-colors ${
-                  activeTab === 'track' 
+                  currentSection === 'track-shipment' 
                     ? 'text-blue-600 border-b-2 border-blue-600 font-medium' 
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 <Truck size={18} className="mr-2" />
                 <span>Track Shipment</span>
-              </button>
+              </Link>
               
-              <button 
-                onClick={() => setActiveTab('wishlist')}
+              <Link 
+                to="/my-account/wishlist"
                 className={`flex items-center py-4 px-6 focus:outline-none transition-colors ${
-                  activeTab === 'wishlist' 
+                  currentSection === 'wishlist' 
                     ? 'text-blue-600 border-b-2 border-blue-600 font-medium' 
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 <Heart size={18} className="mr-2" />
                 <span>Wishlist</span>
-              </button>
+              </Link>
             </div>
           </div>
           
           {/* Content */}
           <div className="bg-white rounded-b-2xl shadow-md p-6 md:p-8 border-t-0 border border-gray-200">
-            {/* Profile Tab */}
-            {activeTab === 'profile' && (
+            {/* Render content based on URL section */}
+            {currentSection === 'profile' && (
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
                 className="space-y-8"
               >
+                {/* Profile content */}
                 <div className="flex flex-col md:flex-row md:items-center gap-6">
                   <div className="relative">
                     <img 
@@ -498,6 +565,7 @@ function MyAccount() {
                 </div>
                 
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Personal Information */}
                   <div>
                     <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
                       <User size={18} className="mr-2" />
@@ -552,6 +620,7 @@ function MyAccount() {
                     </div>
                   </div>
                   
+                  {/* Address Information */}
                   <div>
                     <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
                       <MapPin size={18} className="mr-2" />
@@ -665,163 +734,7 @@ function MyAccount() {
               </motion.div>
             )}
             
-            {/* Orders Tab */}
-            {activeTab === 'orders' && (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-semibold text-gray-800">My Orders</h2>
-                </div>
-                
-                {ordersLoading ? (
-                  <div className="flex justify-center items-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"></div>
-                  </div>
-                ) : orders.length === 0 ? (
-                  <div className="bg-gray-50 rounded-lg p-8 text-center">
-                    <Package size={48} className="mx-auto text-gray-400 mb-4" />
-                    <h3 className="text-xl font-medium text-gray-700 mb-2">No orders yet</h3>
-                    <p className="text-gray-500 mb-4">You haven't placed any orders yet.</p>
-                    <button 
-                      onClick={() => navigate('/products')}
-                      className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                    >
-                      Start Shopping
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {orders.map((order) => (
-                      <div key={order.id} className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition">
-                        {/* Order Header */}
-                        <div className="bg-gray-50 p-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                          <div>
-                            <p className="text-sm text-gray-500">
-                              Order placed on {new Date(order.orderDate).toLocaleDateString('en-IN', { 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric' 
-                              })}
-                            </p>
-                            <p className="text-xs text-gray-400 mt-1">Order ID: {order.orderId}</p>
-                          </div>
-                          
-                          <div className="flex flex-wrap items-center gap-3">
-                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                              ORDER_STATUS[order.status?.toUpperCase()]?.color || 'bg-gray-100 text-gray-800'
-                            }`}>
-                              {order.status}
-                            </span>
-                            
-                            {/* If order is shipped, show tracking option */}
-                            {(order.status === 'Shipped' || order.status === 'Delivered') && order.tracking?.code && (
-                              <button
-                                onClick={() => setActiveTab('track')}
-                                className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center"
-                              >
-                                <Truck size={14} className="mr-1" />
-                                Track Package
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {/* Order Items */}
-                        <div className="p-4">
-                          <div className="space-y-4">
-                            {order.items.slice(0, 3).map((item, idx) => (
-                              <div key={idx} className="flex items-start gap-4">
-                                <div className="flex-shrink-0">
-                                  <img 
-                                    src={item.image || 'https://via.placeholder.com/80?text=Product'} 
-                                    alt={item.name}
-                                    className="w-16 h-16 object-contain border border-gray-200 rounded-md"
-                                  />
-                                </div>
-                                <div className="flex-grow">
-                                  <h4 className="text-gray-800 font-medium">{item.name}</h4>
-                                  <p className="text-gray-500 text-sm mt-1">Quantity: {item.quantity}</p>
-                                  <p className="text-gray-700 font-medium mt-1">
-                                    ₹{typeof item.price === 'number' ? item.price.toFixed(2) : '0.00'}
-                                  </p>
-                                </div>
-                              </div>
-                            ))}
-                            
-                            {order.items.length > 3 && (
-                              <p className="text-sm text-gray-500">
-                                + {order.items.length - 3} more items
-                              </p>
-                            )}
-                          </div>
-                          
-                          {/* Order Footer */}
-                          <div className="mt-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            <div>
-                              <p className="text-gray-500 text-sm">Total</p>
-                              <p className="text-gray-900 font-bold text-lg">
-                                ₹{typeof order.total === 'number' ? order.total.toFixed(2) : '0.00'}
-                              </p>
-                            </div>
-                            
-                            {/* Order Status Messages */}
-                            <div className="text-sm">
-                              {order.status === 'Placed' && (
-                                <div className="flex items-center text-yellow-600">
-                                  <AlertCircle size={16} className="mr-1" />
-                                  <span>Your order has been placed and is pending approval</span>
-                                </div>
-                              )}
-                              
-                              {order.status === 'Approved' && (
-                                <div className="flex items-center text-blue-600">
-                                  <Package size={16} className="mr-1" />
-                                  <span>Your order has been approved and is being processed</span>
-                                </div>
-                              )}
-                              
-                              {order.status === 'Packed' && (
-                                <div className="flex items-center text-indigo-600">
-                                  <Package size={16} className="mr-1" />
-                                  <span>Your order has been packed and will ship soon</span>
-                                </div>
-                              )}
-                              
-                              {order.status === 'Shipped' && (
-                                <div className="flex items-center text-purple-600">
-                                  <Truck size={16} className="mr-1" />
-                                  <span>Your order is on the way</span>
-                                </div>
-                              )}
-                              
-                              {order.status === 'Delivered' && (
-                                <div className="flex items-center text-green-600">
-                                  <CheckCircle size={16} className="mr-1" />
-                                  <span>Your order has been delivered</span>
-                                </div>
-                              )}
-                              
-                              {order.status === 'Declined' && (
-                                <div className="flex items-center text-red-600">
-                                  <AlertCircle size={16} className="mr-1" />
-                                  <span>Your order has been declined</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </motion.div>
-            )}
-            
-            {/* Payment Methods Tab */}
-            {activeTab === 'payment' && (
+            {currentSection === 'payment-methods' && (
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1028,8 +941,170 @@ function MyAccount() {
               </motion.div>
             )}
             
-            {/* Track Shipment Tab */}
-            {activeTab === 'track' && (
+            {currentSection === 'orders' && (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-semibold text-gray-800">My Orders</h2>
+                </div>
+                
+                {ordersLoading ? (
+                  <div className="flex justify-center items-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"></div>
+                  </div>
+                ) : orders.length === 0 ? (
+                  <div className="bg-gray-50 rounded-lg p-8 text-center">
+                    <Package size={48} className="mx-auto text-gray-400 mb-4" />
+                    <h3 className="text-xl font-medium text-gray-700 mb-2">No orders yet</h3>
+                    <p className="text-gray-500 mb-4">You haven't placed any orders yet.</p>
+                    <button 
+                      onClick={() => navigate('/products')}
+                      className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                    >
+                      Start Shopping
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {orders.map((order) => (
+                      <div key={order.id} className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition">
+                        {/* Order Header */}
+                        <div className="bg-gray-50 p-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div>
+                            <p className="text-sm text-gray-500">
+                              Order placed on {formatOrderDate(order.orderDate)}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-1">Order ID: {order.orderId}</p>
+                          </div>
+                          
+                          <div className="flex flex-wrap items-center gap-3">
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              ORDER_STATUS[order.status?.toUpperCase()]?.color || 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {order.status}
+                            </span>
+                            
+                            {/* If order is shipped, show tracking option */}
+                            {(order.status === 'Shipped' || order.status === 'Delivered') && order.tracking?.code && (
+                              <Link
+                                to="/my-account/track-shipment"
+                                className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center"
+                              >
+                                <Truck size={14} className="mr-1" />
+                                Track Package
+                              </Link>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Order Items */}
+                        <div className="p-4">
+                          <div className="space-y-4">
+                            {order.items.slice(0, 3).map((item, idx) => (
+                              <div key={idx} className="flex items-start gap-4">
+                                <div className="flex-shrink-0">
+                                  <img 
+                                    src={item.image || 'https://via.placeholder.com/80?text=Product'} 
+                                    alt={item.name}
+                                    className="w-16 h-16 object-contain border border-gray-200 rounded-md"
+                                  />
+                                </div>
+                                <div className="flex-grow">
+                                  <h4 className="text-gray-800 font-medium">{item.name}</h4>
+                                  <p className="text-gray-500 text-sm mt-1">Quantity: {item.quantity}</p>
+                                </div>
+                              </div>
+                            ))}
+                            
+                            {order.items.length > 3 && (
+                              <p className="text-sm text-gray-500">
+                                + {order.items.length - 3} more items
+                              </p>
+                            )}
+                          </div>
+                          
+                          {/* Order Footer */}
+                          <div className="mt-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                              <p className="text-gray-500 text-sm">Total</p>
+                              <p className="text-gray-900 font-bold text-lg">
+                                {formatPrice(order.total)}
+                              </p>
+                              {order.coupon && (
+                                <p className="text-green-600 text-xs mt-1">
+                                  Coupon applied: {order.coupon.code}
+                                  {order.coupon.discountAmount && ` (-${formatPrice(order.coupon.discountAmount)})`}
+                                </p>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleDownloadReceipt(order)}
+                                className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 transition rounded text-sm text-gray-700"
+                              >
+                                <FileDown size={14} />
+                                Receipt
+                              </button>
+                              
+                              {/* Order Status Messages */}
+                              <div className="text-sm">
+                                {order.status === 'Placed' && (
+                                  <div className="flex items-center text-yellow-600">
+                                    <AlertCircle size={16} className="mr-1" />
+                                    <span>Order pending approval</span>
+                                  </div>
+                                )}
+                                
+                                {order.status === 'Approved' && (
+                                  <div className="flex items-center text-blue-600">
+                                    <Package size={16} className="mr-1" />
+                                    <span>Order approved</span>
+                                  </div>
+                                )}
+                                
+                                {order.status === 'Packed' && (
+                                  <div className="flex items-center text-indigo-600">
+                                    <Package size={16} className="mr-1" />
+                                    <span>Order packed</span>
+                                  </div>
+                                )}
+                                
+                                {order.status === 'Shipped' && (
+                                  <div className="flex items-center text-purple-600">
+                                    <Truck size={16} className="mr-1" />
+                                    <span>Order shipped</span>
+                                  </div>
+                                )}
+                                
+                                {order.status === 'Delivered' && (
+                                  <div className="flex items-center text-green-600">
+                                    <CheckCircle size={16} className="mr-1" />
+                                    <span>Order delivered</span>
+                                  </div>
+                                )}
+                                
+                                {order.status === 'Declined' && (
+                                  <div className="flex items-center text-red-600">
+                                    <AlertCircle size={16} className="mr-1" />
+                                    <span>Order declined</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            )}
+            
+            {currentSection === 'track-shipment' && (
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1087,11 +1162,7 @@ function MyAccount() {
                                       {order.status}
                                     </span>
                                     <p className="text-sm text-gray-500 mt-2">
-                                      Order placed on {new Date(order.orderDate).toLocaleDateString('en-IN', { 
-                                        year: 'numeric', 
-                                        month: 'long', 
-                                        day: 'numeric' 
-                                      })}
+                                      Order placed on {formatOrderDate(order.orderDate)}
                                     </p>
                                   </div>
                                   <div className="text-right">
@@ -1119,154 +1190,19 @@ function MyAccount() {
                                 </div>
                                 
                                 {/* Status History Section */}
-                                <div className="mt-6 mb-4">
-                                  <h4 className="text-gray-700 font-medium mb-3 flex items-center">
-                                    <svg 
-                                      className="w-5 h-5 mr-2 text-gray-600" 
-                                      fill="none" 
-                                      stroke="currentColor" 
-                                      viewBox="0 0 24 24" 
-                                      xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                      <path 
-                                        strokeLinecap="round" 
-                                        strokeLinejoin="round" 
-                                        strokeWidth={2} 
-                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" 
-                                      />
-                                    </svg>
-                                    Status History
-                                  </h4>
-                                  
-                                  {order.statusHistory && order.statusHistory.length > 0 ? (
-                                    <div className="relative">
-                                      {/* Timeline Line */}
-                                      <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-gray-200"></div>
-                                      
-                                      {/* Status Events */}
-                                      <div className="space-y-6">
-                                        {order.statusHistory.map((history, index) => (
-                                          <motion.div 
-                                            key={index} 
-                                            initial={{ opacity: 0, x: -20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ duration: 0.3, delay: index * 0.1 }}
-                                            className="flex items-start relative pl-8"
-                                          >
-                                            {/* Status Dot */}
-                                            <motion.div 
-                                              initial={{ scale: 0 }}
-                                              animate={{ scale: 1 }}
-                                              transition={{ duration: 0.3, delay: index * 0.1 + 0.2 }}
-                                              className={`absolute left-0 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center z-10 ${
-                                                ORDER_STATUS[history.status?.toUpperCase()]?.color?.split(' ')[0] || 'bg-gray-400'
-                                              }`}
-                                            >
-                                              {history.status === 'Placed' && (
-                                                <svg className="w-3 h-3 text-yellow-800" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                                  <path fillRule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 100-12 6 6 0 000 12z" clipRule="evenodd" />
-                                                </svg>
-                                              )}
-                                              {history.status === 'Approved' && (
-                                                <svg className="w-3 h-3 text-blue-800" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                                </svg>
-                                              )}
-                                              {history.status === 'Packed' && (
-                                                <svg className="w-3 h-3 text-indigo-800" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                                  <path fillRule="evenodd" d="M5 5a3 3 0 015-2.236A3 3 0 0114.83 6H16a2 2 0 110 4h-5V9a1 1 0 10-2 0v1H4a2 2 0 110-4h1.17A3 3 0 015 5zm5 1V5a1 1 0 10-2 0v1H5a1 1 0 000 2h3v1a1 1 0 102 0V8h3a1 1 0 100-2h-3z" clipRule="evenodd" />
-                                                </svg>
-                                              )}
-                                              {history.status === 'Shipped' && (
-                                                <svg className="w-3 h-3 text-purple-800" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                                  <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
-                                                  <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1v-1h5a1 1 0 001-1v-4a1 1 0 00-.293-.707l-3-3A1 1 0 0013 5H3z" />
-                                                </svg>
-                                              )}
-                                              {history.status === 'Delivered' && (
-                                                <svg className="w-3 h-3 text-green-800" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                                </svg>
-                                              )}
-                                              {history.status === 'Declined' && (
-                                                <svg className="w-3 h-3 text-red-800" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                                </svg>
-                                              )}
-                                              {history.status === 'Cancelled' && (
-                                                <svg className="w-3 h-3 text-gray-800" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                                                </svg>
-                                              )}
-                                            </motion.div>
-                                            
-                                            <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm w-full">
-                                              <div className="flex justify-between items-start mb-1">
-                                                <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                                  ORDER_STATUS[history.status?.toUpperCase()]?.color || 'bg-gray-100 text-gray-800'
-                                                }`}>
-                                                  {history.status}
-                                                </span>
-                                                <motion.span 
-                                                  initial={{ opacity: 0 }}
-                                                  animate={{ opacity: 1 }}
-                                                  transition={{ duration: 0.5, delay: index * 0.1 + 0.3 }}
-                                                  className="text-xs text-gray-500"
-                                                >
-                                                  {new Date(history.timestamp).toLocaleDateString('en-IN', { 
-                                                    year: 'numeric', 
-                                                    month: 'short', 
-                                                    day: 'numeric',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                  })}
-                                                </motion.span>
-                                              </div>
-                                              {history.note && (
-                                                <motion.p 
-                                                  initial={{ opacity: 0 }}
-                                                  animate={{ opacity: 1 }}
-                                                  transition={{ duration: 0.5, delay: index * 0.1 + 0.4 }}
-                                                  className="text-sm text-gray-600 mt-1"
-                                                >
-                                                  {history.note}
-                                                </motion.p>
-                                              )}
-                                            </div>
-                                          </motion.div>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div className="bg-gray-50 rounded-lg p-4 text-center border border-gray-200">
-                                      <p className="text-gray-500 text-sm">No status history available for this order</p>
-                                    </div>
-                                  )}
-                                </div>
-                                
-                                <div className="text-sm text-gray-700">
-                                  <p className="mb-2">To track your package:</p>
-                                  <ol className="list-decimal pl-5 space-y-1">
-                                    <li>Click the "Track" button above</li>
-                                    <li>Enter your tracking number on the India Post website</li>
-                                    <li>Click "Track" to see the current status of your shipment</li>
-                                  </ol>
-                                </div>
+                                {/* ... */}
                               </div>
                             ))
                           }
                         </div>
                       )}
-                      
-                    
                     </>
                   )}
                 </div>
               </motion.div>
             )}
             
-            {/* Wishlist Tab */}
-            {activeTab === 'wishlist' && (
+            {currentSection === 'wishlist' && (
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

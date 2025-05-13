@@ -207,6 +207,12 @@ export const createReceiptTemplate = (order, containerId) => {
           <span>Subtotal:</span>
           <span>${formatPrice(order.subtotal)}</span>
         </div>
+        ${order.coupon ? `
+        <div class="summary-row" style="color: #10b981;">
+          <span>Coupon (${order.coupon.code}):</span>
+          <span>-${formatPrice(order.coupon.discountAmount || 0)}</span>
+        </div>
+        ` : ''}
         <div class="summary-row">
           <span>Tax (18% GST):</span>
           <span>${formatPrice(order.tax)}</span>
