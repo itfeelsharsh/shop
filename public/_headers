@@ -7,6 +7,7 @@
 # Special caching rules for social media crawlers
 /product/*
   Cache-Control: public, max-age=300
+  X-Robots-Tag: index, follow
   # Bot-specific headers
   User-Agent=*facebookexternalhit*
     X-Prerender-Ready: true
@@ -23,4 +24,11 @@
   User-Agent=*telegrambot*
     X-Prerender-Ready: true
   User-Agent=*whatsapp*
-    X-Prerender-Ready: true 
+    X-Prerender-Ready: true
+
+# Discord-specific headers
+/product/*
+  User-Agent=*discord*
+    Access-Control-Allow-Origin: *
+    X-Frame-Options: ALLOWALL
+    X-Discord-Allowed: true 

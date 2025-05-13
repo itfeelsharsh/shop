@@ -24,36 +24,62 @@ export async function onRequest(context) {
   
   // If it's a product page and a social bot, handle specially
   if (isSocialBot) {
-    // Get the product ID from the URL
-    const productId = url.pathname.split('/').pop();
+    console.log(`Bot detected by catch-all: ${userAgent} for URL: ${url.pathname}`);
     
-    // For bots, we'll fetch the actual HTML and modify it
-    const response = await fetch(request);
-    const originalHtml = await response.text();
-    
-    // For social media bots, we need to make sure they can see the content immediately
-    // by injecting custom CSS to show content without animations or loading screens
-    const modifiedHtml = originalHtml
-      .replace('</head>', 
-        `<style>
-          /* Force-display content for bots */
-          .loading-screen { display: none !important; }
-          * { animation: none !important; transition: none !important; }
-          #root { display: block !important; opacity: 1 !important; }
-        </style>
-        </head>`
-      )
-      // Set the prerender flag for Cloudflare Pages
-      .replace('<html', '<html data-prerendered="true"');
+    try {
+      // Create a new request without any auth headers that might cause 401 errors
+      const cleanRequest = new Request(request.url, {
+        method: request.method,
+        headers: new Headers({
+          'Accept': 'text/html',
+          'User-Agent': userAgent,
+          // Do not include authorization headers
+        }),
+        redirect: 'follow'
+      });
       
-    // Return the modified HTML with the appropriate content type
-    return new Response(modifiedHtml, {
-      headers: {
-        'Content-Type': 'text/html',
-        'Cache-Control': 'public, max-age=300',
-        'X-Prerender-Status': 'success'
+      // Fetch the page without authorization headers
+      const response = await fetch(cleanRequest);
+      
+      // If the response is not ok, we should just pass through instead of trying to modify
+      if (!response.ok) {
+        console.error(`Error fetching page: ${response.status} ${response.statusText}`);
+        return context.next();
       }
-    });
+      
+      const originalHtml = await response.text();
+      
+      // For Discord and other bots, we need to ensure content is immediately visible
+      const modifiedHtml = originalHtml
+        .replace('</head>', 
+          `<style>
+            /* Force-display content for bots */
+            .loading-screen { display: none !important; }
+            * { animation: none !important; transition: none !important; opacity: 1 !important; }
+            #root { display: block !important; opacity: 1 !important; }
+            body { visibility: visible !important; }
+          </style>
+          <meta name="robots" content="index, follow">
+          </head>`
+        )
+        .replace('<html', '<html data-bot="true"');
+        
+      // Return the modified HTML with public headers
+      return new Response(modifiedHtml, {
+        headers: {
+          'Content-Type': 'text/html',
+          'Cache-Control': 'public, max-age=300',
+          'X-Robots-Tag': 'index, follow',
+          'Access-Control-Allow-Origin': '*',
+          'X-Frame-Options': 'ALLOWALL', // Allow embedding in iframes
+          'X-Bot-Friendly': 'true'
+        }
+      });
+    } catch (error) {
+      console.error('Error in social-bot handler:', error);
+      // If anything fails, fall back to normal page render
+      return context.next();
+    }
   }
   
   // For all other requests, pass through

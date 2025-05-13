@@ -2,6 +2,10 @@
   "version": 1,
   "routes": [
     {
+      "pattern": "/*",
+      "script": "discord"
+    },
+    {
       "pattern": "/product/:id",
       "script": "product/[id]"
     },

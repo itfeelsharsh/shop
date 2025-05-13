@@ -1,5 +1,5 @@
 # Redirect all routes to index.html for SPA
 /* /index.html 200 
 
-# SPA fallback
+# SPA fallback - ensure all routes render the React app
 /* /index.html 200 
