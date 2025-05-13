@@ -1,10 +1,10 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from "framer-motion";
 import { spinnerVariants, shimmer } from '../utils/animations';
 
 const Loading = ({ fullScreen = false }) => {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -14,7 +14,7 @@ const Loading = ({ fullScreen = false }) => {
       `}
     >
       {/* Spinner */}
-      <motion.div
+      <m.div
         variants={spinnerVariants}
         animate="animate"
         className="relative"
@@ -23,23 +23,23 @@ const Loading = ({ fullScreen = false }) => {
         <div className="w-16 h-16 rounded-full border-4 border-blue-100" />
         
         {/* Spinning segment */}
-        <motion.div
+        <m.div
           className="absolute top-0 left-0 w-16 h-16"
         >
           <div className="w-4 h-4 rounded-full bg-blue-600 shadow-lg" />
-        </motion.div>
-      </motion.div>
+        </m.div>
+      </m.div>
 
       {/* Loading text with shimmer effect */}
       <div className="mt-4 relative overflow-hidden">
-        <motion.div
+        <m.div
           className="text-lg font-medium text-gray-700"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
           Loading
-          <motion.span
+          <m.span
             animate={{
               opacity: [0, 1, 0],
               transition: {
@@ -50,28 +50,28 @@ const Loading = ({ fullScreen = false }) => {
             }}
           >
             ...
-          </motion.span>
-        </motion.div>
+          </m.span>
+        </m.div>
         
         {/* Shimmer effect */}
-        <motion.div
+        <m.div
           className="absolute inset-0 w-full h-full"
           variants={shimmer}
           initial="hidden"
           animate="visible"
         >
           <div className="w-1/2 h-full bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-        </motion.div>
+        </m.div>
       </div>
 
       {/* Progress bar */}
-      <motion.div
+      <m.div
         className="mt-4 w-48 h-1 bg-gray-200 rounded-full overflow-hidden"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <motion.div
+        <m.div
           className="h-full bg-blue-600 rounded-full"
           animate={{
             x: [-192, 0],
@@ -82,8 +82,8 @@ const Loading = ({ fullScreen = false }) => {
             }
           }}
         />
-      </motion.div>
-    </motion.div>
+      </m.div>
+    </m.div>
   );
 };
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from "framer-motion";
 
 const LoadingBar = ({ progress = 0, isIndeterminate = false }) => {
   // Animation variants for the loading bar
@@ -54,45 +54,45 @@ const LoadingBar = ({ progress = 0, isIndeterminate = false }) => {
   return (
     <div className="relative w-full">
       {/* Background track */}
-      <motion.div
+      <m.div
         className="h-2 bg-gray-200 rounded-full overflow-hidden"
         variants={pulseVariants}
         initial="initial"
         animate="animate"
       >
         {/* Progress bar */}
-        <motion.div
+        <m.div
           className="h-full bg-blue-600 rounded-full relative"
           variants={barVariants}
           initial="initial"
           animate="animate"
         >
           {/* Shimmer effect */}
-          <motion.div
+          <m.div
             className="absolute inset-0 w-full h-full"
             variants={shimmerVariants}
             initial="initial"
             animate="animate"
           >
             <div className="w-1/3 h-full bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-          </motion.div>
-        </motion.div>
-      </motion.div>
+          </m.div>
+        </m.div>
+      </m.div>
 
       {/* Progress percentage */}
       {!isIndeterminate && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="absolute right-0 top-4 text-sm text-gray-600"
         >
           {Math.round(progress)}%
-        </motion.div>
+        </m.div>
       )}
 
       {/* Loading text for indeterminate state */}
       {isIndeterminate && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{
@@ -103,7 +103,7 @@ const LoadingBar = ({ progress = 0, isIndeterminate = false }) => {
           className="absolute left-0 top-4 text-sm text-gray-600"
         >
           Loading...
-        </motion.div>
+        </m.div>
       )}
     </div>
   );

@@ -3,7 +3,7 @@ import { db } from "../firebase/config";
 import { collection, getDocs } from "firebase/firestore";
 import ProductCard from "../components/ProductCard";
 import { Search } from "lucide-react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -142,17 +142,65 @@ function Products() {
       // Ensure originalPrice is a number if it exists
       originalPrice: product.originalPrice ? 
         (typeof product.originalPrice === 'string' ? parseFloat(product.originalPrice) : product.originalPrice) 
-        : null
+        : null,
+      // Ensure stock is a number
+      stock: typeof product.stock === 'string' ? parseInt(product.stock, 10) : product.stock,
     }));
 
     return categoriesOrder.map((category) => ({
       category,
-      items: processedProducts.filter(
-        (product) =>
-          product.type === category &&
-          (searchTerm === "" ||
-            product.name.toLowerCase().includes(searchTerm.toLowerCase()))
-      ),
+      items: processedProducts.filter((product) => {
+        // Ensure product belongs to the current category
+        if (product.type !== category) {
+          return false;
+        }
+
+        // If searchTerm is empty, include the product
+        if (searchTerm === "") {
+          return true;
+        }
+
+        // Prepare searchTerm for case-insensitive comparison
+        const term = searchTerm.toLowerCase();
+
+        // Check various product fields for a match
+        // Check product name
+        if (product.name?.toLowerCase().includes(term)) return true;
+        // Check product description
+        if (product.description?.toLowerCase().includes(term)) return true;
+        // Check product brand
+        if (product.brand?.toLowerCase().includes(term)) return true;
+        // Check product slug
+        if (product.slug?.toLowerCase().includes(term)) return true;
+        // Check product origin
+        if (product.origin?.toLowerCase().includes(term)) return true;
+        // Check additional product information
+        if (product.additionalInfo?.toLowerCase().includes(term)) return true;
+
+        // Check product tags (array of strings)
+        if (product.tags?.some(tag => tag.toLowerCase().includes(term))) return true;
+
+        // Check warranty information (if available)
+        if (product.warranty?.available) {
+          if (product.warranty.details?.toLowerCase().includes(term)) return true;
+          if (product.warranty.period?.toLowerCase().includes(term)) return true;
+        }
+
+        // Check guarantee information (if available)
+        if (product.guarantee?.available) {
+          if (product.guarantee.details?.toLowerCase().includes(term)) return true;
+          if (product.guarantee.period?.toLowerCase().includes(term)) return true;
+        }
+
+        // Check import details (if applicable)
+        if (product.importDetails?.isImported) {
+          if (product.importDetails.country?.toLowerCase().includes(term)) return true;
+          if (product.importDetails.deliveryNote?.toLowerCase().includes(term)) return true;
+        }
+        
+        // If no match is found in any field, exclude the product
+        return false;
+      }),
     }));
   }, [products, searchTerm, categoriesOrder]);
 
@@ -189,7 +237,7 @@ function Products() {
   }
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeInOut" }}
@@ -257,7 +305,7 @@ function Products() {
               {/* Show More button - only display when there are more than 4 items and not all items are shown */}
               {items.length > 4 && !(visibleCounts[category] >= items.length) && (
                 <div className="flex justify-center mt-8">
-                  <motion.button
+                  <m.button
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                     className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 flex items-center gap-2 font-medium shadow-md"
@@ -267,7 +315,7 @@ function Products() {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                     </svg>
-                  </motion.button>
+                  </m.button>
                 </div>
               )}
             </div>
@@ -281,7 +329,7 @@ function Products() {
           <p className="text-xl">No products found matching your search.</p>
         </div>
       )}
-    </motion.div>
+    </m.div>
   );
 }
 

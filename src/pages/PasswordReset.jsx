@@ -4,7 +4,7 @@ import { sendPasswordResetEmail } from 'firebase/auth';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
-import { motion } from 'framer-motion';
+import { m } from "framer-motion";
 
 
 function PasswordReset() {
@@ -93,7 +93,7 @@ function PasswordReset() {
   }, [executeRecaptcha]);
 
   return (
-    <motion.div
+    <m.div
     initial={{ opacity: 0, y: 50 }} 
     animate={{ opacity: 1, y: 0 }} 
     transition={{ duration: 0.6, ease: "easeInOut" }} 
@@ -137,7 +137,7 @@ function PasswordReset() {
         </p>
       </form>
     </div>
-    </motion.div>
+    </m.div>
 
   );
 }

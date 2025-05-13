@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { 
   CheckCircleIcon,
   XCircleIcon,
@@ -100,7 +100,7 @@ const Toast = ({
   return (
     <AnimatePresence>
       {isVisible && (
-        <motion.div
+        <m.div
           variants={toastVariants}
           initial="initial"
           animate="animate"
@@ -120,7 +120,7 @@ const Toast = ({
           </div>
 
           {/* Close button */}
-          <motion.button
+          <m.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => {
@@ -130,10 +130,10 @@ const Toast = ({
             className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
           >
             <XMarkIcon className="w-5 h-5" />
-          </motion.button>
+          </m.button>
 
           {/* Progress bar */}
-          <motion.div
+          <m.div
             variants={progressVariants}
             initial="initial"
             animate="animate"
@@ -142,7 +142,7 @@ const Toast = ({
               originX: 0
             }}
           />
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

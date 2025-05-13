@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { downloadOrderReceipt } from '../utils/pdfUtils';
 import { Home, Package, FileDown, CheckCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from "framer-motion";
 
 /**
  * Component for displaying order confirmation with receipt download functionality
@@ -66,14 +66,14 @@ function OrderConfirmation({ order }) {
     <div className="w-full max-w-4xl mx-auto p-6">
       {/* Success Animation */}
       <div className="flex flex-col items-center mb-8">
-        <motion.div
+        <m.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ duration: 0.5 }}
           className="text-green-500 mb-4"
         >
           <CheckCircle size={80} />
-        </motion.div>
+        </m.div>
         <h1 className="text-3xl font-bold text-center text-gray-800">
           Order Placed Successfully!
         </h1>

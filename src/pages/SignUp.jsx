@@ -13,7 +13,7 @@ import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
 import { setUser } from '../redux/userSlice';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
-import { motion } from 'framer-motion';
+import { m } from "framer-motion";
 
 function SignUp() {
   const [email, setEmail] = useState('');
@@ -169,7 +169,7 @@ function SignUp() {
   }, [executeRecaptcha]);
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 50 }} 
       animate={{ opacity: 1, y: 0 }} 
       transition={{ duration: 0.6, ease: "easeInOut" }} 
@@ -250,7 +250,7 @@ function SignUp() {
           </p>
         </form>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 

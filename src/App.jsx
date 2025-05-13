@@ -19,6 +19,7 @@ import Wishlist from "./pages/Wishlist";
 import LoadingScreen from "./components/LoadingScreen";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AnnouncementStrip from "./components/AnnouncementStrip";
 import { auth } from "./firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
 import { useDispatch } from "react-redux";
@@ -27,6 +28,7 @@ import "react-toastify/dist/ReactToastify.css";
 import PasswordReset from './pages/PasswordReset'; 
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { HelmetProvider } from 'react-helmet-async';
+import { LazyMotion, domAnimation } from "framer-motion";
 
 /**
  * Main application component with routing and providers setup
@@ -83,72 +85,75 @@ function App() {
   if (loading && !isBotOrCrawler()) return <LoadingScreen message="Welcome to KamiKoto" showTips={true} />;
 
   return (
-    <HelmetProvider>
-      <GoogleReCaptchaProvider
-        reCaptchaKey="6LdQtjcrAAAAAB-gw9QaVLt8zIUTcvWAjCmlVwDs"
-        scriptProps={{
-          async: true, // Async load to improve page load time
-          defer: true,
-          appendTo: 'head',
-        }}
-        language="en"
-        useRecaptchaNet={true} // Use recaptcha.net instead of google.com (helps in certain countries)
-        useEnterprise={false} // Set to true if using enterprise version
-        scriptLoadingTimeout={10000} // 10 seconds timeout (adjust as needed)
-      >
-        <Router>
-          <ScrollToTop />
-          <ToastContainer
-            position="top-center"
-            autoClose={3000}
-            hideProgressBar={false}
-            closeOnClick
-            draggable
-            pauseOnHover
-          />
+    <LazyMotion features={domAnimation}>
+      <HelmetProvider>
+        <GoogleReCaptchaProvider
+          reCaptchaKey="6LdQtjcrAAAAAB-gw9QaVLt8zIUTcvWAjCmlVwDs"
+          scriptProps={{
+            async: true, // Async load to improve page load time
+            defer: true,
+            appendTo: 'head',
+          }}
+          language="en"
+          useRecaptchaNet={true} // Use recaptcha.net instead of google.com (helps in certain countries)
+          useEnterprise={false} // Set to true if using enterprise version
+          scriptLoadingTimeout={10000} // 10 seconds timeout (adjust as needed)
+        >
+          <Router>
+            <ScrollToTop />
+            <ToastContainer
+              position="top-center"
+              autoClose={3000}
+              hideProgressBar={false}
+              closeOnClick
+              draggable
+              pauseOnHover
+            />
 
-          <div className="flex flex-col min-h-screen">
-            <Navbar />
+            <div className="flex flex-col min-h-screen">
+              <Navbar />
+              <AnnouncementStrip />
 
-            <main className="flex-grow">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/product/:id" element={<ProductView />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/signin" element={<SignIn />} />
-                <Route path="/signup" element={<SignUp />} />
-                <Route path="/password-reset" element={<PasswordReset />} />
-                
-                {/* My Account routes */}
-                <Route path="/my-account" element={
-                  <ProtectedRoute>
-                    <MyAccount />
-                  </ProtectedRoute>
-                } />
-                <Route path="/my-account/:section" element={
-                  <ProtectedRoute>
-                    <MyAccount />
-                  </ProtectedRoute>
-                } />
-                
-                <Route path="/wishlist" element={
-                  <ProtectedRoute>
-                    <Wishlist />
-                  </ProtectedRoute>
-                } />
-                <Route path="/checkout" element={<UnifiedCheckout />} />
-                <Route path="/about" element={<AboutUs />} />
-                <Route path="/contact" element={<ContactUs />} />
-                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                <Route path="/terms-of-service" element={<TermsOfService />} />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
-        </Router>
-      </GoogleReCaptchaProvider>
-    </HelmetProvider>
+              <main className="flex-grow">
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/products" element={<Products />} />
+                  <Route path="/product/:id" element={<ProductView />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/signin" element={<SignIn />} />
+                  <Route path="/signup" element={<SignUp />} />
+                  <Route path="/password-reset" element={<PasswordReset />} />
+                  
+                  {/* My Account routes */}
+                  <Route path="/my-account" element={
+                    <ProtectedRoute>
+                      <MyAccount />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/my-account/:section" element={
+                    <ProtectedRoute>
+                      <MyAccount />
+                    </ProtectedRoute>
+                  } />
+                  
+                  <Route path="/wishlist" element={
+                    <ProtectedRoute>
+                      <Wishlist />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/checkout" element={<UnifiedCheckout />} />
+                  <Route path="/about" element={<AboutUs />} />
+                  <Route path="/contact" element={<ContactUs />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="/terms-of-service" element={<TermsOfService />} />
+                </Routes>
+              </main>
+              <Footer />
+            </div>
+          </Router>
+        </GoogleReCaptchaProvider>
+      </HelmetProvider>
+    </LazyMotion>
   );
 }
 

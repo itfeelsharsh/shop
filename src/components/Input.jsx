@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import React, { useState } from 'react';
 
 const Input = ({
@@ -109,7 +109,7 @@ const Input = ({
   };
 
   return (
-    <motion.div
+    <m.div
       variants={containerVariants}
       initial="default"
       animate={isHovered ? "hover" : "default"}
@@ -118,7 +118,7 @@ const Input = ({
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Label */}
-      <motion.label
+      <m.label
         variants={labelVariants}
         initial="default"
         animate={isFocused || value ? "focused" : "default"}
@@ -126,7 +126,7 @@ const Input = ({
       >
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
-      </motion.label>
+      </m.label>
 
       {/* Input container */}
       <div className="relative">
@@ -156,7 +156,7 @@ const Input = ({
         {/* Success icon */}
         <AnimatePresence>
           {success && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.5 }}
@@ -165,7 +165,7 @@ const Input = ({
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </div>
@@ -173,7 +173,7 @@ const Input = ({
       {/* Error/Helper text */}
       <AnimatePresence>
         {(error || helperText) && (
-          <motion.div
+          <m.div
             variants={messageVariants}
             initial="initial"
             animate="animate"
@@ -181,10 +181,10 @@ const Input = ({
             className={`mt-1 text-sm ${error ? 'text-red-500' : 'text-gray-500'}`}
           >
             {error || helperText}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </m.div>
   );
 };
 

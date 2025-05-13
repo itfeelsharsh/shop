@@ -1,6 +1,6 @@
 import React, { useState, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Eye, X } from 'lucide-react';
 import { useInView } from 'react-intersection-observer';
 import PropTypes from 'prop-types';
@@ -70,14 +70,14 @@ const NotificationModal = memo(({ isOpen, onClose, type, message }) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
+        <m.div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
         >
-          <motion.div
+          <m.div
             className={`relative p-6 rounded-xl shadow-xl border-2 max-w-md w-full ${getModalStyles()}`}
             variants={modalVariants}
             initial="hidden"
@@ -94,7 +94,7 @@ const NotificationModal = memo(({ isOpen, onClose, type, message }) => {
             <div className="text-center">
               <p className="text-lg font-semibold mb-2">{message}</p>
               {type === 'error' && (
-                <motion.button
+                <m.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => {
@@ -104,11 +104,11 @@ const NotificationModal = memo(({ isOpen, onClose, type, message }) => {
                   className="mt-4 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                 >
                   Sign In
-                </motion.button>
+                </m.button>
               )}
             </div>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </AnimatePresence>
   );
@@ -347,7 +347,7 @@ const ProductCard = memo(function ProductCard({
 
   return (
     <>
-      <motion.div
+      <m.div
         ref={ref}
         variants={cardVariants}
         initial="hidden"
@@ -425,7 +425,7 @@ const ProductCard = memo(function ProductCard({
             {/* Action Buttons - View Product and Add to Cart */}
             <div className="flex gap-3">
               {/* View Product Button */}
-              <motion.button
+              <m.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleViewDetails}
@@ -447,10 +447,10 @@ const ProductCard = memo(function ProductCard({
               >
                 <Eye className="w-5 h-5" />
                 View Product
-              </motion.button>
+              </m.button>
 
               {/* Add to Cart Icon Button */}
-              <motion.button
+              <m.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleAddToCart}
@@ -472,11 +472,11 @@ const ProductCard = memo(function ProductCard({
                 `}
               >
                 <ShoppingCart className="w-5 h-5" />
-              </motion.button>
+              </m.button>
             </div>
           </div>
         </div>
-      </motion.div>
+      </m.div>
 
       {/* Notification Modal for user feedback */}
       <NotificationModal

@@ -1,9 +1,9 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from "framer-motion";
 
 function AboutUs() {
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 50 }} 
       animate={{ opacity: 1, y: 0 }} 
       transition={{ duration: 0.6, ease: "easeInOut" }} 
@@ -49,7 +49,7 @@ function AboutUs() {
           Thanks for checking out our app. Whether you’re a user looking for a great shopping time or an admin managing the site, I aim to provide tools and features that make your tasks simple and easy!
         </p>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 

@@ -3,25 +3,48 @@ import { db } from "../firebase/config";
 import { collection, getDocs } from "firebase/firestore";
 import ProductCard from "../components/ProductCard";
 import { Link } from "react-router-dom"; 
-import { motion } from "framer-motion"; 
+import { m } from "framer-motion"; 
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
+import DynamicBanner from "../components/DynamicBanner";
 
+/**
+ * Home Page Component
+ * 
+ * The main landing page for the shop featuring:
+ * - Dynamic banner system with slideshow capabilities
+ * - Featured products section
+ * - Call to action for product exploration
+ * 
+ * @returns {JSX.Element} The Home page component
+ */
 function Home() {
   const [products, setProducts] = useState([]);
   const dispatch = useDispatch();
 
   useEffect(() => {
+    /**
+     * Fetches products marked to be shown on the home page
+     */
     const fetchProducts = async () => {
-      const productsCol = collection(db, "products");
-      const productSnapshot = await getDocs(productsCol);
-      const productList = productSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      try {
+        const productsCol = collection(db, "products");
+        const productSnapshot = await getDocs(productsCol);
+        const productList = productSnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            // Ensure stock is a number, defaulting to 0 if undefined or not a number
+            stock: data.stock !== undefined ? parseInt(data.stock, 10) : 0,
+          };
+        });
 
-      const filteredProducts = productList.filter(product => product.showOnHome);
-      setProducts(filteredProducts);
+        const filteredProducts = productList.filter(product => product.showOnHome);
+        setProducts(filteredProducts);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
     };
     fetchProducts();
   }, []);
@@ -38,19 +61,16 @@ function Home() {
   }, [dispatch]);
 
   return (
-    <motion.div
-    initial={{ opacity: 0, y: 50 }} 
-    animate={{ opacity: 1, y: 0 }} 
-    transition={{ duration: 0.6, ease: "easeInOut" }} 
-    className="container mx-auto px-4 py-8 bg-gray-50"
-  >
-      {/* Banner Image */}
-      <img
-        src="/banners/3.webp"
-        alt="KamiKoto Banner"
-        className="w-full mb-6 mx-auto"
-      />
+    <m.div
+      initial={{ opacity: 0, y: 50 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ duration: 0.6, ease: "easeInOut" }} 
+      className="container mx-auto px-4 py-8 bg-gray-50"
+    >
+      {/* Dynamic Banner Component */}
+      <DynamicBanner />
 
+      {/* Featured Products Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {products.map((product) => (
           <ProductCard 
@@ -60,15 +80,16 @@ function Home() {
           />
         ))}
       </div>
-      <br /><br /><br />
-      <div className="block md:hidden mb-6 text-center">
+      
+      {/* Call to Action for Mobile */}
+      <div className="block md:hidden mt-12 mb-6 text-center">
         <Link to="/products">
           <button className="animate-pulse bg-blue-600 text-white py-4 px-8 rounded-full shadow-lg transform transition duration-500 hover:scale-105">
             Explore Our Complete Collection
           </button>
         </Link>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 

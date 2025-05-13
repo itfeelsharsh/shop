@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from "framer-motion";
 
 
 function TermsOfService() {
   return (
-    <motion.div
+    <m.div
     initial={{ opacity: 0, y: 50 }} 
     animate={{ opacity: 1, y: 0 }} 
     transition={{ duration: 0.6, ease: "easeInOut" }} 
@@ -58,7 +58,7 @@ function TermsOfService() {
         If you have any questions about these Terms of Service, please contact us through our <a href="/contact" className="text-blue-500 underline">Contact Us</a> page.
       </p>
     </div>
-    </motion.div>
+    </m.div>
 
   );
 }

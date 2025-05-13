@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from "framer-motion";
 
 
 function PrivacyPolicy() {
   return (
-    <motion.div
+    <m.div
     initial={{ opacity: 0, y: 50 }} 
     animate={{ opacity: 1, y: 0 }} 
     transition={{ duration: 0.6, ease: "easeInOut" }} 
@@ -49,7 +49,7 @@ function PrivacyPolicy() {
         If you have any questions or concerns about this Privacy Policy, please feel free to reach out to us through our <a href="/contact" className="text-blue-500 underline">Contact Us</a> page.
       </p>
     </div>
-    </motion.div>
+    </m.div>
 
   );
 }

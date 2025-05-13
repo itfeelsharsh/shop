@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from "framer-motion";
 import { buttonHover } from '../utils/animations';
 
 const variants = {
@@ -51,7 +51,7 @@ function Button({
   const baseClasses = 'inline-flex items-center justify-center rounded-lg font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:cursor-not-allowed';
   
   return (
-    <motion.button
+    <m.button
       type={type}
       onClick={onClick}
       disabled={disabled || isLoading}
@@ -70,7 +70,7 @@ function Button({
       {...props}
     >
       {isLoading && (
-        <motion.div
+        <m.div
           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
           variants={spinnerAnimation}
           animate="animate"
@@ -95,13 +95,13 @@ function Button({
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-        </motion.div>
+        </m.div>
       )}
       <span className={isLoading ? 'invisible' : ''}>
         {icon && <span className="mr-2">{icon}</span>}
         {children}
       </span>
-    </motion.button>
+    </m.button>
   );
 }
 

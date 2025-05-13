@@ -9,7 +9,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import countriesStatesData from '../../src/countriesStates.json';
-import { motion } from 'framer-motion';
+import { m } from "framer-motion";
 import { 
   User, 
   MapPin, 
@@ -539,7 +539,7 @@ function MyAccount() {
           <div className="bg-white rounded-b-2xl shadow-md p-6 md:p-8 border-t-0 border border-gray-200">
             {/* Render content based on URL section */}
             {currentSection === 'profile' && (
-              <motion.div 
+              <m.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
@@ -731,11 +731,11 @@ function MyAccount() {
                     </button>
                   </div>
                 </form>
-              </motion.div>
+              </m.div>
             )}
             
             {currentSection === 'payment-methods' && (
-              <motion.div 
+              <m.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
@@ -938,11 +938,11 @@ function MyAccount() {
                     </div>
                   </form>
                 </div>
-              </motion.div>
+              </m.div>
             )}
             
             {currentSection === 'orders' && (
-              <motion.div 
+              <m.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
@@ -1101,11 +1101,11 @@ function MyAccount() {
                     ))}
                   </div>
                 )}
-              </motion.div>
+              </m.div>
             )}
             
             {currentSection === 'track-shipment' && (
-              <motion.div 
+              <m.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
@@ -1199,11 +1199,11 @@ function MyAccount() {
                     </>
                   )}
                 </div>
-              </motion.div>
+              </m.div>
             )}
             
             {currentSection === 'wishlist' && (
-              <motion.div 
+              <m.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
@@ -1304,7 +1304,7 @@ function MyAccount() {
                     )}
                   </>
                 )}
-              </motion.div>
+              </m.div>
             )}
           </div>
         </div>

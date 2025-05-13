@@ -84,5 +84,23 @@ service cloud.firestore {
       allow create: if request.auth != null; 
       allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId; 
     }
+
+    // Banner System
+    match /banners/{bannerId} {
+      allow read: if true; // Allow public read for all users
+      allow write: if request.auth != null && isAdmin(); // Admins can create, update, delete
+    }
+
+    // Announcement System
+    match /announcements/{announcementId} {
+      allow read: if true; // Allow public read for all users
+      allow write: if request.auth != null && isAdmin(); // Admins can create, update, delete
+    }
+
+    // General Settings (for banner/announcement toggles etc.)
+    match /settings/{settingId} {
+      allow read: if true; // Allow public read for all users
+      allow write: if request.auth != null && isAdmin(); // Admins can create, update, delete
+    }
   }
 }

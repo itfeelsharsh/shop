@@ -12,7 +12,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Trash2, Heart, AlertCircle, ArrowLeft } from 'lucide-react';
 import { addToCart } from '../redux/cartSlice';
 import { toast } from 'react-toastify';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import useWishlist from '../utils/useWishlist';
 import logger from '../utils/logger';
 
@@ -218,7 +218,7 @@ function Wishlist() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <AnimatePresence>
           {items.map(item => (
-            <motion.div
+            <m.div
               key={item.id}
               layout
               initial={{ opacity: 0, y: 20 }}
@@ -269,7 +269,7 @@ function Wishlist() {
                   </button>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </AnimatePresence>
       </div>
@@ -277,14 +277,14 @@ function Wishlist() {
       {/* Confirm clear wishlist modal */}
       <AnimatePresence>
         {confirmClear && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
             onClick={() => setConfirmClear(false)}
           >
-            <motion.div
+            <m.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -319,8 +319,8 @@ function Wishlist() {
                   )}
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

@@ -3,8 +3,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { db } from '../firebase/config';
 import { collection, getDocs } from 'firebase/firestore';
 import { removeFromCart, updateQuantity, applyCoupon, removeCoupon } from '../redux/cartSlice';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { Link, useNavigate } from 'react-router-dom';
+import { m } from 'framer-motion';
 import { ShoppingBag, Trash2, Plus, Minus, ChevronRight, X, Tag } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import taxmedaddyImg from '../assets/taxmedaddy.png';
@@ -12,6 +12,7 @@ import CouponService from '../utils/couponService';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '../firebase/config';
 import { toast } from 'react-toastify';
+import LoadingBar from '../components/LoadingBar';
 
 /**
  * Cart component that displays cart items and popular products recommendation
@@ -28,6 +29,7 @@ function Cart() {
   const [validatingCoupon, setValidatingCoupon] = useState(false);
   const [couponError, setCouponError] = useState('');
   const [user] = useAuthState(auth);
+  const navigate = useNavigate();
 
   useEffect(() => {
     /**
@@ -179,7 +181,7 @@ function Cart() {
   }
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 20 }} 
       animate={{ opacity: 1, y: 0 }} 
       transition={{ duration: 0.6, ease: "easeInOut" }} 
@@ -429,7 +431,7 @@ function Cart() {
           </div>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 

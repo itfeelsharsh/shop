@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { m } from "framer-motion";
 
 
 function ContactUs() {
   return (
-    <motion.div
+    <m.div
     initial={{ opacity: 0, y: 50 }} 
     animate={{ opacity: 1, y: 0 }} 
     transition={{ duration: 0.6, ease: "easeInOut" }} 
@@ -56,7 +56,7 @@ function ContactUs() {
         </button>
       </form>
     </div>
-    </motion.div>
+    </m.div>
 
   );
 }

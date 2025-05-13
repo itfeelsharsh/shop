@@ -80,7 +80,7 @@ const useWishlist = () => {
     };
     
     loadWishlist();
-  }, [user, dispatch, isDataStale, wishlistItems.length]);
+  }, [user, dispatch, wishlistItems.length, isDataStale]);
 
   /**
    * Adds a product to the user's wishlist

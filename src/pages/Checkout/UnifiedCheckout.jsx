@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { auth, db } from '../../firebase/config';
 import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
 import { collection, getDocs } from 'firebase/firestore';
@@ -466,7 +466,7 @@ function UnifiedCheckout() {
   }
   
   return (
-    <motion.div 
+    <m.div 
       className="min-h-screen bg-gray-50 py-12"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -510,7 +510,7 @@ function UnifiedCheckout() {
             <div className="lg:col-span-2 p-6 md:p-8">
               <AnimatePresence mode="wait">
                 {currentStep === 1 && (
-                  <motion.div 
+                  <m.div 
                     key="summary"
                     variants={slideVariants}
                     initial="hidden"
@@ -597,11 +597,11 @@ function UnifiedCheckout() {
                         </div>
                       </div>
                     )}
-                  </motion.div>
+                  </m.div>
                 )}
                 
                 {currentStep === 2 && (
-                  <motion.div 
+                  <m.div 
                     key="shipping"
                     variants={slideVariants}
                     initial="hidden"
@@ -701,11 +701,11 @@ function UnifiedCheckout() {
                         </select>
                       </div>
                     </div>
-                  </motion.div>
+                  </m.div>
                 )}
                 
                 {currentStep === 3 && (
-                  <motion.div 
+                  <m.div 
                     key="payment"
                     variants={slideVariants}
                     initial="hidden"
@@ -838,7 +838,7 @@ function UnifiedCheckout() {
                         )}
                       </div>
                     )}
-                  </motion.div>
+                  </m.div>
                 )}
               </AnimatePresence>
               
@@ -957,7 +957,7 @@ function UnifiedCheckout() {
           </div>
         </div>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 
