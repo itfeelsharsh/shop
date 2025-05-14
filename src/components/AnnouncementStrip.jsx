@@ -13,6 +13,7 @@ import { Bell, X } from 'react-feather';
  * - Allows dismissing individual announcements
  * - Auto-rotates between multiple announcements if available
  * - Handles missing index errors with fallback query
+ * - Text is centered in the announcement strip
  * 
  * @returns {JSX.Element} The AnnouncementStrip component or null if no announcements
  */
@@ -155,10 +156,11 @@ const AnnouncementStrip = () => {
       }}
       data-testid="announcement-strip"
     >
-      <div className="container mx-auto flex items-center justify-between">
-        <div className="flex items-center">
+      <div className="container mx-auto flex items-center justify-center relative">
+        {/* Bell icon and announcement text centered */}
+        <div className="flex items-center justify-center flex-grow">
           <Bell size={16} className="mr-2 flex-shrink-0" />
-          <div className="flex items-center text-sm">
+          <div className="flex items-center text-sm text-center">
             {/* Announcement text */}
             <span>{currentAnnouncement.text}</span>
             
@@ -193,10 +195,10 @@ const AnnouncementStrip = () => {
           </div>
         </div>
         
-        {/* Dismiss button */}
+        {/* Dismiss button positioned absolutely to maintain centering */}
         <button
           onClick={() => dismissAnnouncement(currentAnnouncement.id)}
-          className="p-1 ml-2 rounded-full hover:bg-black/10 transition-colors"
+          className="p-1 absolute right-0 rounded-full hover:bg-black/10 transition-colors"
           aria-label="Dismiss announcement"
         >
           <X size={14} />
