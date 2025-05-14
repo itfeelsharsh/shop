@@ -7,8 +7,9 @@ import { Link } from 'react-router-dom';
 import { m } from 'framer-motion';
 import { ShoppingBag, Trash2, Plus, Minus, ChevronRight } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '../firebase/config';
+// Auth imports commented out as they're not currently used
+// import { useAuthState } from 'react-firebase-hooks/auth';
+// import { auth } from '../firebase/config';
 
 /**
  * Cart component that displays cart items and popular products recommendation
@@ -19,7 +20,7 @@ function Cart() {
   const [products, setProducts] = useState([]);
   const [popularProducts, setPopularProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [user] = useAuthState(auth);
+  // const [user] = useAuthState(auth); // Commented out since it's not being used
 
   useEffect(() => {
     /**
@@ -74,7 +75,7 @@ function Cart() {
   }).filter(Boolean); // Remove null items
 
   // Calculate total cost of items in cart
-  const subtotal = cartDetails.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+  // const subtotal = cartDetails.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
 
   /**
    * Format price with Indian currency format

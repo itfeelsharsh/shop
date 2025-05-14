@@ -218,43 +218,43 @@ function UnifiedCheckout() {
   
   // Calculate shipping cost based on country and method
   useEffect(() => {
-    calculateShippingCost();
-  }, [address.country, shippingMethod, subtotal]);
-  
-  /**
-   * Calculates shipping cost and import duty based on country and shipping method
-   */
-  const calculateShippingCost = () => {
-    let newShippingCost = 0;
-    let newImportDuty = 0;
-    
-    // Free standard shipping if subtotal > 1000 (before discount and GST)
-    const qualifiesForFreeShipping = subtotal > 1000;
-    
-    if (address.country === 'India') {
-      // For India
-      if (shippingMethod === 'express') {
-        newShippingCost = 150; // Express shipping for India
-      } else if (!qualifiesForFreeShipping) {
-        newShippingCost = 100; // Standard shipping for India if order value < 1000
-      }
-    } else {
-      // For international
-      if (shippingMethod === 'express') {
-        newShippingCost = 600; // Express shipping for international
+    /**
+     * Calculates shipping cost and import duty based on country and shipping method
+     */
+    const calculateShippingCost = () => {
+      let newShippingCost = 0;
+      let newImportDuty = 0;
+      
+      // Free standard shipping if subtotal > 1000 (before discount and GST)
+      const qualifiesForFreeShipping = subtotal > 1000;
+      
+      if (address.country === 'India') {
+        // For India
+        if (shippingMethod === 'express') {
+          newShippingCost = 150; // Express shipping for India
+        } else if (!qualifiesForFreeShipping) {
+          newShippingCost = 100; // Standard shipping for India if order value < 1000
+        }
       } else {
-        newShippingCost = 500; // Standard shipping for international
+        // For international
+        if (shippingMethod === 'express') {
+          newShippingCost = 600; // Express shipping for international
+        } else {
+          newShippingCost = 500; // Standard shipping for international
+        }
+        
+        // Apply import duty for US
+        if (address.country === 'United States') {
+          newImportDuty = subtotal * 0.69; // 69% import duty for US orders
+        }
       }
       
-      // Apply import duty for US
-      if (address.country === 'United States') {
-        newImportDuty = subtotal * 0.69; // 69% import duty for US orders
-      }
-    }
-    
-    setShippingCost(newShippingCost);
-    setImportDuty(newImportDuty);
-  };
+      setShippingCost(newShippingCost);
+      setImportDuty(newImportDuty);
+    };
+
+    calculateShippingCost();
+  }, [address.country, shippingMethod, subtotal]);
   
   // Apply coupon discount if available
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
@@ -343,14 +343,20 @@ function UnifiedCheckout() {
 
   /**
    * Handle country selection
+   * @param {Event} e - Select change event 
+   * @note Function defined for future use in UI but not currently used
    */
+  // eslint-disable-next-line no-unused-vars
   const handleCountryChange = (e) => {
     setAddress({ ...address, country: e.target.value, state: '' });
   };
 
   /**
    * Handle state selection
+   * @param {Event} e - Select change event
+   * @note Function defined for future use in UI but not currently used
    */
+  // eslint-disable-next-line no-unused-vars
   const handleStateChange = (e) => {
     setAddress({ ...address, state: e.target.value });
   };
@@ -1489,7 +1495,7 @@ function UnifiedCheckout() {
                   
                   <button
                     onClick={nextStep}
-                    disabled={currentStep === 2 && !areAllRequiredFieldsFilled() || processingPayment || cartDetails.length === 0}
+                    disabled={(currentStep === 2 && !areAllRequiredFieldsFilled()) || processingPayment || cartDetails.length === 0}
                     className={`w-full flex items-center justify-center px-4 py-3 rounded-lg text-white transition-colors ${
                       (currentStep === 2 && !areAllRequiredFieldsFilled()) || processingPayment || cartDetails.length === 0
                         ? 'bg-gray-400 cursor-not-allowed'
