@@ -4,8 +4,6 @@ import { Menu, Transition } from '@headlessui/react';
 import {
   HomeIcon,
   TagIcon,
-  InformationCircleIcon,
-  PhoneIcon,
   UserCircleIcon,
   ShoppingBagIcon,
   HeartIcon
@@ -34,7 +32,6 @@ export default function Navbar() {
   const [profileLoading, setProfileLoading] = useState(false);
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Get cart items from Redux store
   const cartItems = useSelector(state => state.cart.items);
@@ -43,6 +40,21 @@ export default function Navbar() {
   const cartItemCount = useMemo(() => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   }, [cartItems]);
+
+  // Define navigation items for both top navbar and bottom tab bar
+  const mainNavItems = [
+    { name: 'Home', href: '/', icon: HomeIcon, exact: true }, // Added exact for better active state matching
+    { name: 'Products', href: '/products', icon: TagIcon },
+    // Additional navigation items can be added here when needed
+  ];
+
+  // Define items for the bottom tab navigation, including essentials like Cart and Account
+  const bottomNavItems = [
+    { name: 'Home', href: '/', icon: HomeIcon, exact: true },
+    { name: 'Products', href: '/products', icon: TagIcon },
+    { name: 'Cart', href: '/cart', icon: ShoppingBagIcon, count: cartItemCount }, // Added count for cart badge
+    { name: 'Account', href: user ? '/my-account' : '/signin', icon: UserCircleIcon }, // Dynamic link based on auth state
+  ];
 
   /**
    * Fetches user profile data from Firestore
@@ -131,19 +143,14 @@ export default function Navbar() {
     }
   };
 
-  const navigation = [
-    { name: 'Home', href: '/', icon: HomeIcon },
-    { name: 'Products', href: '/products', icon: TagIcon },
-    { name: 'About', href: '/about', icon: InformationCircleIcon },
-    { name: 'Contact', href: '/contact', icon: PhoneIcon },
-  ];
-
   return (
     <>
+      {/* Top Navigation Bar (for desktop and tablet) */}
       <nav
         className={`
           fixed top-0 left-0 right-0 z-50
           transition-all duration-300 backdrop-blur-md
+          hidden md:block {/* Hidden on mobile, block on md and larger */}
           ${isScrolled 
             ? 'bg-white/95 shadow-lg' 
             : 'bg-white/50'}
@@ -162,8 +169,9 @@ export default function Navbar() {
               </Link>
             </div>
 
+            {/* Desktop Navigation Links */}
             <div className="hidden md:flex items-center space-x-8">
-              {navigation.map((item, i) => (
+              {mainNavItems.map((item) => ( // Changed to mainNavItems
                 <div
                   key={item.name}
                   className="relative"
@@ -171,7 +179,7 @@ export default function Navbar() {
                   <Link
                     to={item.href}
                     className={classNames(
-                      location.pathname === item.href
+                      location.pathname === item.href // Using exact match for home if needed elsewhere
                         ? 'text-blue-600'
                         : 'text-gray-700 hover:text-blue-600',
                       'flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200'
@@ -299,132 +307,44 @@ export default function Navbar() {
                 </div>
               )}
             </div>
-
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden rounded-lg p-2 hover:bg-gray-100 transition-colors"
-            >
-              <span className="sr-only">Open main menu</span>
-              <div className="w-6 h-5 flex flex-col justify-between">
-                <span
-                  className={`h-0.5 w-6 bg-gray-600 transform transition-all duration-300 rounded-full ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}
-                />
-                <span
-                  className={`h-0.5 w-6 bg-gray-600 transition-all duration-300 rounded-full ${isMobileMenuOpen ? 'opacity-0' : 'opacity-100'}`}
-                />
-                <span
-                  className={`h-0.5 w-6 bg-gray-600 transform transition-all duration-300 rounded-full ${isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}
-                />
-              </div>
-            </button>
           </div>
         </div>
-
-        {isMobileMenuOpen && (
-          <div
-            className="md:hidden bg-white border-t border-gray-100 shadow-lg"
-          >
-            <div className="px-4 pt-2 pb-3 space-y-1">
-              {navigation.map((item, i) => (
-                <div
-                  key={item.name}
-                >
-                  <Link
-                    to={item.href}
-                    className={classNames(
-                      location.pathname === item.href
-                        ? 'bg-blue-50 text-blue-600'
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600',
-                      'flex items-center px-3 py-2 rounded-lg text-base font-medium transition-colors'
-                    )}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <item.icon className="h-5 w-5 mr-3" />
-                    {item.name}
-                  </Link>
-                </div>
-              ))}
-
-              {user ? (
-                <>
-                  <div>
-                    <Link
-                      to="/cart"
-                      className="flex items-center justify-between px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <div className="flex items-center relative">
-                        <ShoppingBagIcon className="h-5 w-5 mr-3" />
-                        Cart
-                        {cartItemCount > 0 && (
-                          <span className="absolute top-1 left-4 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                            {cartItemCount > 99 ? '99+' : cartItemCount}
-                          </span>
-                        )}
-                      </div>
-                    </Link>
-                  </div>
-                  
-                  <div>
-                    <Link
-                      to="/wishlist"
-                      className="flex items-center px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <HeartIcon className="h-5 w-5 mr-3" />
-                      My Wishlist
-                    </Link>
-                  </div>
-                  
-                  <div>
-                    <Link
-                      to="/my-account"
-                      className="flex items-center px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <UserCircleIcon className="h-5 w-5 mr-3" />
-                      My Account
-                    </Link>
-                  </div>
-                  
-                  <button
-                    onClick={() => {
-                      handleSignOut();
-                      setIsMobileMenuOpen(false);
-                      logger.user.action("Sign out (mobile)");
-                    }}
-                    className="w-full mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-md"
-                  >
-                    Sign out
-                  </button>
-                </>
-              ) : (
-                <div className="pt-4 space-y-2">
-                  <div>
-                    <Link
-                      to="/signin"
-                      className="block w-full text-center bg-gray-50 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Sign in
-                    </Link>
-                  </div>
-                  <div>
-                    <Link
-                      to="/signup"
-                      className="block w-full text-center bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-md"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Sign up
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </nav>
-      <div className="h-16"></div>
+
+      {/* Spacer for the fixed top navbar (only for desktop/tablet) */}
+      <div className="hidden md:block h-16"></div>
+
+      {/* Bottom Tab Navigation (for mobile) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
+        <div className="max-w-md mx-auto flex justify-around items-center h-16 px-2">
+          {bottomNavItems.map((item) => (
+            <Link
+              key={item.name}
+              to={item.href}
+              className={classNames(
+                ((item.exact && location.pathname === item.href) || (!item.exact && location.pathname.startsWith(item.href) && item.href !== '/') || (item.href === '/' && location.pathname === '/'))
+                  ? 'text-blue-600 scale-110' // Active state: blue text and slightly larger icon/text
+                  : 'text-gray-500 hover:text-blue-500',
+                'flex flex-col items-center justify-center flex-1 pt-1 pb-1 text-xs font-medium transition-all duration-150 ease-in-out focus:outline-none'
+              )}
+              onClick={() => {
+                // Optional: close any open modals or perform other actions on tab click
+                // setIsMobileMenuOpen(false); // If we had a modal menu this would be useful
+              }}
+            >
+              <div className="relative">
+                <item.icon className="h-6 w-6 mb-0.5" />
+                {item.name === 'Cart' && item.count > 0 && (
+                  <span className="absolute -top-1 -right-2.5 bg-blue-600 text-white text-[10px] font-semibold w-4 h-4 rounded-full flex items-center justify-center ring-1 ring-white">
+                    {item.count > 9 ? '9+' : item.count}
+                  </span>
+                )}
+              </div>
+              <span className="truncate">{item.name}</span>
+            </Link>
+          ))}
+        </div>
+      </nav>
     </>
   );
 }

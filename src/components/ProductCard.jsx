@@ -140,6 +140,9 @@ const ProductCard = memo(function ProductCard({
   product = {}, 
   onAddToCart = () => {
     console.warn('onAddToCart handler is not provided to ProductCard component');
+  },
+  onAddToWishlist = (item) => {
+    console.warn('onAddToWishlist handler is not provided to ProductCard component for item:', item);
   }
 }) {
   const [user] = useAuthState(auth);
@@ -149,6 +152,7 @@ const ProductCard = memo(function ProductCard({
     type: 'success',
     message: ''
   });
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   // Intersection observer for revealing animation when card scrolls into view
   const [ref, inView] = useInView({
@@ -162,7 +166,7 @@ const ProductCard = memo(function ProductCard({
    * 
    * @param {Event} e - The click event
    */
-  const handleAddToCart = (e) => {
+  const handleAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -177,7 +181,7 @@ const ProductCard = memo(function ProductCard({
     }
 
     // Stock availability check
-    if (!product?.stock) {
+    if (!product?.stock || product.stock <= 0) {
       setModalConfig({
         type: 'warning',
         message: 'This product is currently out of stock'
@@ -186,9 +190,10 @@ const ProductCard = memo(function ProductCard({
       return;
     }
 
+    setIsAddingToCart(true);
     // Add to cart with error handling
     try {
-      onAddToCart(product);
+      await onAddToCart(product);
       setModalConfig({
         type: 'success',
         message: 'Product added to cart successfully!'
@@ -200,6 +205,8 @@ const ProductCard = memo(function ProductCard({
         message: error.message || 'Failed to add product to cart'
       });
       setShowModal(true);
+    } finally {
+      setIsAddingToCart(false);
     }
   };
 
@@ -209,31 +216,6 @@ const ProductCard = memo(function ProductCard({
    */
   const handleViewDetails = () => {
     navigate(`/product/${product.id}`);
-  };
-
-  /**
-   * Format price with Indian currency format
-   * Handles edge cases for undefined or invalid prices
-   * 
-   * @param {number|string} price - The price to format
-   * @returns {string} The formatted price
-   */
-  const formatPrice = (price) => {
-    // Return '₹0.00' if price is undefined, null, or not a number
-    if (!price) return '₹0.00';
-    
-    // Convert string to number if needed
-    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-    
-    // Handle NaN after conversion
-    if (isNaN(numPrice)) return '₹0.00';
-    
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(numPrice);
   };
 
   /**
@@ -399,80 +381,35 @@ const ProductCard = memo(function ProductCard({
           </div>
 
           {/* Bottom Section - Price, Stock Status and Action Buttons */}
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            {/* Price and Stock Status */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-baseline gap-2">
-                <span className="text-xl font-bold text-gray-900">
-                  {formatPrice(product?.price)}
-                </span>
-                {product?.originalPrice > product?.price && (
-                  <span className="text-sm text-gray-500 line-through">
-                    {formatPrice(product?.originalPrice)}
-                  </span>
-                )}
-              </div>
-              <span className={`
-                text-xs font-medium px-2.5 py-1 rounded-full
-                ${product?.stock > 0 
-                  ? 'text-green-600 bg-green-50' 
-                  : 'text-red-600 bg-red-50'}
-              `}>
-                {product?.stock > 0 ? 'In Stock' : 'Out of Stock'}
-              </span>
-            </div>
-
-            {/* Action Buttons - View Product and Add to Cart */}
-            <div className="flex gap-3">
-              {/* View Product Button */}
-              <m.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleViewDetails}
-                className={`
-                  flex-grow
-                  h-12
-                  rounded-lg
-                  font-semibold
-                  transition-all
-                  duration-200
-                  flex
-                  items-center
-                  justify-center
-                  gap-2
-                  bg-blue-600 
-                  hover:bg-blue-700 
-                  text-white
-                `}
-              >
-                <Eye className="w-5 h-5" />
-                View Product
-              </m.button>
-
-              {/* Add to Cart Icon Button */}
-              <m.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleAddToCart}
-                disabled={!product?.stock}
-                aria-label="Add to cart"
-                title={product?.stock ? "Add to cart" : "Out of stock"}
-                className={`
-                  h-12
-                  w-12
-                  rounded-lg
-                  transition-all
-                  duration-200
-                  flex
-                  items-center
-                  justify-center
-                  ${product?.stock 
-                    ? 'bg-gray-100 hover:bg-gray-200 text-blue-600' 
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'}
-                `}
-              >
-                <ShoppingCart className="w-5 h-5" />
-              </m.button>
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="flex items-center justify-between mb-3">
+              {product.stock > 0 ? (
+                <button
+                  onClick={handleAddToCart}
+                  disabled={isAddingToCart}
+                  className={`w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-all duration-200 ease-in-out transform focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center justify-center space-x-2 ${isAddingToCart ? 'opacity-70 cursor-wait' : 'group-hover:opacity-100 group-hover:translate-y-0'}`}
+                  aria-live="polite"
+                >
+                  {isAddingToCart ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Adding...
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart size={18} className="mr-2" />
+                      Add to Cart
+                    </>
+                  )}
+                </button>
+              ) : (
+                <div className="w-full bg-gray-300 text-gray-600 py-2.5 rounded-lg text-sm font-semibold cursor-not-allowed flex items-center justify-center space-x-2">
+                  Out of Stock
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -492,17 +429,22 @@ const ProductCard = memo(function ProductCard({
 // PropTypes validation for component props
 ProductCard.propTypes = {
   product: PropTypes.shape({
-    id: PropTypes.string,
-    name: PropTypes.string,
-    description: PropTypes.string,
-    price: PropTypes.oneOfType([PropTypes.number, PropTypes.string]), // Accept both number and string
-    originalPrice: PropTypes.oneOfType([PropTypes.number, PropTypes.string]), // Accept both number and string
-    image: PropTypes.string,
-    stock: PropTypes.number,
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    image: PropTypes.string.isRequired,
+    price: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    originalPrice: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    discount: PropTypes.string,
     isNew: PropTypes.bool,
-    type: PropTypes.string,
+    rating: PropTypes.number,
+    stock: PropTypes.number,
+    category: PropTypes.string,
+    tags: PropTypes.arrayOf(PropTypes.string),
+    description: PropTypes.string,
+    hoverImage: PropTypes.string
   }),
-  onAddToCart: PropTypes.func
+  onAddToCart: PropTypes.func.isRequired,
+  onAddToWishlist: PropTypes.func.isRequired
 };
 
 export default ProductCard;

@@ -149,7 +149,7 @@ const AnnouncementStrip = () => {
 
   return (
     <div
-      className="w-full py-2 px-4 shadow-sm transition-all"
+      className="w-full py-2 px-3 md:px-4 shadow-sm transition-all"
       style={{ 
         backgroundColor: currentAnnouncement.backgroundColor || '#E5F6FD',
         color: currentAnnouncement.textColor || '#1E88E5'
@@ -159,18 +159,21 @@ const AnnouncementStrip = () => {
       <div className="container mx-auto flex items-center justify-center relative">
         {/* Bell icon and announcement text centered */}
         <div className="flex items-center justify-center flex-grow">
-          <Bell size={16} className="mr-2 flex-shrink-0" />
+          {/* Responsive bell icon size */}
+          <Bell size={16} className="mr-2 flex-shrink-0 md:mr-3" />
+          {/* Main announcement text container */}
           <div className="flex items-center text-sm text-center">
             {/* Announcement text */}
             <span>{currentAnnouncement.text}</span>
             
-            {/* Optional link */}
+            {/* Optional link - added truncate for long link text */}
             {currentAnnouncement.link && currentAnnouncement.linkText && (
               <a 
                 href={currentAnnouncement.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="ml-2 font-medium underline hover:opacity-80"
+                // Added truncate and slightly smaller text for link on mobile
+                className="ml-2 font-medium underline hover:opacity-80 text-xs sm:text-sm truncate max-w-[100px] sm:max-w-xs"
                 aria-label={`Learn more about: ${currentAnnouncement.linkText}`}
               >
                 {currentAnnouncement.linkText}
@@ -196,12 +199,13 @@ const AnnouncementStrip = () => {
         </div>
         
         {/* Dismiss button positioned absolutely to maintain centering */}
+        {/* Increased padding and icon size for better tap target on mobile */}
         <button
           onClick={() => dismissAnnouncement(currentAnnouncement.id)}
-          className="p-1 absolute right-0 rounded-full hover:bg-black/10 transition-colors"
+          className="p-1.5 sm:p-1 absolute right-0 sm:right-1 md:right-0 rounded-full hover:bg-black/10 transition-colors focus:outline-none focus:ring-2 focus:ring-current"
           aria-label="Dismiss announcement"
         >
-          <X size={14} />
+          <X size={16} /> {/* Increased icon size slightly from 14 to 16 */}
         </button>
       </div>
     </div>

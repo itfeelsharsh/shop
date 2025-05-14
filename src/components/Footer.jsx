@@ -47,7 +47,7 @@ const Footer = () => {
       variants={containerVariants}
       initial="hidden"
       animate={inView ? "visible" : "hidden"}
-      className="bg-gradient-to-b from-gray-800 to-gray-900 text-white py-12"
+      className="bg-gradient-to-b from-gray-800 to-gray-900 text-white py-12 hidden md:block"
     >
       <div className="container mx-auto px-4">
         <m.div 
@@ -108,7 +108,7 @@ const Footer = () => {
           <m.div variants={itemVariants} className="text-center md:text-left">
             <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              {['About', 'Privacy Policy', 'Terms of Service'].map((item) => (
+              {['About', 'Privacy Policy', 'Terms of Service', 'Return Policy', 'Shipping Info'].map((item) => (
                 <m.li 
                   key={item}
                   variants={itemVariants}

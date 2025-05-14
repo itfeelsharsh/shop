@@ -33,7 +33,7 @@ const Layout = ({ children }) => {
       
       <main
         ref={ref}
-        className="flex-grow"
+        className="flex-grow pb-16 md:pb-0"
       >
         {children}
       </main>
