@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { downloadOrderReceipt } from '../utils/pdfUtils';
-import { Home, Package, FileDown, CheckCircle } from 'lucide-react';
+import { Home, Package, FileDown, CheckCircle, AlertTriangle } from 'lucide-react';
 import { m } from "framer-motion";
 
 /**
@@ -62,6 +62,15 @@ function OrderConfirmation({ order }) {
     }
   };
   
+  /**
+   * Check if order has import duty (for US orders)
+   * 
+   * @returns {boolean} Whether order has import duty
+   */
+  const hasImportDuty = () => {
+    return order.shipping?.address?.country === 'United States' && order.importDuty > 0;
+  };
+  
   return (
     <div className="w-full max-w-4xl mx-auto p-6">
       {/* Success Animation */}
@@ -80,6 +89,20 @@ function OrderConfirmation({ order }) {
         <p className="text-gray-600 text-center mt-2">
           Your order #{order.orderId} has been confirmed.
         </p>
+
+        {/* Display import duty notice for US customers */}
+        {hasImportDuty() && (
+          <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start max-w-xl">
+            <AlertTriangle size={24} className="text-amber-500 mr-3 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-amber-800">US Import Duty Applied</p>
+              <p className="text-amber-700 text-sm mt-1">
+                Your order includes a 69% import duty fee of {formatPrice(order.importDuty)} 
+                as required for shipments to the United States.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
       
       {/* Order Information */}
@@ -159,6 +182,14 @@ function OrderConfirmation({ order }) {
                 <div className="text-sm text-gray-500">Shipping</div>
                 <div className="text-sm text-gray-900">{formatPrice(order.shipping?.cost || 0)}</div>
                 
+                {/* Import Duty Information */}
+                {hasImportDuty() && (
+                  <>
+                    <div className="text-sm text-amber-600 font-medium">US Import Duty (69%)</div>
+                    <div className="text-sm font-medium text-amber-600">{formatPrice(order.importDuty)}</div>
+                  </>
+                )}
+                
                 <div className="text-sm text-gray-500 font-medium">Total</div>
                 <div className="text-sm font-bold text-gray-900">{formatPrice(order.total)}</div>
               </div>
@@ -214,6 +245,16 @@ function OrderConfirmation({ order }) {
                       </span>
                       <span>International orders may take additional time</span>
                     </li>
+                    
+                    {/* Additional shipping information for international orders */}
+                    {order.shipping?.address?.country !== 'India' && (
+                      <li className="flex items-start">
+                        <span className="h-5 w-5 rounded-full bg-amber-100 flex items-center justify-center mr-2 mt-0.5">
+                          <AlertTriangle size={12} className="text-amber-600" />
+                        </span>
+                        <span>International shipping includes customs processing time</span>
+                      </li>
+                    )}
                   </ul>
                 </div>
               </div>

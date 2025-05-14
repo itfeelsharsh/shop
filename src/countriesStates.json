@@ -2,8 +2,8 @@
     "countries": {
       "India": [
         "Andhra Pradesh",
-        "Arunachal Pradesh", 
-        "Assam",
+        "Arunachal Pradesh",
+        "Assam", 
         "Bihar",
         "Chhattisgarh",
         "Goa",
@@ -11,7 +11,7 @@
         "Haryana",
         "Himachal Pradesh",
         "Jharkhand",
-        "Karnataka",
+        "Karnataka", 
         "Kerala",
         "Madhya Pradesh",
         "Maharashtra",
@@ -24,11 +24,18 @@
         "Rajasthan",
         "Sikkim",
         "Tamil Nadu",
-        "Telangana",
+        "Telangana", 
         "Tripura",
         "Uttar Pradesh",
         "Uttarakhand",
-        "West Bengal"
+        "West Bengal",
+        "Andaman and Nicobar Islands",
+        "Chandigarh",
+        "Dadra and Nagar Haveli and Daman and Diu",
+        "Jammu and Kashmir",
+        "Ladakh",
+        "Lakshadweep",
+        "Puducherry"
       ],
       "Canada": [
         "Alberta",

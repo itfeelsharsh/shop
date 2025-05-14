@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { m, AnimatePresence } from 'framer-motion';
@@ -6,9 +6,9 @@ import { auth, db } from '../../firebase/config';
 import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
 import { collection, getDocs } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { clearCart } from '../../redux/cartSlice';
+import { clearCart, applyCoupon, removeCoupon } from '../../redux/cartSlice';
 import countriesStatesData from '../../countriesStates.json';
-import { ShoppingBag, Truck, CreditCard, CheckCircle, ChevronRight, ChevronLeft, Tag } from 'lucide-react';
+import { ShoppingBag, Truck, CreditCard, CheckCircle, ChevronRight, ChevronLeft, Tag, RefreshCw, X } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import OrderConfirmation from '../../components/OrderConfirmation';
@@ -19,6 +19,26 @@ import VisaLogo from '../../assets/visa.png';
 import MasterCardLogo from '../../assets/mastercard.png';
 import RuPayLogo from '../../assets/rupay.png';
 import AMEXLogo from '../../assets/amex.png';
+
+// Add a mapping of countries to country codes
+const COUNTRY_CODES = {
+  "India": "+91",
+  "United States": "+1",
+  "Canada": "+1",
+  "United Kingdom": "+44",
+  "France": "+33",
+  "Germany": "+49",
+  "Italy": "+39",
+  "Japan": "+81",
+  "Thailand": "+66",
+  "Vietnam": "+84",
+  "Indonesia": "+62",
+  "Philippines": "+63",
+  "Spain": "+34",
+  "Sri Lanka": "+94",
+  "Nepal": "+977",
+  "Bhutan": "+975"
+};
 
 /**
  * Unified checkout component that combines summary, shipping and payment
@@ -47,6 +67,16 @@ function UnifiedCheckout() {
     pin: ''
   });
   
+  // Customer info for enhanced shipping with country code
+  const [customerName, setCustomerName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [selectedCountryCode, setSelectedCountryCode] = useState(COUNTRY_CODES["India"]);
+  const [shippingMethod, setShippingMethod] = useState('standard');
+  
+  // Shipping cost calculation variables
+  const [shippingCost, setShippingCost] = useState(0);
+  const [importDuty, setImportDuty] = useState(0);
+
   // Payment details
   const [paymentMethod, setPaymentMethod] = useState('Card');
   const [card, setCard] = useState({ number: '', cvv: '', expiry: '', type: 'RuPay' });
@@ -56,6 +86,34 @@ function UnifiedCheckout() {
   
   // Add state for order data and completion
   const [completedOrder, setCompletedOrder] = useState(null);
+
+  // Coupon validation with captcha
+  const [couponCode, setCouponCode] = useState('');
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
+  const [couponError, setCouponError] = useState('');
+  const [captchaText, setCaptchaText] = useState('');
+  const [userCaptchaInput, setUserCaptchaInput] = useState('');
+  const [captchaError, setCaptchaError] = useState('');
+  const couponInputRef = useRef(null);
+  
+  // Generate captcha on component mount
+  useEffect(() => {
+    generateCaptcha();
+  }, []);
+  
+  /**
+   * Generates a random captcha text
+   */
+  const generateCaptcha = () => {
+    // Generate a random 6-character alphanumeric string
+    const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let result = '';
+    for (let i = 0; i < 6; i++) {
+      result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    setCaptchaText(result);
+    setUserCaptchaInput('');
+  };
   
   // Fetch products for cart
   useEffect(() => {
@@ -85,6 +143,34 @@ function UnifiedCheckout() {
           const userDoc = await getDoc(doc(db, "users", user.uid));
           if (userDoc.exists()) {
             const userData = userDoc.data();
+            
+            // Auto-fill name if available
+            if (userData.name) {
+              setCustomerName(userData.name);
+            }
+            
+            // Auto-fill phone if available
+            if (userData.phone) {
+              // Extract country code from phone number
+              let phone = userData.phone;
+              let countryCode = '';
+              
+              // Check for known country codes in the phone number
+              for (const country in COUNTRY_CODES) {
+                const code = COUNTRY_CODES[country];
+                if (phone.startsWith(code)) {
+                  countryCode = code;
+                  phone = phone.substring(code.length); // Remove country code from number
+                  break;
+                }
+              }
+              
+              // Set the extracted values
+              if (countryCode) {
+                setSelectedCountryCode(countryCode);
+              }
+              setPhoneNumber(phone);
+            }
             
             // Set address if available
             if (userData.address) {
@@ -129,14 +215,93 @@ function UnifiedCheckout() {
   // Calculate total
   const subtotal = cartDetails.reduce((acc, item) => acc + (item.product.price * item.quantity), 0);
   const tax = subtotal * 0.18; // 18% GST
-  const shipping = subtotal > 1000 ? 0 : 120; // Free shipping over ₹1000
+  
+  // Calculate shipping cost based on country and method
+  useEffect(() => {
+    calculateShippingCost();
+  }, [address.country, shippingMethod, subtotal]);
+  
+  /**
+   * Calculates shipping cost and import duty based on country and shipping method
+   */
+  const calculateShippingCost = () => {
+    let newShippingCost = 0;
+    let newImportDuty = 0;
+    
+    // Free standard shipping if subtotal > 1000 (before discount and GST)
+    const qualifiesForFreeShipping = subtotal > 1000;
+    
+    if (address.country === 'India') {
+      // For India
+      if (shippingMethod === 'express') {
+        newShippingCost = 150; // Express shipping for India
+      } else if (!qualifiesForFreeShipping) {
+        newShippingCost = 100; // Standard shipping for India if order value < 1000
+      }
+    } else {
+      // For international
+      if (shippingMethod === 'express') {
+        newShippingCost = 600; // Express shipping for international
+      } else {
+        newShippingCost = 500; // Standard shipping for international
+      }
+      
+      // Apply import duty for US
+      if (address.country === 'United States') {
+        newImportDuty = subtotal * 0.69; // 69% import duty for US orders
+      }
+    }
+    
+    setShippingCost(newShippingCost);
+    setImportDuty(newImportDuty);
+  };
   
   // Apply coupon discount if available
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
   
   // Calculate final total
-  const total = subtotal + tax + shipping - discountAmount;
+  const total = subtotal + tax + shippingCost - discountAmount;
   
+  /**
+   * Validates phone number format
+   * @param {string} phone - Phone number to validate
+   * @returns {boolean} - Whether the phone number is valid
+   */
+  const isValidPhoneNumber = (phone) => {
+    // Allow max 12 characters, only numbers, and require at least 7 digits
+    return /^[0-9]{7,12}$/.test(phone);
+  };
+  
+  /**
+   * Handles phone number input changes
+   * @param {Event} e - Input change event
+   */
+  const handlePhoneChange = (e) => {
+    const value = e.target.value;
+    
+    // Only update if it's a valid number or empty
+    if (value === '' || /^[0-9]{0,12}$/.test(value)) {
+      setPhoneNumber(value);
+    }
+  };
+
+  /**
+   * Handles country code selection
+   * @param {Event} e - Select change event
+   */
+  const handleCountryCodeChange = (e) => {
+    setSelectedCountryCode(e.target.value);
+  };
+  
+  /**
+   * Get full phone number with country code
+   * @returns {string} - Full phone number with country code
+   */
+  const getFullPhoneNumber = () => {
+    if (!phoneNumber) return '';
+    return `${selectedCountryCode}${phoneNumber}`;
+  };
+
   /**
    * Format price with Indian currency format
    */
@@ -191,20 +356,27 @@ function UnifiedCheckout() {
   };
 
   /**
-   * Save shipping address to user profile
+   * Save customer's shipping address to their profile
    */
   const saveShippingAddress = async () => {
-    if (user) {
-      try {
-        const userRef = doc(db, "users", user.uid);
-        await updateDoc(userRef, { address });
-        return true;
-      } catch (error) {
-        console.error("Error saving address:", error);
-        return false;
-      }
+    if (!user) return false;
+    
+    try {
+      const userRef = doc(db, "users", user.uid);
+      
+      await updateDoc(userRef, {
+        address: address,
+        name: customerName,
+        // Store phone number with country code for Firebase compatibility
+        phone: getFullPhoneNumber()
+      });
+      
+      return true;
+    } catch (error) {
+      console.error("Error saving shipping address:", error);
+      toast.error("Failed to save shipping address. Please try again.");
+      return false;
     }
-    return false;
   };
 
   /**
@@ -280,7 +452,8 @@ function UnifiedCheckout() {
         orderId,
         userId: user.uid,
         userEmail: user.email,
-        userName: user.displayName || '',
+        userName: customerName || user.displayName || '',
+        userPhone: getFullPhoneNumber() || '',
         orderDate: new Date().toISOString(),
         items: cartDetails.map(item => ({
           productId: item.productId,
@@ -291,8 +464,9 @@ function UnifiedCheckout() {
         })),
         shipping: {
           address: address,
-          method: "Standard Shipping",
-          cost: shipping
+          method: shippingMethod === 'express' ? "Express Shipping" : "Standard Shipping",
+          cost: shippingCost,
+          estimatedDelivery: shippingMethod === 'express' ? "2 days" : "7 days"
         },
         payment: {
           method: paymentMethod,
@@ -305,8 +479,9 @@ function UnifiedCheckout() {
         },
         subtotal,
         tax,
+        importDuty,
         discount: discountAmount,
-        total,
+        total: total + importDuty,
         status: "Placed", // Initial status is "Placed"
         statusHistory: [
           {
@@ -317,7 +492,7 @@ function UnifiedCheckout() {
         ],
         tracking: {
           code: null,
-          carrier: "IndiaPost",
+          carrier: address.country === 'India' ? "IndiaPost" : "DHL",
           url: null
         }
       };
@@ -363,53 +538,75 @@ function UnifiedCheckout() {
   };
   
   /**
+   * Check if all required fields are filled
+   * @returns {boolean} - Whether all required fields are filled
+   */
+  const areAllRequiredFieldsFilled = () => {
+    // Check customer info
+    if (!customerName.trim() || !phoneNumber.trim() || !isValidPhoneNumber(phoneNumber)) {
+      return false;
+    }
+
+    // Check address fields
+    if (
+      !address.houseNo.trim() ||
+      !address.line1.trim() ||
+      !address.city.trim() || 
+      !address.state.trim() || 
+      !address.country.trim() || 
+      !address.pin.trim()
+    ) {
+      return false;
+    }
+
+    return true;
+  };
+  
+  /**
    * Move to next step in checkout
    */
-  const nextStep = async () => {
+  const nextStep = () => {
+    // For step 1 (Cart Summary), just move to shipping
     if (currentStep === 1) {
-      // Validate cart has items
-      if (cartDetails.length === 0) {
-        alert("Your cart is empty!");
-        return;
-      }
       setCurrentStep(2);
-    } else if (currentStep === 2) {
-      // Validate shipping info
-      if (!address.houseNo || !address.line1 || !address.city || !address.state || !address.pin) {
-        alert("Please fill all required shipping fields!");
+      return;
+    }
+    
+    // For step 2 (Shipping), validate all fields before proceeding
+    if (currentStep === 2) {
+      // Validate required fields
+      if (!areAllRequiredFieldsFilled()) {
+        toast.error("Please fill all required fields");
         return;
       }
+      
+      if (!isValidPhoneNumber(phoneNumber)) {
+        toast.error("Please enter a valid phone number");
+        return;
+      }
+      
+      // If all validations pass, proceed
       setCurrentStep(3);
-    } else if (currentStep === 3) {
-      // Validate payment info
+      return;
+    }
+    
+    // For step 3 (Payment), process the order
+    if (currentStep === 3) {
+      // Validate payment details
       if (paymentMethod === 'Card') {
         if (!card.number || !card.cvv || !card.expiry) {
-          alert("Please fill all card details!");
+          toast.error("Please fill all card details");
           return;
         }
-        
-        const cardNumber = card.number.replace(/\s+/g, '');
-        if (!/^\d{12,}$/.test(cardNumber)) {
-          alert("Invalid card number. It should have at least 12 digits.");
-          return;
-        }
-        
-        if (!/^\d{3,4}$/.test(card.cvv)) {
-          alert("Invalid CVV. It should be 3 or 4 digits.");
-          return;
-        }
-        
-        if (!/^(0[1-9]|1[0-2])\/?([0-9]{2})$/.test(card.expiry)) {
-          alert("Invalid expiry date. Format should be MM/YY.");
-          return;
-        }
-      } else {
-        if (!upi || !upi.includes('@')) {
-          alert("Please enter a valid UPI ID!");
+      } else if (paymentMethod === 'UPI') {
+        if (!upi) {
+          toast.error("Please enter a valid UPI ID");
           return;
         }
       }
-      await processOrder();
+      
+      // Process the order
+      processOrder();
     }
   };
   
@@ -436,6 +633,104 @@ function UnifiedCheckout() {
       default:
         return null;
     }
+  };
+  
+  /**
+   * Handles validating and applying a coupon code
+   * @param {Event} e - Form submit event
+   */
+  const handleApplyCoupon = async (e) => {
+    e.preventDefault();
+    
+    // Validate that the coupon code is alphanumeric and uppercase
+    if (!/^[A-Z0-9]+$/.test(couponCode.trim())) {
+      setCouponError("Coupon code must contain only uppercase letters and numbers");
+      return;
+    }
+    
+    // Validate the captcha
+    if (userCaptchaInput !== captchaText) {
+      setCaptchaError("Incorrect captcha. Please try again.");
+      generateCaptcha(); // Generate a new captcha
+      return;
+    }
+    
+    // Clear any previous errors
+    setCouponError('');
+    setCaptchaError('');
+    
+    if (!couponCode.trim()) {
+      setCouponError("Please enter a coupon code");
+      return;
+    }
+    
+    if (!user) {
+      setCouponError("Please sign in to apply a coupon");
+      return;
+    }
+    
+    setValidatingCoupon(true);
+    
+    try {
+      // Pass cart items to validateCoupon for product-specific validation
+      const result = await CouponService.validateCoupon(
+        couponCode, 
+        cartDetails,  // Pass full cart details for product-specific validation
+        subtotal,
+        user.uid
+      );
+      
+      if (result.valid) {
+        // Apply the coupon to cart state
+        dispatch(applyCoupon({
+          code: result.coupon.code,
+          discountAmount: result.discountAmount,
+          couponId: result.coupon.id,
+          discountType: result.coupon.discountType,
+          discountValue: result.coupon.discountValue,
+          isProductSpecific: result.isProductSpecific,
+          applicableProducts: result.isProductSpecific ? result.eligibleProductIds : [],
+          appliedToCartItems: result.isProductSpecific ? result.appliedToCartItems : []
+        }));
+        
+        // Clear the input fields
+        setCouponCode('');
+        setUserCaptchaInput('');
+        generateCaptcha(); // Generate a new captcha for next use
+        
+        // Show success message
+        toast.success(result.message);
+      } else {
+        setCouponError(result.message);
+        generateCaptcha(); // Generate a new captcha on failure
+      }
+    } catch (error) {
+      console.error("Error validating coupon:", error);
+      setCouponError("An error occurred. Please try again.");
+      generateCaptcha(); // Generate a new captcha on error
+    } finally {
+      setValidatingCoupon(false);
+    }
+  };
+  
+  /**
+   * Handles removing an applied coupon
+   */
+  const handleRemoveCoupon = () => {
+    dispatch(removeCoupon());
+    toast.info("Coupon removed");
+  };
+  
+  /**
+   * Handle coupon code input validation
+   * @param {Event} e - Input change event
+   */
+  const handleCouponInputChange = (e) => {
+    // Only allow uppercase alphanumeric characters
+    const value = e.target.value.toUpperCase();
+    // Further filter out any non-alphanumeric characters
+    const filteredValue = value.replace(/[^A-Z0-9]/g, '');
+    setCouponCode(filteredValue);
   };
   
   // Animation variants
@@ -580,19 +875,26 @@ function UnifiedCheckout() {
                           </div>
                           <div className="flex justify-between text-sm mb-2">
                             <span className="text-gray-600">Shipping</span>
-                            <span className="text-gray-900">{shipping === 0 ? 'Free' : formatPrice(shipping)}</span>
+                            <span className="text-gray-900">{shippingCost === 0 ? 'Free' : formatPrice(shippingCost)}</span>
                           </div>
                           
+                          {importDuty > 0 && (
+                            <div className="flex justify-between text-amber-600">
+                              <span>Import Duty (69%)</span>
+                              <span>{formatPrice(importDuty)}</span>
+                            </div>
+                          )}
+                          
                           {appliedCoupon && (
-                            <div className="flex justify-between text-sm mb-2">
-                              <span className="text-green-600">Discount</span>
-                              <span className="text-green-600">-{formatPrice(discountAmount)}</span>
+                            <div className="flex justify-between text-green-600">
+                              <span>Discount</span>
+                              <span>-{formatPrice(discountAmount)}</span>
                             </div>
                           )}
                           
                           <div className="flex justify-between text-lg font-bold mt-4 pt-4 border-t">
                             <span>Total</span>
-                            <span>{formatPrice(total)}</span>
+                            <span>{formatPrice(total + importDuty)}</span>
                           </div>
                         </div>
                       </div>
@@ -611,95 +913,278 @@ function UnifiedCheckout() {
                   >
                     <h2 className="text-2xl font-bold text-gray-800 mb-6">Shipping Information</h2>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">House/Apartment Number*</label>
-                        <input
-                          type="text"
-                          value={address.houseNo}
-                          onChange={(e) => setAddress({ ...address, houseNo: e.target.value })}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          required
-                        />
+                    {/* Customer Details */}
+                    <div className="bg-white rounded-lg border border-gray-200 p-5 shadow-sm">
+                      <h3 className="text-lg font-medium text-gray-800 mb-4">Customer Details</h3>
+                      <div className="space-y-4">
+                        {/* Full Name */}
+                        <div>
+                          <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+                            Full Name <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            id="fullName"
+                            type="text"
+                            value={customerName}
+                            onChange={(e) => setCustomerName(e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter your full name"
+                            required
+                          />
+                        </div>
+                        
+                        {/* Phone Number with Country Code Dropdown */}
+                        <div>
+                          <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                            Phone Number <span className="text-red-500">*</span>
+                          </label>
+                          <div className="flex">
+                            <select
+                              value={selectedCountryCode}
+                              onChange={handleCountryCodeChange}
+                              className="w-24 p-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+                            >
+                              {Object.keys(COUNTRY_CODES).map((country) => (
+                                <option key={country} value={COUNTRY_CODES[country]}>
+                                  {COUNTRY_CODES[country]} ({country})
+                                </option>
+                              ))}
+                            </select>
+                            <input
+                              id="phoneNumber"
+                              type="tel"
+                              value={phoneNumber}
+                              onChange={handlePhoneChange}
+                              className="flex-1 p-2 border border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="Phone number without country code"
+                              maxLength={12}
+                              required
+                            />
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Phone number without spaces or special characters
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Shipping Address - Restructured */}
+                    <div className="bg-white rounded-lg border border-gray-200 p-5 shadow-sm">
+                      <h3 className="text-lg font-medium text-gray-800 mb-4">Shipping Address</h3>
+                      <div className="space-y-4">
+                        {/* Apartment Number / House Number / House Name */}
+                        <div>
+                          <label htmlFor="addressHouseNo" className="block text-sm font-medium text-gray-700 mb-1">
+                            Apartment/House Number/Name <span className="text-red-500">*</span>
+                          </label>
+                          <input 
+                            id="addressHouseNo"
+                            type="text" 
+                            value={address.houseNo} 
+                            onChange={(e) => setAddress({ ...address, houseNo: e.target.value })}
+                            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Apartment number, House number, or House name"
+                            required
+                          />
+                        </div>
+                        
+                        {/* Address Line 1 */}
+                        <div>
+                          <label htmlFor="addressLine1" className="block text-sm font-medium text-gray-700 mb-1">
+                            Address Line 1 <span className="text-red-500">*</span>
+                          </label>
+                          <input 
+                            id="addressLine1"
+                            type="text" 
+                            value={address.line1} 
+                            onChange={(e) => setAddress({ ...address, line1: e.target.value })}
+                            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Street address, P.O. box, company name"
+                            required
+                          />
+                        </div>
+                        
+                        {/* Address Line 2 */}
+                        <div>
+                          <label htmlFor="addressLine2" className="block text-sm font-medium text-gray-700 mb-1">
+                            Address Line 2
+                          </label>
+                          <input 
+                            id="addressLine2"
+                            type="text" 
+                            value={address.line2} 
+                            onChange={(e) => setAddress({ ...address, line2: e.target.value })}
+                            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Apartment, suite, unit, building, floor, etc."
+                          />
+                        </div>
+                        
+                        {/* City and State */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label htmlFor="addressCity" className="block text-sm font-medium text-gray-700 mb-1">
+                              City <span className="text-red-500">*</span>
+                            </label>
+                            <input 
+                              id="addressCity"
+                              type="text" 
+                              value={address.city} 
+                              onChange={(e) => setAddress({ ...address, city: e.target.value })}
+                              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="City"
+                              required
+                            />
+                          </div>
+                          
+                          <div>
+                            <label htmlFor="addressState" className="block text-sm font-medium text-gray-700 mb-1">
+                              State/Province <span className="text-red-500">*</span>
+                            </label>
+                            <select 
+                              id="addressState"
+                              value={address.state} 
+                              onChange={(e) => setAddress({ ...address, state: e.target.value })}
+                              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              required
+                            >
+                              <option value="" disabled>Select State</option>
+                              {countriesStatesData.countries[address.country]?.map((state) => (
+                                <option key={state} value={state}>{state}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                        
+                        {/* Country and PIN */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="relative">
+                            <label htmlFor="addressCountry" className="block text-sm font-medium text-gray-700 mb-1">
+                              Country <span className="text-red-500">*</span>
+                            </label>
+                            <select 
+                              id="addressCountry"
+                              value={address.country} 
+                              onChange={(e) => {
+                                setAddress({ 
+                                  ...address, 
+                                  country: e.target.value,
+                                  state: '' // Reset state when country changes
+                                });
+                                // Update country code when country changes
+                                setSelectedCountryCode(COUNTRY_CODES[e.target.value] || COUNTRY_CODES["India"]);
+                              }}
+                              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              required
+                            >
+                              {Object.keys(countriesStatesData.countries).map((country) => (
+                                <option key={country} value={country}>{country}</option>
+                              ))}
+                            </select>
+                            
+                            {/* US Import Duty Notice - Shown directly after country selection */}
+                            {address.country === 'United States' && (
+                              <div className="mt-2 p-2 bg-amber-50 text-amber-800 text-xs rounded-md border border-amber-200 font-medium animate-pulse-once">
+                                ⚠️ US orders subject to 69% import duty
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div>
+                            <label htmlFor="addressPin" className="block text-sm font-medium text-gray-700 mb-1">
+                              PIN/ZIP Code <span className="text-red-500">*</span>
+                            </label>
+                            <input 
+                              id="addressPin"
+                              type="text" 
+                              value={address.pin} 
+                              onChange={(e) => setAddress({ ...address, pin: e.target.value })}
+                              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="PIN/ZIP code"
+                              required
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+
+                    {/* Shipping Method Selection */}
+                    <div className="bg-white rounded-lg border border-gray-200 p-5 shadow-sm">
+                      <h3 className="text-lg font-medium text-gray-800 mb-4">Shipping Method</h3>
+                      
+                      {/* Shipping Information Banner */}
+                      <div className={`p-3 rounded-md mb-4 ${subtotal > 1000 ? 'bg-green-50 text-green-800' : 'bg-blue-50 text-blue-800'}`}>
+                        <p className="text-sm">
+                          {subtotal > 1000 
+                            ? 'You qualify for free standard shipping!' 
+                            : 'Orders above ₹1,000 qualify for free standard shipping.'}
+                        </p>
                       </div>
                       
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Address Line 1*</label>
-                        <input
-                          type="text"
-                          value={address.line1}
-                          onChange={(e) => setAddress({ ...address, line1: e.target.value })}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          required
-                        />
-                      </div>
-                      
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Address Line 2</label>
-                        <input
-                          type="text"
-                          value={address.line2}
-                          onChange={(e) => setAddress({ ...address, line2: e.target.value })}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">City*</label>
-                        <input
-                          type="text"
-                          value={address.city}
-                          onChange={(e) => setAddress({ ...address, city: e.target.value })}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          required
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">PIN Code*</label>
-                        <input
-                          type="text"
-                          value={address.pin}
-                          onChange={(e) => setAddress({ ...address, pin: e.target.value })}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          required
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Country*</label>
-                        <select
-                          value={address.country}
-                          onChange={handleCountryChange}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          required
+                      <div className="space-y-3">
+                        {/* Standard Shipping Option */}
+                        <label className={`block border rounded-md p-4 cursor-pointer 
+                          ${shippingMethod === 'standard' 
+                            ? 'border-blue-500 bg-blue-50' 
+                            : 'border-gray-200 hover:border-gray-300'}`}
                         >
-                          {Object.keys(countriesStatesData.countries).map((country) => (
-                            <option key={country} value={country}>
-                              {country}
-                            </option>
-                          ))}
-                        </select>
+                          <div className="flex items-start">
+                            <input
+                              type="radio"
+                              name="shippingMethod"
+                              value="standard"
+                              checked={shippingMethod === 'standard'}
+                              onChange={() => setShippingMethod('standard')}
+                              className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500"
+                            />
+                            <div className="ml-3">
+                              <span className="block font-medium text-gray-900">Standard Shipping</span>
+                              <span className="block text-sm text-gray-500 mt-1">Delivery within 7 days</span>
+                              <span className="block text-sm font-medium mt-1">
+                                {address.country === 'India'
+                                  ? (subtotal > 1000 ? 'Free' : '₹100')
+                                  : '₹500'}
+                              </span>
+                            </div>
+                          </div>
+                        </label>
+                        
+                        {/* Express Shipping Option */}
+                        <label className={`block border rounded-md p-4 cursor-pointer 
+                          ${shippingMethod === 'express' 
+                            ? 'border-blue-500 bg-blue-50' 
+                            : 'border-gray-200 hover:border-gray-300'}`}
+                        >
+                          <div className="flex items-start">
+                            <input
+                              type="radio"
+                              name="shippingMethod"
+                              value="express"
+                              checked={shippingMethod === 'express'}
+                              onChange={() => setShippingMethod('express')}
+                              className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500"
+                            />
+                            <div className="ml-3">
+                              <span className="block font-medium text-gray-900">Express Shipping</span>
+                              <span className="block text-sm text-gray-500 mt-1">Delivery within 2 days</span>
+                              <span className="block text-sm font-medium mt-1">
+                                {address.country === 'India' ? '₹150' : '₹600'}
+                              </span>
+                            </div>
+                          </div>
+                        </label>
                       </div>
                       
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">State*</label>
-                        <select
-                          value={address.state}
-                          onChange={handleStateChange}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          required
-                        >
-                          <option value="" disabled>
-                            Select State
-                          </option>
-                          {countriesStatesData.countries[address.country]?.map((state) => (
-                            <option key={state} value={state}>
-                              {state}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                      {/* US Import Duty Warning */}
+                      {address.country === 'United States' && (
+                        <div className="mt-4 p-3 bg-amber-50 text-amber-800 rounded-md border border-amber-200">
+                          <p className="text-sm font-medium">Import Duty Notice:</p>
+                          <p className="text-sm mt-1">
+                            Orders shipped to the United States are subject to a 69% import duty.
+                            This will be added to your total order cost.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </m.div>
                 )}
@@ -842,50 +1327,117 @@ function UnifiedCheckout() {
                 )}
               </AnimatePresence>
               
-              {/* Navigation Buttons */}
-              <div className="mt-8 flex justify-between">
-                {currentStep > 1 && !orderComplete && (
-                  <button
-                    onClick={prevStep}
-                    className="flex items-center text-gray-600 hover:text-gray-900 transition"
-                  >
-                    <ChevronLeft size={16} className="mr-1" />
-                    Back
-                  </button>
-                )}
-                
-                {!orderComplete && (
-                  <button
-                    onClick={nextStep}
-                    disabled={processingPayment}
-                    className={`ml-auto flex items-center px-6 py-2 rounded-lg font-medium ${
-                      processingPayment
-                        ? 'bg-gray-300 cursor-not-allowed'
-                        : 'bg-blue-600 hover:bg-blue-700 text-white'
-                    } transition`}
-                  >
-                    {processingPayment ? (
-                      <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-                        Processing...
-                      </div>
-                    ) : currentStep === 3 ? (
-                      "Complete Order"
-                    ) : (
-                      <>
-                        Continue
-                        <ChevronRight size={16} className="ml-1" />
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
+              {/* Navigation buttons moved to right-hand side */}
             </div>
             
             {/* Right Column - Order Summary */}
             <div className="lg:col-span-1 bg-gray-50 p-6 md:p-8 border-t lg:border-t-0 lg:border-l border-gray-200">
               <div className="sticky top-8">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Order Summary</h3>
+                
+                {/* Coupon Code Section - New Enhanced Version */}
+                <div className="bg-white p-4 rounded-lg border border-gray-200 mb-6 shadow-sm">
+                  <h4 className="font-medium text-gray-700 mb-3 flex items-center">
+                    <Tag size={16} className="mr-2 text-blue-500" />
+                    Apply Coupon
+                  </h4>
+
+                  {!appliedCoupon ? (
+                    <form onSubmit={handleApplyCoupon} className="space-y-3">
+                      {/* Coupon Input */}
+                      <div>
+                        <label htmlFor="couponCode" className="block text-xs text-gray-500 mb-1">
+                          Enter coupon code (uppercase letters & numbers only)
+                        </label>
+                        <input
+                          id="couponCode"
+                          type="text"
+                          ref={couponInputRef}
+                          value={couponCode}
+                          onChange={handleCouponInputChange}
+                          placeholder="COUPONCODE"
+                          className="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
+                          autoComplete="off"
+                          autoCapitalize="characters"
+                          style={{ textTransform: 'uppercase' }}
+                        />
+                        {couponError && <p className="text-xs text-red-500 mt-1">{couponError}</p>}
+                      </div>
+
+                      {/* Captcha */}
+                      <div className="pt-2 border-t border-gray-100">
+                        <label className="block text-xs text-gray-500 mb-1">
+                          Enter the characters you see below
+                        </label>
+                        <div className="flex space-x-2 items-center mb-2">
+                          <div className="bg-blue-50 px-3 py-2 rounded-md select-none flex-grow text-center font-mono tracking-wider text-gray-700" style={{ letterSpacing: '0.25em' }}>
+                            {captchaText.split('').map((char, idx) => (
+                              <span 
+                                key={idx} 
+                                style={{ 
+                                  display: 'inline-block',
+                                  transform: `rotate(${Math.random() * 20 - 10}deg)`,
+                                  marginRight: '2px'
+                                }}
+                              >
+                                {char}
+                              </span>
+                            ))}
+                          </div>
+                          <button 
+                            type="button" 
+                            onClick={generateCaptcha}
+                            className="p-2 text-gray-500 hover:text-blue-600 bg-gray-100 hover:bg-gray-200 rounded-md" 
+                            aria-label="Refresh captcha"
+                          >
+                            <RefreshCw size={16} />
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          value={userCaptchaInput}
+                          onChange={(e) => setUserCaptchaInput(e.target.value.toUpperCase())}
+                          placeholder="Enter captcha text"
+                          className="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          autoComplete="off"
+                        />
+                        {captchaError && <p className="text-xs text-red-500 mt-1">{captchaError}</p>}
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={validatingCoupon}
+                        className={`w-full py-2 rounded-md text-white font-medium text-sm transition-colors ${
+                          validatingCoupon ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
+                        }`}
+                      >
+                        {validatingCoupon ? "Validating..." : "Apply Coupon"}
+                      </button>
+                    </form>
+                  ) : (
+                    <div className="bg-green-50 p-3 rounded-md">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="font-medium text-gray-800">{appliedCoupon.code}</p>
+                          <p className="text-sm text-green-700">
+                            {appliedCoupon.discountType === 'percentage' 
+                              ? `${appliedCoupon.discountValue}% off`
+                              : `₹${appliedCoupon.discountValue} off`
+                            }
+                            {appliedCoupon.isProductSpecific ? ' on eligible items' : ''}
+                          </p>
+                        </div>
+                        <button 
+                          onClick={handleRemoveCoupon}
+                          className="text-gray-500 hover:text-red-500 p-1 rounded-full"
+                          aria-label="Remove coupon"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 
                 <div className="space-y-2 text-sm mb-6">
                   <div className="flex justify-between">
@@ -898,8 +1450,15 @@ function UnifiedCheckout() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Shipping</span>
-                    <span>{shipping === 0 ? 'Free' : formatPrice(shipping)}</span>
+                    <span>{shippingCost === 0 ? 'Free' : formatPrice(shippingCost)}</span>
                   </div>
+                  
+                  {importDuty > 0 && (
+                    <div className="flex justify-between text-amber-600">
+                      <span>Import Duty (69%)</span>
+                      <span>{formatPrice(importDuty)}</span>
+                    </div>
+                  )}
                   
                   {appliedCoupon && (
                     <div className="flex justify-between text-green-600">
@@ -911,7 +1470,7 @@ function UnifiedCheckout() {
                   <div className="pt-2 mt-2 border-t border-gray-200">
                     <div className="flex justify-between font-semibold">
                       <span>Total</span>
-                      <span>{formatPrice(total)}</span>
+                      <span>{formatPrice(total + importDuty)}</span>
                     </div>
                   </div>
                 </div>
@@ -930,9 +1489,9 @@ function UnifiedCheckout() {
                   
                   <button
                     onClick={nextStep}
-                    disabled={processingPayment || cartDetails.length === 0}
+                    disabled={currentStep === 2 && !areAllRequiredFieldsFilled() || processingPayment || cartDetails.length === 0}
                     className={`w-full flex items-center justify-center px-4 py-3 rounded-lg text-white transition-colors ${
-                      processingPayment || cartDetails.length === 0
+                      (currentStep === 2 && !areAllRequiredFieldsFilled()) || processingPayment || cartDetails.length === 0
                         ? 'bg-gray-400 cursor-not-allowed'
                         : 'bg-blue-600 hover:bg-blue-700'
                     }`}

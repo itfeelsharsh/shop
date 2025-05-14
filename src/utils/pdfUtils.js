@@ -140,6 +140,15 @@ export const createReceiptTemplate = (order, containerId) => {
     });
   };
   
+  /**
+   * Check if order has import duty applied (for US orders)
+   * 
+   * @returns {boolean} Whether order has import duty
+   */
+  const hasImportDuty = () => {
+    return order.shipping?.address?.country === 'United States' && order.importDuty > 0;
+  };
+  
   // Create receipt HTML with enhanced styling
   const receiptHtml = `
     <div class="receipt-container">
@@ -177,6 +186,14 @@ export const createReceiptTemplate = (order, containerId) => {
             ${order.shipping.address.pin ? '- ' + order.shipping.address.pin : ''}`
           ) : 'Address not provided'}
         </p>
+        ${hasImportDuty() ? `
+        <div style="margin-top: 10px; padding: 8px; background-color: #fff8e1; border: 1px solid #ffecb3; border-radius: 4px;">
+          <p style="margin: 0; color: #775700; font-weight: bold;">US Import Duty Information</p>
+          <p style="margin: 5px 0 0; color: #775700; font-size: 13px;">
+            This order includes a 69% import duty fee as required for shipments to the United States.
+          </p>
+        </div>
+        ` : ''}
       </div>
       
       <div class="items-section">
@@ -221,6 +238,12 @@ export const createReceiptTemplate = (order, containerId) => {
           <span>Shipping:</span>
           <span>${formatPrice(order.shipping?.cost || 0)}</span>
         </div>
+        ${hasImportDuty() ? `
+        <div class="summary-row" style="color: #b45309;">
+          <span>US Import Duty (69%):</span>
+          <span>${formatPrice(order.importDuty)}</span>
+        </div>
+        ` : ''}
         <div class="summary-row total">
           <span>Total:</span>
           <span>${formatPrice(order.total)}</span>
@@ -243,6 +266,18 @@ export const createReceiptTemplate = (order, containerId) => {
         ` : ''}
       </div>
       
+      ${hasImportDuty() ? `
+      <div style="margin-top: 20px; padding: 15px; background-color: #fff8e1; border: 1px solid #ffecb3; border-radius: 8px;">
+        <h3 style="margin-top: 0; color: #b45309;">Import Duty Notice</h3>
+        <p style="margin: 8px 0; color: #775700;">
+          This order includes a 69% import duty fee of ${formatPrice(order.importDuty)} as required by US customs regulations for shipments to the United States.
+        </p>
+        <p style="margin: 8px 0; color: #775700; font-size: 13px;">
+          Import duties are collected to allow international shipments to clear customs in the destination country. 
+          This fee has been collected upfront to prevent delivery delays or additional payments upon delivery.
+        </p>
+      </div>
+      ` : ''}
 
     </div>
   `;
