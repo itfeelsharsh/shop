@@ -1,29 +1,12 @@
 /**
  * Email Service
  * 
- * This utility provides functions for sending various types of emails to users using Resend API.
+ * This utility provides functions for sending various types of emails to users using Resend API via Cloudflare Functions.
  * It checks the featureConfig to determine if emails should be sent.
  */
 
 import featureConfig from './featureConfig';
-// Remove direct Resend import since we'll use our own server endpoint
-// import { Resend } from 'resend';
-
-/**
- * Helper function to get environment variables from multiple possible sources
- * This makes the code work in both development and Cloudflare Pages environments
- * 
- * @param {string} name - Name of the environment variable without prefix
- * @returns {string|undefined} - The value of the environment variable
- */
-const getEnvVar = (name) => {
-  // Try with REACT_APP_ prefix (for local development)
-  const reactValue = process.env[`REACT_APP_${name}`];
-  if (reactValue !== undefined) return reactValue;
-  
-  // Try without prefix (for Cloudflare Pages)
-  return process.env[name];
-};
+// No need for Resend import as we're using server-side functions
 
 /**
  * Get the base URL for the API functions based on the current environment
