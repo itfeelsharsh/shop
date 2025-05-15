@@ -17,7 +17,7 @@ const featureConfig = {
    */
   email: {
     enabled: process.env.REACT_APP_EMAIL_ENABLED === 'true',
-    useEmailServer: process.env.REACT_APP_USE_EMAIL_SERVER === 'true',
+    useEmailServer: process.env.REACT_APP_USE_EMAIL_SERVER === 'false',
     fromAddress: process.env.REACT_APP_EMAIL_FROM,
     supportEmail: process.env.REACT_APP_SUPPORT_EMAIL,
   },

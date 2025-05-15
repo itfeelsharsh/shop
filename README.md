@@ -64,14 +64,18 @@ Welcome to KamiKoto, a beautifully crafted e-commerce platform offering a seamle
    - Create a `.env` file in the root directory based on the example below.
    - Sign up at [Resend](https://resend.com) to get your API key.
    - Verify your domain in Resend dashboard for better deliverability.
-   - Set `REACT_APP_EMAIL_ENABLED` to `true` to enable email functionality.
+   - Email functionality is enabled by default unless specifically disabled.
    - Add your Resend API key to the `.env` file as `REACT_APP_RESEND_API_KEY`.
    - Customize your email addresses as needed.
 
    ```
    # Email Configuration
-   REACT_APP_EMAIL_ENABLED=true
-   REACT_APP_USE_EMAIL_SERVER=false
+   # Email is enabled by default unless set to 'false'
+   # REACT_APP_EMAIL_ENABLED=false
+   
+   # Use Resend API by default unless set to 'true'
+   # REACT_APP_USE_EMAIL_SERVER=true
+   
    REACT_APP_RESEND_API_KEY=your_resend_api_key_here
    REACT_APP_EMAIL_FROM=orders@yourdomain.com
    REACT_APP_SUPPORT_EMAIL=support@yourdomain.com
