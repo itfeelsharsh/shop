@@ -6,7 +6,8 @@
  */
 
 import featureConfig from './featureConfig';
-import { Resend } from 'resend';
+// Remove direct Resend import since we'll use our own server endpoint
+// import { Resend } from 'resend';
 
 /**
  * Helper function to get environment variables from multiple possible sources
@@ -25,6 +26,24 @@ const getEnvVar = (name) => {
 };
 
 /**
+ * Get the base URL for the API functions based on the current environment
+ * @returns {string} - Base URL for API functions
+ */
+const getApiFunctionBaseUrl = () => {
+  // Check if we're in a development environment
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  
+  if (isDevelopment) {
+    // In development, use a local URL that can be proxied to the real endpoint
+    // This should be configured in your package.json proxy field
+    return '/api';
+  } else {
+    // In production, use the same domain as the application
+    return '';
+  }
+};
+
+/**
  * Checks if the email functionality is properly configured and enabled
  * @returns {boolean} - True if email is enabled and properly configured
  */
@@ -35,26 +54,18 @@ const isEmailEnabled = () => {
     return false;
   }
 
-  // Check if Resend API key is available
-  const resendApiKey = getEnvVar('RESEND_API_KEY');
-  if (!resendApiKey) {
-    console.error('RESEND_API_KEY is missing in environment variables');
-    return false;
-  }
-  
   // Log email configuration for debugging
   console.log('Email Configuration:', {
     enabled: featureConfig.email.enabled,
-    useEmailServer: false, // Always use Resend API
+    useEmailServer: false, // Always use our API endpoint
     fromAddress: featureConfig.email.fromAddress,
-    apiKeyExists: !!resendApiKey
   });
 
   return true;
 };
 
 /**
- * Sends an email using the Resend API
+ * Sends an email using the server API endpoint
  * @param {Object} emailData - Email data including recipient, subject, body, etc.
  * @returns {Promise<Object>} - Result of the email sending operation
  */
@@ -71,8 +82,8 @@ const sendEmail = async (emailData) => {
   }
 
   try {
-    console.log('Using Resend API method');
-    return await sendViaResend(emailData);
+    console.log('Using API endpoint method');
+    return await sendViaApiEndpoint(emailData);
   } catch (error) {
     console.error('Error in sendEmail function:', error);
     return { success: false, error: error.message || 'Failed to send email' };
@@ -80,29 +91,26 @@ const sendEmail = async (emailData) => {
 };
 
 /**
- * Sends an email using the Resend API
+ * Sends an email using our server API endpoint instead of calling Resend directly
+ * This avoids CORS issues when calling from the client side
+ * 
  * @param {Object} emailData - Email data
  * @returns {Promise<Object>} - Result of the email sending operation
  */
-const sendViaResend = async (emailData) => {
+const sendViaApiEndpoint = async (emailData) => {
   try {
-    console.log('Attempting to send email via Resend with data:', {
+    console.log('Attempting to send email via API endpoint with data:', {
       to: emailData.to,
       subject: emailData.subject,
       fromAddress: emailData.from || featureConfig.email.fromAddress
     });
-    
-    // Initialize the Resend client with the API key
-    const resendApiKey = getEnvVar('RESEND_API_KEY');
-    const resend = new Resend(resendApiKey);
-    console.log('Resend client initialized');
     
     // Prepare the sender with proper format
     const fromEmail = emailData.from || featureConfig.email.fromAddress;
     // Ensure proper "From" format with name - Resend requires this format
     const formattedFrom = fromEmail.includes('<') ? fromEmail : `KamiKoto <${fromEmail}>`;
     
-    // Send the email using the Resend SDK
+    // Prepare the email payload for our API
     const emailPayload = {
       from: formattedFrom,
       to: emailData.to,
@@ -112,17 +120,31 @@ const sendViaResend = async (emailData) => {
     
     console.log('Sending email with payload:', emailPayload);
     
-    const response = await resend.emails.send(emailPayload);
-    console.log('Resend API response:', response);
+    // Use the Cloudflare Function endpoint
+    const apiEndpoint = `${getApiFunctionBaseUrl()}/send-email`;
+    console.log('Using API endpoint:', apiEndpoint);
     
-    if (response.error) {
-      console.error('Resend API returned an error:', response.error);
-      throw new Error(response.error.message || 'Failed to send email via Resend');
+    // Send the request to our server-side function
+    const response = await fetch(apiEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(emailPayload),
+    });
+    
+    // Parse the response
+    const result = await response.json();
+    console.log('API endpoint response:', result);
+    
+    if (!response.ok || result.error) {
+      console.error('API endpoint returned an error:', result.error);
+      throw new Error(result.error?.message || 'Failed to send email via API endpoint');
     }
     
-    return { success: true, data: response.data };
+    return { success: true, data: result.data };
   } catch (error) {
-    console.error('Detailed error sending email via Resend:', error);
+    console.error('Detailed error sending email via API endpoint:', error);
     throw error;
   }
 };

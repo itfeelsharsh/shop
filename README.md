@@ -60,12 +60,12 @@ Welcome to KamiKoto, a beautifully crafted e-commerce platform offering a seamle
    - Set up Firestore Database and Authentication in [Firebase Console](https://console.firebase.google.com).
    - Update Firestore security rules accordingly.
 
-5. **Email Configuration with Resend (Optional):**
+5. **Email Configuration with Resend:**
    - Create a `.env` file in the root directory based on the example below.
    - Sign up at [Resend](https://resend.com) to get your API key.
    - Verify your domain in Resend dashboard for better deliverability.
    - Email functionality is enabled by default unless specifically disabled.
-   - Add your Resend API key to the `.env` file as `REACT_APP_RESEND_API_KEY`.
+   - Add your Resend API key to the Cloudflare Pages environment variables as `RESEND_API_KEY`.
    - Customize your email addresses as needed.
 
    ```
@@ -73,13 +73,15 @@ Welcome to KamiKoto, a beautifully crafted e-commerce platform offering a seamle
    # Email is enabled by default unless set to 'false'
    # REACT_APP_EMAIL_ENABLED=false
    
-   # Use Resend API by default unless set to 'true'
-   # REACT_APP_USE_EMAIL_SERVER=true
-   
-   REACT_APP_RESEND_API_KEY=your_resend_api_key_here
    REACT_APP_EMAIL_FROM=orders@yourdomain.com
    REACT_APP_SUPPORT_EMAIL=support@yourdomain.com
    ```
+
+   The application uses Cloudflare Functions to handle email sending server-side, avoiding CORS issues. When deployed to Cloudflare Pages:
+   
+   1. Add the `RESEND_API_KEY` environment variable in the Cloudflare Pages dashboard.
+   2. The Functions directory contains the server-side code that handles secure API calls to Resend.
+   3. Emails are sent through a secure server-side function rather than directly from the browser.
 
    The application will automatically send order confirmation emails when orders are placed, and shipping notification emails when orders are shipped.
 
@@ -154,7 +156,7 @@ To use the Admin Panel ([shopAdmin](https://github.com/itfeelsharsh/shopAdmin)):
 
 ## 📝 Notes
 
-- **Optimized UI/UX:** The application uses clean, modern design principles for a smooth user experience, modeled after Apple’s elegant design ethos.
+- **Optimized UI/UX:** The application uses clean, modern design principles for a smooth user experience, modeled after Apple's elegant design ethos.
 - **Mobile-Friendly:** Built with responsive design to ensure users have a great experience on both desktop and mobile devices.
 - **Secure Authentication:** Firebase Authentication provides seamless sign-in options, including Google and GitHub for faster logins.
 - **Easy Product Management:** Admins can quickly add, edit, or remove products with all the necessary details, including images, stock, and pricing.
@@ -167,5 +169,5 @@ To use the Admin Panel ([shopAdmin](https://github.com/itfeelsharsh/shopAdmin)):
 
 - **Frontend:** React.js
 - **Backend/Database:** Firebase (Firestore, Authentication)
-- **Email Service:** Resend API (optional)
-- **Deployment:** Firebase Hosting (or any other service)
+- **Email Service:** Resend API with Cloudflare Functions
+- **Deployment:** Cloudflare Pages with Functions

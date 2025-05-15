@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "description": "Routing configuration for Cloudflare Functions",
+  "routes": [
+    {
+      "pattern": "/send-email",
+      "script": "send-email"
+    }
+  ]
+} 
