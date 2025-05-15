@@ -122,13 +122,30 @@ export const createReceiptTemplate = (order, containerId) => {
     return new Date(dateString).toLocaleDateString('en-IN', options);
   };
   
-  // Format price as currency
+  /**
+   * Format price as currency with Indian Rupee (INR) 
+   * 
+   * @param {number|string} price - The price to format
+   * @returns {string} The formatted price
+   * 
+   * IMPORTANT: This handles potential null/undefined values and NaN that
+   * can occur when there are inconsistencies between database fields
+   * (order.totalAmount vs order.total). The database schema uses 'totalAmount'
+   * but some older entries might use 'total' field instead.
+   */
   const formatPrice = (price) => {
+    if (price === undefined || price === null) return 'INR 0.00';
+    
+    const num = typeof price === 'string' ? parseFloat(price) : price;
+    
+    // Handle NaN, just in case
+    if (isNaN(num)) return 'INR 0.00';
+    
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       minimumFractionDigits: 2
-    }).format(price);
+    }).format(num);
   };
   
   // Get current date in a formatted string
@@ -246,7 +263,7 @@ export const createReceiptTemplate = (order, containerId) => {
         ` : ''}
         <div class="summary-row total">
           <span>Total:</span>
-          <span>${formatPrice(order.total)}</span>
+          <span>${formatPrice(order.totalAmount || order.total || 0)}</span>
         </div>
       </div>
       

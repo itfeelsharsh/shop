@@ -182,6 +182,26 @@ function MyAccount() {
       ordersSnapshot.forEach((doc) => {
         const data = doc.data();
         if (data.userId === user.uid) {
+          // Ensure totalAmount is calculated if missing
+          // This fixes potential issues with older orders in the database
+          if (!data.totalAmount && !data.total) {
+            // Calculate total based on available fields
+            const subtotal = data.subtotal || 0;
+            const tax = data.tax || 0;
+            const shipping = data.shipping?.cost || 0;
+            const discount = data.discount || 0;
+            const importDuty = data.importDuty || 0;
+            
+            // Set totalAmount using the same calculation used in checkout
+            data.totalAmount = subtotal + tax + shipping + importDuty - discount;
+            
+            // Log the calculated total for debugging
+            console.log(`Calculated missing total for order ${data.orderId}:`, {
+              subtotal, tax, shipping, discount, importDuty,
+              calculatedTotal: data.totalAmount
+            });
+          }
+          
           ordersData.push({
             id: doc.id,
             ...data
@@ -387,6 +407,12 @@ function MyAccount() {
    * 
    * @param {number} price - Price to format
    * @returns {string} Formatted price
+   * 
+   * IMPORTANT: There's inconsistency in the database schema where some order records
+   * use 'totalAmount' field while others might use 'total' field for the order total.
+   * The email service uses 'totalAmount', so we prioritize that field but fall back to 'total' 
+   * if needed to ensure consistent display across all app sections.
+   * This prevents "₹0.00" or "NaN" issues in the UI and PDF generation.
    */
   const formatPrice = (price) => {
     if (price === undefined || price === null) return '₹0.00';
@@ -447,7 +473,28 @@ function MyAccount() {
   const handleDownloadReceipt = async (order) => {
     try {
       toast.info('Preparing your receipt...');
-      await downloadOrderReceipt(order);
+      
+      // Ensure the order has a valid total amount for the PDF generation
+      const orderCopy = { ...order };
+      
+      // Check and calculate totalAmount if missing to avoid NaN in the PDF
+      if (!orderCopy.totalAmount && !orderCopy.total) {
+        const subtotal = orderCopy.subtotal || 0;
+        const tax = orderCopy.tax || 0;
+        const shipping = orderCopy.shipping?.cost || 0;
+        const discount = orderCopy.discount || 0;
+        const importDuty = orderCopy.importDuty || 0;
+        
+        // Calculate and set the total amount
+        orderCopy.totalAmount = subtotal + tax + shipping + importDuty - discount;
+        
+        console.log('Calculated missing total for PDF receipt:', {
+          orderId: orderCopy.orderId,
+          calculatedTotal: orderCopy.totalAmount
+        });
+      }
+      
+      await downloadOrderReceipt(orderCopy);
       toast.success('Receipt downloaded successfully!');
     } catch (error) {
       console.error('Error downloading receipt:', error);
@@ -969,136 +1016,145 @@ function MyAccount() {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {orders.map((order) => (
-                      <div key={order.id} className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition">
-                        {/* Order Header */}
-                        <div className="bg-gray-50 p-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                          <div>
-                            <p className="text-sm text-gray-500">
-                              Order placed on {formatOrderDate(order.orderDate)}
-                            </p>
-                            <p className="text-xs text-gray-400 mt-1">Order ID: {order.orderId}</p>
-                          </div>
-                          
-                          <div className="flex flex-wrap items-center gap-3">
-                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                              ORDER_STATUS[order.status?.toUpperCase()]?.color || 'bg-gray-100 text-gray-800'
-                            }`}>
-                              {order.status}
-                            </span>
-                            
-                            {/* If order is shipped, show tracking option */}
-                            {(order.status === 'Shipped' || order.status === 'Delivered') && order.tracking?.code && (
-                              <Link
-                                to="/my-account/track-shipment"
-                                className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center"
-                              >
-                                <Truck size={14} className="mr-1" />
-                                Track Package
-                              </Link>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {/* Order Items */}
-                        <div className="p-4">
-                          <div className="space-y-4">
-                            {order.items.slice(0, 3).map((item, idx) => (
-                              <div key={idx} className="flex items-start gap-4">
-                                <div className="flex-shrink-0">
-                                  <img 
-                                    src={item.image || 'https://via.placeholder.com/80?text=Product'} 
-                                    alt={item.name}
-                                    className="w-16 h-16 object-contain border border-gray-200 rounded-md"
-                                  />
-                                </div>
-                                <div className="flex-grow">
-                                  <h4 className="text-gray-800 font-medium">{item.name}</h4>
-                                  <p className="text-gray-500 text-sm mt-1">Quantity: {item.quantity}</p>
-                                </div>
-                              </div>
-                            ))}
-                            
-                            {order.items.length > 3 && (
-                              <p className="text-sm text-gray-500">
-                                + {order.items.length - 3} more items
-                              </p>
-                            )}
-                          </div>
-                          
-                          {/* Order Footer */}
-                          <div className="mt-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    {orders.map((order) => {
+                      // Log order total info for debugging - helps identify inconsistent data
+                      console.log(`Order ${order.orderId} total data:`, {
+                        totalAmount: order.totalAmount,
+                        total: order.total,
+                        usedValue: order.totalAmount || order.total || 0,
+                      });
+                      
+                      return (
+                        <div key={order.id} className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition">
+                          {/* Order Header */}
+                          <div className="bg-gray-50 p-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div>
-                              <p className="text-gray-500 text-sm">Total</p>
-                              <p className="text-gray-900 font-bold text-lg">
-                                {formatPrice(order.total)}
+                              <p className="text-sm text-gray-500">
+                                Order placed on {formatOrderDate(order.orderDate)}
                               </p>
-                              {order.coupon && (
-                                <p className="text-green-600 text-xs mt-1">
-                                  Coupon applied: {order.coupon.code}
-                                  {order.coupon.discountAmount && ` (-${formatPrice(order.coupon.discountAmount)})`}
+                              <p className="text-xs text-gray-400 mt-1">Order ID: {order.orderId}</p>
+                            </div>
+                            
+                            <div className="flex flex-wrap items-center gap-3">
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                ORDER_STATUS[order.status?.toUpperCase()]?.color || 'bg-gray-100 text-gray-800'
+                              }`}>
+                                {order.status}
+                              </span>
+                              
+                              {/* If order is shipped, show tracking option */}
+                              {(order.status === 'Shipped' || order.status === 'Delivered') && order.tracking?.code && (
+                                <Link
+                                  to="/my-account/track-shipment"
+                                  className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center"
+                                >
+                                  <Truck size={14} className="mr-1" />
+                                  Track Package
+                                </Link>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Order Items */}
+                          <div className="p-4">
+                            <div className="space-y-4">
+                              {order.items.slice(0, 3).map((item, idx) => (
+                                <div key={idx} className="flex items-start gap-4">
+                                  <div className="flex-shrink-0">
+                                    <img 
+                                      src={item.image || 'https://via.placeholder.com/80?text=Product'} 
+                                      alt={item.name}
+                                      className="w-16 h-16 object-contain border border-gray-200 rounded-md"
+                                    />
+                                  </div>
+                                  <div className="flex-grow">
+                                    <h4 className="text-gray-800 font-medium">{item.name}</h4>
+                                    <p className="text-gray-500 text-sm mt-1">Quantity: {item.quantity}</p>
+                                  </div>
+                                </div>
+                              ))}
+                              
+                              {order.items.length > 3 && (
+                                <p className="text-sm text-gray-500">
+                                  + {order.items.length - 3} more items
                                 </p>
                               )}
                             </div>
                             
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => handleDownloadReceipt(order)}
-                                className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 transition rounded text-sm text-gray-700"
-                              >
-                                <FileDown size={14} />
-                                Receipt
-                              </button>
+                            {/* Order Footer */}
+                            <div className="mt-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                              <div>
+                                <p className="text-gray-500 text-sm">Total</p>
+                                <p className="text-gray-900 font-bold text-lg">
+                                  {formatPrice(order.totalAmount || order.total || 0)}
+                                </p>
+                                {order.coupon && (
+                                  <p className="text-green-600 text-xs mt-1">
+                                    Coupon applied: {order.coupon.code}
+                                    {order.coupon.discountAmount && ` (-${formatPrice(order.coupon.discountAmount)})`}
+                                  </p>
+                                )}
+                              </div>
                               
-                              {/* Order Status Messages */}
-                              <div className="text-sm">
-                                {order.status === 'Placed' && (
-                                  <div className="flex items-center text-yellow-600">
-                                    <AlertCircle size={16} className="mr-1" />
-                                    <span>Order pending approval</span>
-                                  </div>
-                                )}
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleDownloadReceipt(order)}
+                                  className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 transition rounded text-sm text-gray-700"
+                                >
+                                  <FileDown size={14} />
+                                  Receipt
+                                </button>
                                 
-                                {order.status === 'Approved' && (
-                                  <div className="flex items-center text-blue-600">
-                                    <Package size={16} className="mr-1" />
-                                    <span>Order approved</span>
-                                  </div>
-                                )}
-                                
-                                {order.status === 'Packed' && (
-                                  <div className="flex items-center text-indigo-600">
-                                    <Package size={16} className="mr-1" />
-                                    <span>Order packed</span>
-                                  </div>
-                                )}
-                                
-                                {order.status === 'Shipped' && (
-                                  <div className="flex items-center text-purple-600">
-                                    <Truck size={16} className="mr-1" />
-                                    <span>Order shipped</span>
-                                  </div>
-                                )}
-                                
-                                {order.status === 'Delivered' && (
-                                  <div className="flex items-center text-green-600">
-                                    <CheckCircle size={16} className="mr-1" />
-                                    <span>Order delivered</span>
-                                  </div>
-                                )}
-                                
-                                {order.status === 'Declined' && (
-                                  <div className="flex items-center text-red-600">
-                                    <AlertCircle size={16} className="mr-1" />
-                                    <span>Order declined</span>
-                                  </div>
-                                )}
+                                {/* Order Status Messages */}
+                                <div className="text-sm">
+                                  {order.status === 'Placed' && (
+                                    <div className="flex items-center text-yellow-600">
+                                      <AlertCircle size={16} className="mr-1" />
+                                      <span>Order pending approval</span>
+                                    </div>
+                                  )}
+                                  
+                                  {order.status === 'Approved' && (
+                                    <div className="flex items-center text-blue-600">
+                                      <Package size={16} className="mr-1" />
+                                      <span>Order approved</span>
+                                    </div>
+                                  )}
+                                  
+                                  {order.status === 'Packed' && (
+                                    <div className="flex items-center text-indigo-600">
+                                      <Package size={16} className="mr-1" />
+                                      <span>Order packed</span>
+                                    </div>
+                                  )}
+                                  
+                                  {order.status === 'Shipped' && (
+                                    <div className="flex items-center text-purple-600">
+                                      <Truck size={16} className="mr-1" />
+                                      <span>Order shipped</span>
+                                    </div>
+                                  )}
+                                  
+                                  {order.status === 'Delivered' && (
+                                    <div className="flex items-center text-green-600">
+                                      <CheckCircle size={16} className="mr-1" />
+                                      <span>Order delivered</span>
+                                    </div>
+                                  )}
+                                  
+                                  {order.status === 'Declined' && (
+                                    <div className="flex items-center text-red-600">
+                                      <AlertCircle size={16} className="mr-1" />
+                                      <span>Order declined</span>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </m.div>

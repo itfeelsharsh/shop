@@ -219,6 +219,32 @@ const ProductCard = memo(function ProductCard({
   };
 
   /**
+   * Format price as currency with Indian Rupee (₹)
+   * 
+   * @param {number|string} price - The price to format 
+   * @returns {string} Formatted price with currency symbol
+   */
+  const formatPrice = (price) => {
+    if (price === undefined || price === null) return '₹0.00';
+    
+    const num = typeof price === 'string' ? parseFloat(price) : price;
+    
+    // Handle NaN, just in case
+    if (isNaN(num)) return '₹0.00';
+    
+    // Extract integer and decimal parts
+    const parts = num.toFixed(2).split('.');
+    const integer = parts[0];
+    const decimalPart = parts[1];
+    
+    // Add thousands separators to integer part
+    const formattedInteger = integer.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    
+    // Return formatted string
+    return `₹${decimalPart ? `${formattedInteger}.${decimalPart}` : formattedInteger}`;
+  };
+
+  /**
    * Calculate discount percentage between original and current price
    * 
    * @param {number} originalPrice - The original price
@@ -382,6 +408,33 @@ const ProductCard = memo(function ProductCard({
 
           {/* Bottom Section - Price, Stock Status and Action Buttons */}
           <div className="mt-4 pt-4 border-t border-gray-200">
+            {/* 
+              * Product Price Display Section
+              * 
+              * IMPORTANT: This section is critical for displaying product prices on home/product pages.
+              * Displays:
+              * 1. Current price in bold format with Indian Rupee symbol (₹)
+              * 2. Original price (if available) with strikethrough styling
+              * 3. Savings percentage badge when a discount is applied
+              *
+              * The formatPrice function properly formats prices with thousands separators
+              * and handles null/undefined values to prevent display issues.
+              */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center">
+                <span className="text-lg font-bold text-gray-900">{formatPrice(product?.price)}</span>
+                {product?.originalPrice && product.originalPrice > product.price && (
+                  <span className="ml-2 text-sm text-gray-500 line-through">{formatPrice(product?.originalPrice)}</span>
+                )}
+              </div>
+              
+              {product?.originalPrice && product.originalPrice > product.price && (
+                <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                  Save {calculateDiscount(product.originalPrice, product.price)}%
+                </span>
+              )}
+            </div>
+            
             <div className="flex items-center justify-between mb-3">
               {product.stock > 0 ? (
                 <button

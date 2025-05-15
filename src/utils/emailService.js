@@ -175,7 +175,7 @@ const sendOrderConfirmationEmail = async (order, user) => {
     
     const emailData = {
       to: user.email,
-      subject: `Order Confirmation #${order.orderId}`,
+      subject: `KamiKoto - Order Confirmation #${order.orderId}`,
       body: emailBody,
     };
     
