@@ -9,6 +9,22 @@ import featureConfig from './featureConfig';
 import { Resend } from 'resend';
 
 /**
+ * Helper function to get environment variables from multiple possible sources
+ * This makes the code work in both development and Cloudflare Pages environments
+ * 
+ * @param {string} name - Name of the environment variable without prefix
+ * @returns {string|undefined} - The value of the environment variable
+ */
+const getEnvVar = (name) => {
+  // Try with REACT_APP_ prefix (for local development)
+  const reactValue = process.env[`REACT_APP_${name}`];
+  if (reactValue !== undefined) return reactValue;
+  
+  // Try without prefix (for Cloudflare Pages)
+  return process.env[name];
+};
+
+/**
  * Checks if the email functionality is properly configured and enabled
  * @returns {boolean} - True if email is enabled and properly configured
  */
@@ -19,8 +35,9 @@ const isEmailEnabled = () => {
     return false;
   }
 
-  // Check if Resend API key is available when using Resend
-  if (!featureConfig.email.useEmailServer && !process.env.REACT_APP_RESEND_API_KEY) {
+  // Check if Resend API key is available
+  const resendApiKey = getEnvVar('RESEND_API_KEY');
+  if (!resendApiKey) {
     console.error('RESEND_API_KEY is missing in environment variables');
     return false;
   }
@@ -28,16 +45,16 @@ const isEmailEnabled = () => {
   // Log email configuration for debugging
   console.log('Email Configuration:', {
     enabled: featureConfig.email.enabled,
-    useEmailServer: featureConfig.email.useEmailServer,
+    useEmailServer: false, // Always use Resend API
     fromAddress: featureConfig.email.fromAddress,
-    apiKeyExists: !!process.env.REACT_APP_RESEND_API_KEY
+    apiKeyExists: !!resendApiKey
   });
 
   return true;
 };
 
 /**
- * Sends an email using the appropriate method based on configuration
+ * Sends an email using the Resend API
  * @param {Object} emailData - Email data including recipient, subject, body, etc.
  * @returns {Promise<Object>} - Result of the email sending operation
  */
@@ -54,13 +71,8 @@ const sendEmail = async (emailData) => {
   }
 
   try {
-    if (featureConfig.email.useEmailServer) {
-      console.log('Using email server method');
-      return await sendViaEmailServer(emailData);
-    } else {
-      console.log('Using Resend API method');
-      return await sendViaResend(emailData);
-    }
+    console.log('Using Resend API method');
+    return await sendViaResend(emailData);
   } catch (error) {
     console.error('Error in sendEmail function:', error);
     return { success: false, error: error.message || 'Failed to send email' };
@@ -81,7 +93,8 @@ const sendViaResend = async (emailData) => {
     });
     
     // Initialize the Resend client with the API key
-    const resend = new Resend(process.env.REACT_APP_RESEND_API_KEY);
+    const resendApiKey = getEnvVar('RESEND_API_KEY');
+    const resend = new Resend(resendApiKey);
     console.log('Resend client initialized');
     
     // Prepare the sender with proper format
@@ -115,15 +128,13 @@ const sendViaResend = async (emailData) => {
 };
 
 /**
- * Sends an email using a traditional email server
- * @param {Object} emailData - Email data
- * @returns {Promise<Object>} - Result of the email sending operation
+ * Email server method is not implemented
+ * All emails are sent through Resend API for better reliability and deliverability
  */
-const sendViaEmailServer = async (emailData) => {
-  // Not implemented - would be replaced with actual SMTP implementation if needed
-  console.error('Email server method not implemented');
-  return { success: false, error: 'Email server method not implemented' };
-};
+// const sendViaEmailServer = async (emailData) => {
+//   console.error('Email server method not implemented');
+//   return { success: false, error: 'Email server method not implemented' };
+// };
 
 /**
  * Sends an order confirmation email to the customer
