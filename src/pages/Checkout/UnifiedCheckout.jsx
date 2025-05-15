@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { m, AnimatePresence } from 'framer-motion';
 import { auth, db } from '../../firebase/config';
-import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { collection, getDocs } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { clearCart, applyCoupon, removeCoupon } from '../../redux/cartSlice';
@@ -13,6 +13,8 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import OrderConfirmation from '../../components/OrderConfirmation';
 import CouponService from '../../utils/couponService';
+import featureConfig from '../../utils/featureConfig';
+import { processNewOrder } from '../../utils/orderService';
 
 // Import card logos
 import VisaLogo from '../../assets/visa.png';
@@ -55,6 +57,12 @@ function UnifiedCheckout() {
   // Products data
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // Print environment variables when component mounts to confirm they're properly loaded
+  useEffect(() => {
+    console.log('UnifiedCheckout component mounted, environment check:');
+    logEnvironmentVars();
+  }, []);
   
   // Shipping address
   const [address, setAddress] = useState({
@@ -441,9 +449,14 @@ function UnifiedCheckout() {
   const processOrder = async () => {
     setProcessingPayment(true);
     
+    // Log environment variables to help debug
+    logEnvironmentVars();
+    console.log('Starting order process...');
+    
     try {
       // Save shipping address
       await saveShippingAddress();
+      console.log('Shipping address saved');
       
       // Save payment method
       const paymentMethodSaved = await savePaymentMethod();
@@ -451,93 +464,119 @@ function UnifiedCheckout() {
         setProcessingPayment(false);
         return;
       }
+      console.log('Payment method saved');
       
-      // Create order object
-      const orderId = Date.now().toString(); // Simple order ID generation
-      const orderData = {
-        orderId,
-        userId: user.uid,
-        userEmail: user.email,
-        userName: customerName || user.displayName || '',
-        userPhone: getFullPhoneNumber() || '',
-        orderDate: new Date().toISOString(),
-        items: cartDetails.map(item => ({
-          productId: item.productId,
-          name: item.product.name,
-          price: item.product.price,
-          quantity: item.quantity,
-          image: item.product.image,
-        })),
-        shipping: {
-          address: address,
-          method: shippingMethod === 'express' ? "Express Shipping" : "Standard Shipping",
-          cost: shippingCost,
-          estimatedDelivery: shippingMethod === 'express' ? "2 days" : "7 days"
-        },
-        payment: {
-          method: paymentMethod,
-          details: paymentMethod === 'Card' ? {
-            cardType: card.type,
-            lastFour: card.number.slice(-4),
-          } : {
-            upiId: upi.split('@')[0] + '@xxxx' // Mask UPI ID for security
-          }
-        },
-        subtotal,
-        tax,
-        importDuty,
-        discount: discountAmount,
-        total: total + importDuty,
-        status: "Placed", // Initial status is "Placed"
-        statusHistory: [
-          {
-            status: "Placed",
-            timestamp: new Date().toISOString(),
-            note: "Order placed successfully"
-          }
-        ],
-        tracking: {
-          code: null,
-          carrier: address.country === 'India' ? "IndiaPost" : "DHL",
-          url: null
+          // Create order object with all required information
+    // Log if email feature is enabled
+    console.log('Email feature enabled?', featureConfig.email.enabled);
+    console.log('Email config:', featureConfig.email);
+    
+    // Create the order data object
+    const orderData = {
+      userId: user.uid,
+      userEmail: user.email,
+      userName: customerName || user.displayName || '',
+      userPhone: getFullPhoneNumber() || '',
+      orderDate: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      items: cartDetails.map(item => ({
+        productId: item.productId,
+        name: item.product.name,
+        price: item.product.price,
+        quantity: item.quantity,
+        image: item.product.image,
+      })),
+      shipping: {
+        address: address,
+        method: shippingMethod === 'express' ? "Express Shipping" : "Standard Shipping",
+        cost: shippingCost,
+        estimatedDelivery: shippingMethod === 'express' ? "2 days" : "7 days"
+      },
+      payment: {
+        method: paymentMethod,
+        details: paymentMethod === 'Card' ? {
+          cardType: card.type,
+          lastFour: card.number.slice(-4),
+        } : {
+          upiId: upi.split('@')[0] + '@xxxx' // Mask UPI ID for security
         }
+      },
+      subtotal,
+      tax,
+      importDuty,
+      discount: discountAmount,
+      totalAmount: total + importDuty,
+      status: "Placed",
+      statusHistory: [
+        {
+          status: "Placed",
+          timestamp: new Date().toISOString(),
+          note: "Order placed successfully"
+        }
+      ],
+      tracking: {
+        code: null,
+        carrier: address.country === 'India' ? "IndiaPost" : "DHL",
+        url: null
+      },
+      shippingAddress: {
+        name: customerName,
+        street: `${address.houseNo}, ${address.line1}${address.line2 ? ', ' + address.line2 : ''}`,
+        city: address.city,
+        state: address.state,
+        zip: address.pin,
+        country: address.country
+      }
+    };
+    
+    // Add coupon information if applied
+    if (appliedCoupon && appliedCoupon.code) {
+      orderData.coupon = {
+        code: appliedCoupon.code,
+        discountAmount: appliedCoupon.discountAmount,
+        discountType: appliedCoupon.discountType,
+        discountValue: appliedCoupon.discountValue
       };
+    }
+    
+    // Record coupon usage if applied
+    if (appliedCoupon && appliedCoupon.couponId) {
+      await CouponService.recordCouponUsage(appliedCoupon.couponId);
+    }
+    
+    // Prepare user data for email
+    const userData = {
+      uid: user.uid,
+      email: user.email,
+      displayName: customerName || user.displayName || user.email
+    };
+    
+    // Process the order using the order service
+    console.log('Processing order...');
+    const orderResult = await processNewOrder(orderData, userData);
+    
+    if (!orderResult.success) {
+      throw new Error(orderResult.error || 'Failed to process order');
+    }
+    
+    console.log('Order processed successfully:', orderResult.orderId);
       
-      // Add coupon information if applied
-      if (appliedCoupon) {
-        orderData.coupon = {
-          code: appliedCoupon.code,
-          discountAmount: appliedCoupon.discountAmount,
-          discountType: appliedCoupon.discountType,
-          discountValue: appliedCoupon.discountValue
-        };
-      }
+          // Finalize the order and transition to confirmation
+    setTimeout(() => {
+      // Clear the cart
+      dispatch(clearCart());
       
-      // Save order to Firestore
-      const orderRef = doc(db, "orders", orderId);
-      await setDoc(orderRef, orderData);
-      
-      // Add to user's orders collection
-      const userOrderRef = doc(db, "users", user.uid, "orders", orderId);
-      await setDoc(userOrderRef, { orderId, timestamp: new Date().toISOString() });
-      
-      // Record coupon usage if applied
-      if (appliedCoupon && appliedCoupon.couponId) {
-        await CouponService.recordCouponUsage(appliedCoupon.couponId);
-      }
-      
-      // Simulate payment processing
-      setTimeout(() => {
-        // Clear the cart
-        dispatch(clearCart());
-        
-        // Set completed order and show order confirmation
-        setCompletedOrder(orderData);
-        setOrderComplete(true);
-        setProcessingPayment(false);
-      }, 1500);
+      // Set completed order with orderId from the result
+      setCompletedOrder({
+        ...orderData,
+        orderId: orderResult.orderId
+      });
+      setOrderComplete(true);
+      setProcessingPayment(false);
+      console.log('Order process completed successfully with ID:', orderResult.orderId);
+    }, 1500);
     } catch (error) {
-      console.error("Error processing order:", error);
+      console.error("Detailed error processing order:", error);
       toast.error("There was an error processing your order. Please try again.");
       setProcessingPayment(false);
     }
@@ -1525,5 +1564,16 @@ function UnifiedCheckout() {
     </m.div>
   );
 }
+
+// Import to show current environment variables (safely)
+const logEnvironmentVars = () => {
+  console.log('Environment Variables Check:', {
+    emailEnabled: process.env.REACT_APP_EMAIL_ENABLED,
+    useEmailServer: process.env.REACT_APP_USE_EMAIL_SERVER,
+    hasResendApiKey: !!process.env.REACT_APP_RESEND_API_KEY,
+    emailFrom: process.env.REACT_APP_EMAIL_FROM,
+    emailSupport: process.env.REACT_APP_SUPPORT_EMAIL
+  });
+};
 
 export default UnifiedCheckout; 

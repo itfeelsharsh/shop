@@ -1,9 +1,9 @@
 # Admin Side (Separate Repo: [shopAdmin](https://github.com/itfeelsharsh/shopAdmin)):
  (made with React + Firebase no server deployment required, can-be hosted on CloudFlare pages, Vercel, Netlify, Firebase Hosting Etc.)
 
-# KamiKoto - Exquisite Japanese Stationery E-Commerce Web App
+# KamiKoto - Stationery E-Commerce Web App
 
-Welcome to KamiKoto, a beautifully crafted e-commerce platform offering a seamless shopping experience for exquisite Japanese stationery. This project is built using **React.js** and **Firebase**, delivering a delightful UI/UX and mobile-friendly experience for all users.
+Welcome to KamiKoto, a beautifully crafted e-commerce platform offering a seamless shopping experience for stationery. This project is built using **React.js** and **Firebase**, delivering a delightful UI/UX and mobile-friendly experience for all users.
 
 ---
 
@@ -59,6 +59,25 @@ Welcome to KamiKoto, a beautifully crafted e-commerce platform offering a seamle
    - Add your Firebase project configuration in `firebase.js`.
    - Set up Firestore Database and Authentication in [Firebase Console](https://console.firebase.google.com).
    - Update Firestore security rules accordingly.
+
+5. **Email Configuration with Resend (Optional):**
+   - Create a `.env` file in the root directory based on the example below.
+   - Sign up at [Resend](https://resend.com) to get your API key.
+   - Verify your domain in Resend dashboard for better deliverability.
+   - Set `REACT_APP_EMAIL_ENABLED` to `true` to enable email functionality.
+   - Add your Resend API key to the `.env` file as `REACT_APP_RESEND_API_KEY`.
+   - Customize your email addresses as needed.
+
+   ```
+   # Email Configuration
+   REACT_APP_EMAIL_ENABLED=true
+   REACT_APP_USE_EMAIL_SERVER=false
+   REACT_APP_RESEND_API_KEY=your_resend_api_key_here
+   REACT_APP_EMAIL_FROM=orders@yourdomain.com
+   REACT_APP_SUPPORT_EMAIL=support@yourdomain.com
+   ```
+
+   The application will automatically send order confirmation emails when orders are placed, and shipping notification emails when orders are shipped.
 
 ---
 
@@ -144,4 +163,5 @@ To use the Admin Panel ([shopAdmin](https://github.com/itfeelsharsh/shopAdmin)):
 
 - **Frontend:** React.js
 - **Backend/Database:** Firebase (Firestore, Authentication)
+- **Email Service:** Resend API (optional)
 - **Deployment:** Firebase Hosting (or any other service)
