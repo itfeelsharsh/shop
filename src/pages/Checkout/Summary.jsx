@@ -12,7 +12,17 @@ function CheckoutSummary() {
     const fetchProducts = async () => {
       const productsCol = collection(db, "products");
       const productSnapshot = await getDocs(productsCol);
-      const productList = productSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const productList = productSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          // Ensure price is a number
+          price: data.price !== undefined ? parseFloat(data.price) : 0,
+          // Ensure stock is a number if needed
+          stock: data.stock !== undefined ? parseInt(data.stock, 10) : 0
+        };
+      });
       setProducts(productList);
     };
     fetchProducts();

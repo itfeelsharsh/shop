@@ -333,7 +333,16 @@ export default function Navbar() {
               }}
             >
               <div className="relative">
-                <item.icon className="h-6 w-6 mb-0.5" />
+                {/* Show profile picture instead of icon for Account tab when user is logged in */}
+                {item.name === 'Account' && user ? (
+                  <img
+                    src={profilePic}
+                    alt={userName}
+                    className="h-6 w-6 mb-0.5 rounded-full object-cover ring-1 ring-gray-200"
+                  />
+                ) : (
+                  <item.icon className="h-6 w-6 mb-0.5" />
+                )}
                 {item.name === 'Cart' && item.count > 0 && (
                   <span className="absolute -top-1 -right-2.5 bg-blue-600 text-white text-[10px] font-semibold w-4 h-4 rounded-full flex items-center justify-center ring-1 ring-white">
                     {item.count > 9 ? '9+' : item.count}

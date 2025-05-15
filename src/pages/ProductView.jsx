@@ -5,10 +5,12 @@ import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart } from '../redux/cartSlice';
 import { toast, ToastContainer } from 'react-toastify';
-import { Truck, ShieldCheck, ArrowLeft, Package2, ShoppingCart, ChevronDown, ChevronUp, Tag, Star, Globe, AlertTriangle, Info, Award } from 'lucide-react';
+import { Truck, ShieldCheck, ArrowLeft, Package2, ShoppingCart, ChevronDown, ChevronUp, Tag, Star, Globe, AlertTriangle, Info, Award, MessageSquare } from 'lucide-react';
 import 'react-toastify/dist/ReactToastify.css';
 import WishlistButton from '../components/WishlistButton';
 import { Helmet } from 'react-helmet-async';
+import ProductReviews from '../components/ProductReviews';
+import ProductReviewForm from '../components/ProductReviewForm';
 
 /**
  * Product details page component
@@ -556,6 +558,26 @@ function ProductView() {
                 </div>
               </div>
             </div>
+          </div>
+          
+          {/* Product Reviews Section */}
+          <div className="bg-white shadow-xl rounded-lg overflow-hidden my-8 p-6">
+            <div className="flex items-center mb-6">
+              <MessageSquare className="mr-3 text-blue-600" size={24} />
+              <h2 className="text-2xl font-bold text-gray-900">Customer Reviews</h2>
+            </div>
+            
+            {/* Display reviews component */}
+            <ProductReviews productId={id} />
+            
+            {/* Review form component */}
+            <ProductReviewForm 
+              productId={id} 
+              onReviewSubmitted={() => {
+                // Refresh the reviews after submission
+                toast.success("Thank you for your review!");
+              }} 
+            />
           </div>
           
           {/* Similar Products Section */}

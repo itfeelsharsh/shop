@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#8B4513" /> <!-- Aesthetic brown theme color -->
     
     <!-- Content Security Policy -->
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' 'inline-speculation-rules' 'sha256-RlhVC6WGhVrcsY0hAmbU/YhaSUz2iA2q1f16/7A6jLU=' https://firestore.googleapis.com https://www.google.com https://www.gstatic.com https://apis.google.com https://www.recaptcha.net;">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'wasm-unsafe-eval' 'inline-speculation-rules' https://firestore.googleapis.com https://www.google.com https://www.gstatic.com https://apis.google.com https://www.recaptcha.net;">
     
     <!-- Prerender status detection -->
     <meta name="prerender-status-code" content="200">
@@ -25,71 +25,8 @@
     <!-- Preload critical assets -->
     <link rel="preload" href="%PUBLIC_URL%/logo192.png" as="image" />
     
-    <!-- Bot Detection Script - Helps serve proper content to social media crawlers -->
-    <script type="text/javascript">
-      /**
-       * Detects if the current visitor is a social media crawler/bot
-       * Modifies page behavior for optimal social media preview generation
-       * 
-       * @returns {boolean} True if visitor is a bot, false otherwise
-       */
-      function detectBot() {
-        const botPatterns = [
-          'googlebot', 'bingbot', 'yandex', 'baiduspider', 'twitterbot',
-          'facebookexternalhit', 'linkedinbot', 'discordbot', 'slackbot',
-          'telegrambot', 'whatsapp', 'line-podcast', 'skype', 'pinterest',
-          'bot', 'spider', 'crawl'
-        ];
-        
-        const userAgent = navigator.userAgent.toLowerCase();
-        for (const pattern of botPatterns) {
-          if (userAgent.indexOf(pattern) !== -1) return true;
-        }
-        
-        return false;
-      }
-      
-      /**
-       * Sets up the page for optimal bot crawling
-       * Disables animations and transitions for bots
-       * Ensures critical content is immediately visible
-       */
-      function setupForBots() {
-        // Create a style element to inject bot-specific CSS
-        const style = document.createElement('style');
-        style.type = 'text/css';
-        style.innerHTML = `
-          /* Disable animations and transitions for bots */
-          * {
-            animation: none !important;
-            transition: none !important;
-            opacity: 1 !important;
-          }
-          
-          /* Hide loading screens for bots */
-          .loading-screen { 
-            display: none !important;
-          }
-          
-          /* Ensure content is visible immediately */
-          #root {
-            display: block !important;
-            opacity: 1 !important;
-          }
-        `;
-        
-        // Add the styles to the head
-        document.head.appendChild(style);
-        
-        // Mark page as ready for prerendering immediately
-        window.prerenderReady = true;
-      }
-      
-      // Execute bot detection and setup
-      if (detectBot()) {
-        setupForBots();
-      }
-    </script>
+    <!-- Bot Detection Script - Moved to external file -->
+    <script src="%PUBLIC_URL%/js/bot-detection.js"></script>
     
     <!-- Default Meta Tags (overridden by product-specific tags when available) -->
     <meta
@@ -154,11 +91,8 @@
       }
     </style>
     
-    <!-- Prerender.io or similar service support -->
-    <script>
-      // This script helps prerendering services detect when page is fully loaded
-      window.prerenderReady = false;
-    </script>
+    <!-- Prerender.io support - Moved to external file -->
+    <script src="%PUBLIC_URL%/js/prerender-support.js"></script>
   </head>
   <body>
     <noscript>Please enable JavaScript to use this website.</noscript>

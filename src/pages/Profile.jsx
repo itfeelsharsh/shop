@@ -23,7 +23,8 @@ import {
   Package,
   ExternalLink,
   CheckCircle,
-  FileDown
+  FileDown,
+  Star
 } from 'lucide-react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import { useDispatch, 
@@ -34,6 +35,7 @@ import { setWishlistItems } from '../redux/wishlistSlice';
 import logger from '../utils/logger';
 import useWishlist from '../utils/useWishlist';
 import { downloadOrderReceipt } from '../utils/pdfUtils';
+import UserReviews from '../components/UserReviews';
 
 /**
  * Order status constants with associated colors for UI display
@@ -50,7 +52,7 @@ const ORDER_STATUS = {
 
 /**
  * My Account page with multiple sections for profile management,
- * orders, wishlist, and shipment tracking
+ * orders, wishlist, shipment tracking, and reviews
  * 
  * Now with URL-based navigation for each section:
  * - /my-account/profile (default)
@@ -58,6 +60,7 @@ const ORDER_STATUS = {
  * - /my-account/orders
  * - /my-account/track-shipment
  * - /my-account/wishlist
+ * - /my-account/reviews
  */
 function MyAccount() {
   // Get the current section from URL parameters
@@ -578,6 +581,18 @@ function MyAccount() {
               >
                 <Heart size={18} className="mr-2" />
                 <span>Wishlist</span>
+              </Link>
+              
+              <Link 
+                to="/my-account/reviews"
+                className={`flex items-center py-4 px-6 focus:outline-none transition-colors ${
+                  currentSection === 'reviews' 
+                    ? 'text-blue-600 border-b-2 border-blue-600 font-medium' 
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <Star size={18} className="mr-2" />
+                <span>Reviews</span>
               </Link>
             </div>
           </div>
@@ -1360,6 +1375,16 @@ function MyAccount() {
                     )}
                   </>
                 )}
+              </m.div>
+            )}
+            
+            {currentSection === 'reviews' && (
+              <m.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <UserReviews />
               </m.div>
             )}
           </div>

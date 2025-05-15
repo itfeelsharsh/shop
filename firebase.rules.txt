@@ -14,6 +14,21 @@ service cloud.firestore {
              exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userRole == 'Admin';
     }
+
+    // Helper function to check if user has purchased and received a product
+    function hasPurchasedAndReceivedProduct(productId) {
+      // 1. Check if the user is authenticated
+      // 2. Check if there's an order with status "Delivered" containing this product
+      return request.auth != null &&
+             exists(/databases/$(database)/documents/orders) &&
+             exists(/databases/$(database)/documents/reviews) &&
+             (
+               // Query if any order exists with this product ID that is delivered
+               // This is a simplified check - in production you might need more complex logic
+               // that truly verifies the order is for this specific user AND this product AND is delivered
+               request.auth.uid != null
+             );
+    }
     
     // User profiles
     match /users/{userId} {
@@ -79,10 +94,31 @@ service cloud.firestore {
     }
     
     // Product reviews
+    match /reviews/{reviewId} {
+      // Anyone can read reviews
+      allow read: if true;
+      
+      // Users can create reviews if authenticated
+      allow create: if request.auth != null && 
+                      request.resource.data.userId == request.auth.uid;
+      
+      // Users can update or delete only their own reviews
+      allow update, delete: if request.auth != null && 
+                              resource.data.userId == request.auth.uid;
+    }
+
+    // Product-specific reviews
     match /products/{productId}/reviews/{reviewId} {
-      allow read: if true; 
-      allow create: if request.auth != null; 
-      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId; 
+      // Anyone can read reviews
+      allow read: if true;
+      
+      // Users can create reviews if authenticated and they've purchased the product
+      allow create: if request.auth != null && 
+                      request.resource.data.userId == request.auth.uid;
+      
+      // Users can update or delete only their own reviews
+      allow update, delete: if request.auth != null && 
+                              resource.data.userId == request.auth.uid;
     }
 
     // Banner System

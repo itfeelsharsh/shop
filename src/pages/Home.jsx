@@ -37,6 +37,10 @@ function Home() {
             ...data,
             // Ensure stock is a number, defaulting to 0 if undefined or not a number
             stock: data.stock !== undefined ? parseInt(data.stock, 10) : 0,
+            // Ensure price is a number, defaulting to 0 if undefined or not a number
+            price: data.price !== undefined ? parseFloat(data.price) : 0,
+            // Also ensure mrp is a number if it exists
+            mrp: data.mrp !== undefined ? parseFloat(data.mrp) : null
           };
         });
 

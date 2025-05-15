@@ -1,12 +1,13 @@
-import React, { useState, memo } from 'react';
+import React, { useState, memo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { m, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, Eye, X } from 'lucide-react';
+import { ShoppingCart, Eye, X, Star } from 'lucide-react';
 import { useInView } from 'react-intersection-observer';
 import PropTypes from 'prop-types';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '../firebase/config';
 import WishlistButton from './WishlistButton';
+import reviewUtils from '../utils/reviewUtils';
 
 /**
  * NotificationModal Component
@@ -132,6 +133,7 @@ NotificationModal.displayName = 'NotificationModal';
  * - Add to cart functionality with authentication check
  * - Wishlist functionality for saving products
  * - Notification system for user feedback
+ * - Rating display showing product reviews
  * 
  * @param {Object} product - The product data to display
  * @param {Function} onAddToCart - Function to call when adding to cart
@@ -153,12 +155,31 @@ const ProductCard = memo(function ProductCard({
     message: ''
   });
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [productRating, setProductRating] = useState({ average: 0, total: 0 });
 
   // Intersection observer for revealing animation when card scrolls into view
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1
   });
+
+  /**
+   * Fetch the product's rating information
+   */
+  useEffect(() => {
+    if (product?.id) {
+      const fetchRating = async () => {
+        try {
+          const ratingStats = await reviewUtils.getProductRatingStats(product.id);
+          setProductRating(ratingStats);
+        } catch (error) {
+          console.error("Error fetching product rating:", error);
+        }
+      };
+      
+      fetchRating();
+    }
+  }, [product]);
 
   /**
    * Handles adding product to cart with authentication and stock validation
@@ -353,6 +374,32 @@ const ProductCard = memo(function ProductCard({
     );
   };
 
+  // Place this where you want the rating to be displayed, typically after the product name
+  const renderRatingStars = () => {
+    return (
+      <div className="flex items-center mt-1 mb-2">
+        <div className="flex">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Star 
+              key={star}
+              size={14}
+              className="mr-0.5"
+              fill={star <= Math.round(productRating.average) ? "#F59E0B" : "none"} 
+              stroke={star <= Math.round(productRating.average) ? "#F59E0B" : "#D1D5DB"}
+            />
+          ))}
+        </div>
+        {productRating.total > 0 ? (
+          <span className="ml-1 text-xs text-gray-600">
+            ({productRating.average.toFixed(1)}) {productRating.total} review{productRating.total !== 1 ? 's' : ''}
+          </span>
+        ) : (
+          <span className="ml-1 text-xs text-gray-500">No reviews yet</span>
+        )}
+      </div>
+    );
+  };
+
   return (
     <>
       <m.div
@@ -380,124 +427,150 @@ const ProductCard = memo(function ProductCard({
         "
         onClick={handleViewDetails}
       >
-        {renderProductImage()}
+        {/* Notification Modal */}
+        <NotificationModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          type={modalConfig.type}
+          message={modalConfig.message}
+        />
+        
+        {/* Discount Badge */}
+        {product?.mrp && product.mrp > product.price && (
+          <div className="absolute top-3 left-3 z-10">
+            <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-sm">
+              {calculateDiscount(product.mrp, product.price)}% OFF
+            </div>
+          </div>
+        )}
 
-        {/* Product Information Section */}
-        <div className="flex flex-col flex-grow p-6">
-          {/* Brand Display - Added for fancy brand name display */}
+        {/* New Product Badge */}
+        {product?.isNew && (
+          <div className="absolute top-3 right-3 z-10">
+            <div className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-sm">
+              NEW
+            </div>
+          </div>
+        )}
+        
+        {/* Product Image */}
+        {renderProductImage()}
+        
+        {/* Product Content */}
+        <div className="flex-grow p-4 flex flex-col">
+          {/* Product Brand */}
           {product?.brand && (
-            <div className="mb-2">
-              <span className="text-xs uppercase tracking-wider bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent font-bold">
+            <div className="mb-1">
+              <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {product.brand}
               </span>
             </div>
           )}
           
-          {/* Product Title, Description & Category */}
-          <div className="flex-grow">
-            <h3 className="text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-2">
-              {product?.name || 'Product Name'}
-            </h3>
-            <p className="mt-2 text-sm text-gray-600 line-clamp-2">
-              {product?.description || 'No description available'}
+          {/* Product Name */}
+          <h3 className="text-lg font-semibold text-gray-800 mb-1 line-clamp-2">{product?.name}</h3>
+          
+          {/* Product Rating */}
+          {renderRatingStars()}
+          
+          {/* Product Description (truncated) */}
+          {product?.description && (
+            <p className="text-sm text-gray-600 mb-3 line-clamp-3 flex-grow">
+              {product.description}
             </p>
-            <div className="mt-2 text-sm text-gray-500">
-              {product?.type && <span className="inline-block">{product?.type}</span>}
-            </div>
+          )}
+          
+          {/* Price Information */}
+          <div className="flex items-baseline mb-3">
+            <span className="text-lg font-bold text-blue-600">
+              {formatPrice(product?.price)}
+            </span>
+            {product?.mrp && product.mrp > product.price && (
+              <span className="ml-2 text-sm text-gray-500 line-through">
+                {formatPrice(product.mrp)}
+              </span>
+            )}
           </div>
-
-          {/* Bottom Section - Price, Stock Status and Action Buttons */}
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            {/* 
-              * Product Price Display Section
-              * 
-              * IMPORTANT: This section is critical for displaying product prices on home/product pages.
-              * Displays:
-              * 1. Current price in bold format with Indian Rupee symbol (₹)
-              * 2. Original price (if available) with strikethrough styling
-              * 3. Savings percentage badge when a discount is applied
-              *
-              * The formatPrice function properly formats prices with thousands separators
-              * and handles null/undefined values to prevent display issues.
-              */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center">
-                <span className="text-lg font-bold text-gray-900">{formatPrice(product?.price)}</span>
-                {product?.originalPrice && product.originalPrice > product.price && (
-                  <span className="ml-2 text-sm text-gray-500 line-through">{formatPrice(product?.originalPrice)}</span>
-                )}
-              </div>
-              
-              {product?.originalPrice && product.originalPrice > product.price && (
-                <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                  Save {calculateDiscount(product.originalPrice, product.price)}%
-                </span>
-              )}
-            </div>
+          
+          {/* Stock Status */}
+          <div className="mb-3">
+            {product?.stock && product.stock > 0 ? (
+              <span className="inline-flex items-center text-xs font-medium text-green-600">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></span>
+                In Stock
+              </span>
+            ) : (
+              <span className="inline-flex items-center text-xs font-medium text-red-600">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5"></span>
+                Out of Stock
+              </span>
+            )}
+          </div>
+          
+          {/* Action Buttons */}
+          <div className="flex mt-auto space-x-2">
+            <button
+              onClick={handleViewDetails}
+              className="flex-1 bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors font-medium rounded-lg py-2 px-4 flex items-center justify-center"
+            >
+              <Eye size={16} className="mr-1.5" />
+              View
+            </button>
             
-            <div className="flex items-center justify-between mb-3">
-              {product.stock > 0 ? (
-                <button
-                  onClick={handleAddToCart}
-                  disabled={isAddingToCart}
-                  className={`w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-all duration-200 ease-in-out transform focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center justify-center space-x-2 ${isAddingToCart ? 'opacity-70 cursor-wait' : 'group-hover:opacity-100 group-hover:translate-y-0'}`}
-                  aria-live="polite"
-                >
-                  {isAddingToCart ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Adding...
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingCart size={18} className="mr-2" />
-                      Add to Cart
-                    </>
-                  )}
-                </button>
+            <button
+              onClick={handleAddToCart}
+              disabled={isAddingToCart || !product?.stock || product.stock <= 0}
+              className={`flex-1 ${
+                isAddingToCart || !product?.stock || product.stock <= 0 
+                  ? 'bg-gray-300 cursor-not-allowed' 
+                  : 'bg-blue-600 hover:bg-blue-700'
+              } text-white transition-colors font-medium rounded-lg py-2 px-4 flex items-center justify-center`}
+            >
+              {isAddingToCart ? (
+                <span className="flex items-center">
+                  <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+                  Adding...
+                </span>
               ) : (
-                <div className="w-full bg-gray-300 text-gray-600 py-2.5 rounded-lg text-sm font-semibold cursor-not-allowed flex items-center justify-center space-x-2">
-                  Out of Stock
-                </div>
+                <>
+                  <ShoppingCart size={16} className="mr-1.5" />
+                  Add to Cart
+                </>
               )}
-            </div>
+            </button>
+          </div>
+          
+          {/* Wishlist Button */}
+          <div className="absolute top-3 right-3 z-20">
+            <WishlistButton 
+              product={product} 
+              size="sm"
+            />
           </div>
         </div>
       </m.div>
-
-      {/* Notification Modal for user feedback */}
-      <NotificationModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        type={modalConfig.type}
-        message={modalConfig.message}
-      />
     </>
   );
 });
 
-// PropTypes validation for component props
+// Add display name for debugging
+ProductCard.displayName = 'ProductCard';
+
+// PropTypes validation
 ProductCard.propTypes = {
   product: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-    image: PropTypes.string.isRequired,
-    price: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    originalPrice: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    discount: PropTypes.string,
-    isNew: PropTypes.bool,
-    rating: PropTypes.number,
-    stock: PropTypes.number,
-    category: PropTypes.string,
-    tags: PropTypes.arrayOf(PropTypes.string),
+    price: PropTypes.number.isRequired,
     description: PropTypes.string,
-    hoverImage: PropTypes.string
+    image: PropTypes.string,
+    stock: PropTypes.number,
+    mrp: PropTypes.number,
+    brand: PropTypes.string,
+    isNew: PropTypes.bool,
   }),
-  onAddToCart: PropTypes.func.isRequired,
-  onAddToWishlist: PropTypes.func.isRequired
+  onAddToCart: PropTypes.func,
+  onAddToWishlist: PropTypes.func
 };
 
 export default ProductCard;

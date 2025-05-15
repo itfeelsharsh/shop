@@ -129,10 +129,19 @@ function UnifiedCheckout() {
       try {
         const productsCol = collection(db, "products");
         const productSnapshot = await getDocs(productsCol);
-        const productList = productSnapshot.docs.map(doc => ({ 
-          id: doc.id, 
-          ...doc.data() 
-        }));
+        const productList = productSnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            // Ensure price is a number
+            price: data.price !== undefined ? parseFloat(data.price) : 0,
+            // Ensure mrp is a number if it exists
+            mrp: data.mrp !== undefined ? parseFloat(data.mrp) : null,
+            // Ensure stock is a number
+            stock: data.stock !== undefined ? parseInt(data.stock, 10) : 0
+          };
+        });
         setProducts(productList);
         setLoading(false);
       } catch (error) {
