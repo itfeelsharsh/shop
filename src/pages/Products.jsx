@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { db } from "../firebase/config";
 import { collection, getDocs } from "firebase/firestore";
 import ProductCard from "../components/ProductCard";
-import { Search } from "lucide-react";
+import { Search, Filter, X } from "lucide-react";
 import { m } from "framer-motion";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
@@ -14,7 +14,7 @@ import { auth } from "../firebase/config";
  * Features:
  * - Fetches products from Firestore database
  * - Organizes products by categories
- * - Provides search functionality
+ * - Provides advanced search and filtering functionality
  * - Implements "load more" pagination per category
  * - Uses animations for enhanced user experience
  * - Includes performance optimizations for authenticated users
@@ -25,6 +25,23 @@ function Products() {
   const [loading, setLoading] = useState(true); // Loading state for initial data fetch
   const [visibleCounts, setVisibleCounts] = useState({}); // Track number of visible products per category
   const [searchTerm, setSearchTerm] = useState(""); // User search input
+  const [showFilters, setShowFilters] = useState(false); // Control filter panel visibility
+  
+  // Filter states
+  const [filters, setFilters] = useState({
+    priceRange: { min: "", max: "" },
+    brands: [],
+    types: [],
+    origin: "",
+    importStatus: "",
+    warranty: false,
+    guarantee: false,
+    inStock: false
+  });
+  
+  const [availableBrands, setAvailableBrands] = useState([]); // Available brands from products
+  const [availableTypes, setAvailableTypes] = useState([]); // Available product types from products
+  
   const dispatch = useDispatch(); // Redux dispatch for cart actions
   const [user] = useAuthState(auth); // Get authenticated user
 
@@ -110,6 +127,47 @@ function Products() {
   }, [user]); // Add user dependency to re-fetch when auth state changes
 
   /**
+   * Extract unique brands and types from products
+   * Updates availableBrands and availableTypes state
+   */
+  useEffect(() => {
+    if (products.length > 0) {
+      const brands = [...new Set(products.map(p => p.brand).filter(Boolean))];
+      const types = [...new Set(products.map(p => p.type).filter(Boolean))];
+      setAvailableBrands(brands);
+      setAvailableTypes(types);
+    }
+  }, [products]);
+
+  /**
+   * Handle filter changes
+   * @param {string} filterType - Type of filter being changed
+   * @param {any} value - New value for the filter
+   */
+  const handleFilterChange = (filterType, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterType]: value
+    }));
+  };
+
+  /**
+   * Reset all filters to their default state
+   */
+  const resetFilters = () => {
+    setFilters({
+      priceRange: { min: "", max: "" },
+      brands: [],
+      types: [],
+      origin: "",
+      importStatus: "",
+      warranty: false,
+      guarantee: false,
+      inStock: false
+    });
+  };
+
+  /**
    * Predefined category order for consistent display
    * Categories are displayed in this exact order regardless of data order
    * Memoized to prevent recreation on every render
@@ -129,7 +187,7 @@ function Products() {
 
   /**
    * Generate categorized products for display
-   * Applies search filter if search term exists
+   * Applies search filter and all other filters if they exist
    * Ensures price values are properly converted to numbers
    * Memoized to prevent recalculation on every render
    */
@@ -137,13 +195,10 @@ function Products() {
     // Process product data to ensure consistent data types
     const processedProducts = products.map(product => ({
       ...product,
-      // Ensure price is a number
       price: typeof product.price === 'string' ? parseFloat(product.price) : product.price,
-      // Ensure originalPrice is a number if it exists
       originalPrice: product.originalPrice ? 
         (typeof product.originalPrice === 'string' ? parseFloat(product.originalPrice) : product.originalPrice) 
         : null,
-      // Ensure stock is a number
       stock: typeof product.stock === 'string' ? parseInt(product.stock, 10) : product.stock,
     }));
 
@@ -155,6 +210,35 @@ function Products() {
           return false;
         }
 
+        // Apply price range filter
+        if (filters.priceRange.min && product.price < parseFloat(filters.priceRange.min)) return false;
+        if (filters.priceRange.max && product.price > parseFloat(filters.priceRange.max)) return false;
+
+        // Apply brand filter
+        if (filters.brands.length > 0 && !filters.brands.includes(product.brand)) return false;
+
+        // Apply type filter
+        if (filters.types.length > 0 && !filters.types.includes(product.type)) return false;
+
+        // Apply origin filter
+        if (filters.origin && product.origin !== filters.origin) return false;
+
+        // Apply import status filter
+        if (filters.importStatus) {
+          const isImported = product.importDetails?.isImported;
+          if (filters.importStatus === 'imported' && !isImported) return false;
+          if (filters.importStatus === 'local' && isImported) return false;
+        }
+
+        // Apply warranty filter
+        if (filters.warranty && !product.warranty?.available) return false;
+
+        // Apply guarantee filter
+        if (filters.guarantee && !product.guarantee?.available) return false;
+
+        // Apply stock filter
+        if (filters.inStock && product.stock <= 0) return false;
+
         // If searchTerm is empty, include the product
         if (searchTerm === "") {
           return true;
@@ -164,45 +248,33 @@ function Products() {
         const term = searchTerm.toLowerCase();
 
         // Check various product fields for a match
-        // Check product name
         if (product.name?.toLowerCase().includes(term)) return true;
-        // Check product description
         if (product.description?.toLowerCase().includes(term)) return true;
-        // Check product brand
         if (product.brand?.toLowerCase().includes(term)) return true;
-        // Check product slug
         if (product.slug?.toLowerCase().includes(term)) return true;
-        // Check product origin
         if (product.origin?.toLowerCase().includes(term)) return true;
-        // Check additional product information
         if (product.additionalInfo?.toLowerCase().includes(term)) return true;
-
-        // Check product tags (array of strings)
         if (product.tags?.some(tag => tag.toLowerCase().includes(term))) return true;
 
-        // Check warranty information (if available)
         if (product.warranty?.available) {
           if (product.warranty.details?.toLowerCase().includes(term)) return true;
           if (product.warranty.period?.toLowerCase().includes(term)) return true;
         }
 
-        // Check guarantee information (if available)
         if (product.guarantee?.available) {
           if (product.guarantee.details?.toLowerCase().includes(term)) return true;
           if (product.guarantee.period?.toLowerCase().includes(term)) return true;
         }
 
-        // Check import details (if applicable)
         if (product.importDetails?.isImported) {
           if (product.importDetails.country?.toLowerCase().includes(term)) return true;
           if (product.importDetails.deliveryNote?.toLowerCase().includes(term)) return true;
         }
         
-        // If no match is found in any field, exclude the product
         return false;
       }),
     }));
-  }, [products, searchTerm, categoriesOrder]);
+  }, [products, searchTerm, categoriesOrder, filters]);
 
   /**
    * Handles loading more products for a specific category
@@ -248,19 +320,266 @@ function Products() {
         Our Premium Collection
       </h1>
 
-      {/* Search Bar */}
-      <div className="mb-8 relative">
-        <input
-          type="text"
-          placeholder="Search products..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full p-4 pr-12 text-gray-900 border border-gray-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <Search
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-          size={20}
-        />
+      {/* Search and Filter Section */}
+      <div className="mb-8 space-y-4">
+        {/* Search Bar with Filter Toggle */}
+        <div className="flex gap-4">
+          <div className="flex-grow relative">
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full p-4 pr-12 text-gray-900 border border-gray-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <Search
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={20}
+            />
+          </div>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm transition-colors ${
+              showFilters 
+                ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                : 'bg-white border border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            <Filter size={20} />
+            <span>Filters</span>
+            {/* Show active filters count */}
+            {Object.values(filters).some(value => {
+              if (typeof value === 'object') {
+                return Object.values(value).some(v => v !== "" && v !== false);
+              }
+              return value !== "" && value !== false && value.length > 0;
+            }) && (
+              <span className="ml-1 bg-white text-blue-600 px-2 py-0.5 rounded-full text-sm">
+                {Object.values(filters).reduce((count, value) => {
+                  if (typeof value === 'object') {
+                    return count + Object.values(value).filter(v => v !== "" && v !== false).length;
+                  }
+                  return count + (value !== "" && value !== false && value.length > 0 ? 1 : 0);
+                }, 0)}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Active Filters Display */}
+        {Object.entries(filters).some(([key, value]) => {
+          if (typeof value === 'object') {
+            return Object.values(value).some(v => v !== "" && v !== false);
+          }
+          return value !== "" && value !== false && value.length > 0;
+        }) && (
+          <div className="flex flex-wrap gap-2 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+            {Object.entries(filters).map(([key, value]) => {
+              if (key === 'priceRange' && (value.min || value.max)) {
+                return (
+                  <div key={key} className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
+                    <span>Price: {value.min ? `₹${value.min}` : 'Min'} - {value.max ? `₹${value.max}` : 'Max'}</span>
+                    <button
+                      onClick={() => handleFilterChange('priceRange', { min: "", max: "" })}
+                      className="text-blue-700 hover:text-blue-900"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                );
+              }
+              if (Array.isArray(value) && value.length > 0) {
+                return value.map(item => (
+                  <div key={`${key}-${item}`} className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
+                    <span>{key === 'brands' ? 'Brand' : 'Type'}: {item}</span>
+                    <button
+                      onClick={() => handleFilterChange(key, value.filter(v => v !== item))}
+                      className="text-blue-700 hover:text-blue-900"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ));
+              }
+              if (typeof value === 'string' && value) {
+                return (
+                  <div key={key} className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
+                    <span>{key === 'origin' ? 'Origin' : 'Import'}: {value}</span>
+                    <button
+                      onClick={() => handleFilterChange(key, "")}
+                      className="text-blue-700 hover:text-blue-900"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                );
+              }
+              if (typeof value === 'boolean' && value) {
+                return (
+                  <div key={key} className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
+                    <span>{key === 'warranty' ? 'With Warranty' : key === 'guarantee' ? 'With Guarantee' : 'In Stock'}</span>
+                    <button
+                      onClick={() => handleFilterChange(key, false)}
+                      className="text-blue-700 hover:text-blue-900"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                );
+              }
+              return null;
+            })}
+            <button
+              onClick={resetFilters}
+              className="text-sm text-blue-600 hover:text-blue-800 underline"
+            >
+              Clear All
+            </button>
+          </div>
+        )}
+
+        {/* Filter Panel */}
+        {showFilters && (
+          <m.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="bg-white p-6 rounded-lg shadow-lg border border-gray-200"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Price Range */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Price Range</label>
+                <div className="flex gap-2">
+                  <div className="flex-grow">
+                    <input
+                      type="number"
+                      placeholder="Min"
+                      value={filters.priceRange.min}
+                      onChange={(e) => handleFilterChange('priceRange', { ...filters.priceRange, min: e.target.value })}
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="flex-grow">
+                    <input
+                      type="number"
+                      placeholder="Max"
+                      value={filters.priceRange.max}
+                      onChange={(e) => handleFilterChange('priceRange', { ...filters.priceRange, max: e.target.value })}
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Brands */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Brands</label>
+                <div className="max-h-40 overflow-y-auto space-y-2">
+                  {availableBrands.map(brand => (
+                    <label key={brand} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
+                      <input
+                        type="checkbox"
+                        checked={filters.brands.includes(brand)}
+                        onChange={(e) => {
+                          const newBrands = e.target.checked
+                            ? [...filters.brands, brand]
+                            : filters.brands.filter(b => b !== brand);
+                          handleFilterChange('brands', newBrands);
+                        }}
+                        className="rounded text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">{brand}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Product Types */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Product Types</label>
+                <div className="max-h-40 overflow-y-auto space-y-2">
+                  {availableTypes.map(type => (
+                    <label key={type} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
+                      <input
+                        type="checkbox"
+                        checked={filters.types.includes(type)}
+                        onChange={(e) => {
+                          const newTypes = e.target.checked
+                            ? [...filters.types, type]
+                            : filters.types.filter(t => t !== type);
+                          handleFilterChange('types', newTypes);
+                        }}
+                        className="rounded text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">{type}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Origin */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Origin</label>
+                <input
+                  type="text"
+                  placeholder="Country of origin"
+                  value={filters.origin}
+                  onChange={(e) => handleFilterChange('origin', e.target.value)}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              {/* Import Status */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Import Status</label>
+                <select
+                  value={filters.importStatus}
+                  onChange={(e) => handleFilterChange('importStatus', e.target.value)}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">All Products</option>
+                  <option value="imported">Imported Products</option>
+                  <option value="local">Local Products</option>
+                </select>
+              </div>
+
+              {/* Additional Filters */}
+              <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Additional Filters</h3>
+                <label className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
+                  <input
+                    type="checkbox"
+                    checked={filters.warranty}
+                    onChange={(e) => handleFilterChange('warranty', e.target.checked)}
+                    className="rounded text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">With Warranty</span>
+                </label>
+
+                <label className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
+                  <input
+                    type="checkbox"
+                    checked={filters.guarantee}
+                    onChange={(e) => handleFilterChange('guarantee', e.target.checked)}
+                    className="rounded text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">With Guarantee</span>
+                </label>
+
+                <label className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
+                  <input
+                    type="checkbox"
+                    checked={filters.inStock}
+                    onChange={(e) => handleFilterChange('inStock', e.target.checked)}
+                    className="rounded text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">In Stock Only</span>
+                </label>
+              </div>
+            </div>
+          </m.div>
+        )}
       </div>
 
       {/* Product Categories */}

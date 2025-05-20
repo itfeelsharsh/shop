@@ -8,12 +8,11 @@ import { collection, getDocs } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { clearCart, applyCoupon, removeCoupon, removePurchasedFromCart, updateQuantity, removeFromCart } from '../../redux/cartSlice';
 import countriesStatesData from '../../countriesStates.json';
-import { ShoppingBag, Truck, CreditCard, CheckCircle, ChevronRight, ChevronLeft, Tag, RefreshCw, X } from 'lucide-react';
+import { ShoppingBag, Truck, CreditCard, CheckCircle, ChevronRight, ChevronLeft, Tag, X } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import OrderConfirmation from '../../components/OrderConfirmation';
 import CouponService from '../../utils/couponService';
-import featureConfig from '../../utils/featureConfig';
 import { processNewOrder } from '../../utils/orderService';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
@@ -91,11 +90,11 @@ function UnifiedCheckout() {
   const [card, setCard] = useState({ number: '', cvv: '', expiry: '', type: 'RuPay' });
   const [upi, setUpi] = useState('');
   const [processingPayment, setProcessingPayment] = useState(false);
-  const [orderComplete, setOrderComplete] = useState(false);
+  const [orderComplete] = useState(false);
   const [savePaymentInfo, setSavePaymentInfo] = useState(true);
   
   // Add state for order data and completion
-  const [completedOrder, setCompletedOrder] = useState(null);
+  const [completedOrder] = useState(null);
 
   // Coupon validation with reCAPTCHA v3
   const [couponCode, setCouponCode] = useState('');

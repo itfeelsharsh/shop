@@ -1,7 +1,7 @@
 import React, { useState, memo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { m, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, Eye, X, Star } from 'lucide-react';
+import { m } from 'framer-motion';
+import { ShoppingCart, Eye, Star } from 'lucide-react';
 import { useInView } from 'react-intersection-observer';
 import PropTypes from 'prop-types';
 import { useAuthState } from 'react-firebase-hooks/auth';

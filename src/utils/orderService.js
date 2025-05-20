@@ -5,11 +5,10 @@
  * It uses the email service to send emails based on configuration settings.
  */
 
-import { sendOrderConfirmationEmail, sendOrderShippedEmail } from './emailService';
+import { sendOrderShippedEmail } from './emailService';
 import featureConfig from './featureConfig';
-import { doc, setDoc, updateDoc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, updateDoc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Process a new order and create the order record in Firestore
