@@ -6,7 +6,7 @@ limit, where,
 // eslint-disable-next-line no-unused-vars
 deleteDoc } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import countriesStatesData from '../../src/countriesStates.json';
 import { m } from "framer-motion";
@@ -1390,8 +1390,6 @@ function MyAccount() {
           </div>
         </div>
       </div>
-      
-      <ToastContainer position="top-center" autoClose={3000} hideProgressBar={false} closeOnClick draggable pauseOnHover />
     </div>
   );
 }

@@ -233,6 +233,7 @@ const sendOrderShippedEmail = async (order, user, shipmentInfo) => {
 
 /**
  * Generates HTML content for order confirmation emails
+ * 
  * @param {Object} order - Order details
  * @param {Object} user - User details
  * @returns {string} - HTML content for the email
@@ -255,21 +256,51 @@ const generateOrderConfirmationHTML = (order, user) => {
     }).format(amount);
   };
   
-  // Generate the HTML for order items
-  const itemsHTML = order.items.map(item => `
-    <!-- Product Item Row -->
-    <tr>
+  /**
+   * Generate animated CSS for modern email clients
+   * Note: Not all email clients support animations, but this
+   * provides a nice visual effect in those that do
+   */
+  const animationCSS = `
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes scaleIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    
+    .animated {
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+    
+    .animated-scale {
+      animation: scaleIn 0.5s ease-out forwards;
+    }
+  `;
+  
+  // Generate the HTML for order items - optimized for consistent display
+  // Limits product name length to ensure consistent layout
+  const itemsHTML = order.items.map((item, index) => {
+    // Trim long product names to maintain consistent layout
+    const truncatedName = item.name.length > 35 ? item.name.substring(0, 32) + '...' : item.name;
+    
+    return `
+    <!-- Product Item Row - Optimized for up to 5 products per email -->
+    <tr style="animation-delay: ${index * 0.1}s;" class="animated">
       <td style="padding: 20px 0; border-bottom: 1px solid #E8ECF0;">
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
             <td width="80" style="vertical-align: top; padding-right: 15px;">
               ${item.image ? 
-                `<img src="${item.image}" alt="${item.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; background-color: #F5F7FA;">` : 
+                `<img src="${item.image}" alt="${truncatedName}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; background-color: #F5F7FA;">` : 
                 `<div style="width: 80px; height: 80px; border-radius: 8px; background-color: #F5F7FA;"></div>`
               }
             </td>
             <td style="vertical-align: top;">
-              <p style="margin: 0; font-weight: 600; font-size: 16px; color: #1A202C;">${item.name}</p>
+              <p style="margin: 0; font-weight: 600; font-size: 16px; color: #1A202C;">${truncatedName}</p>
               <p style="margin: 5px 0 0; font-size: 14px; color: #64748B;">Quantity: ${item.quantity}</p>
             </td>
             <td width="100" style="vertical-align: top; text-align: right;">
@@ -279,7 +310,7 @@ const generateOrderConfirmationHTML = (order, user) => {
         </table>
       </td>
     </tr>
-  `).join('');
+  `}).join('');
   
   return `
 <!DOCTYPE html>
@@ -294,6 +325,15 @@ const generateOrderConfirmationHTML = (order, user) => {
   <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:ital,wght@0,400;0,400;0,600;0,700;0,800" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Nunito:ital,wght@0,400;0,700" rel="stylesheet">
   <title>Order Confirmation</title>
+  <style type="text/css">
+    /* Base styles */
+    body, table, td {
+      font-family: 'Nunito Sans', Arial, Helvetica, sans-serif !important;
+    }
+    
+    /* Animation support */
+    ${animationCSS}
+  </style>
   <!--[if mso]>
   <style type="text/css">
     body, table, td {font-family: Arial, Helvetica, sans-serif !important;}
@@ -328,7 +368,7 @@ const generateOrderConfirmationHTML = (order, user) => {
                 <td style="padding: 0px 32px 0px 32px; background-color: #FFFFFF;" bgcolor="#FFFFFF">
                   <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
                     <tr>
-                      <td style="padding: 48px 24px 48px 24px; background-color: #fff8f0; border-radius: 12px; text-align: center;">
+                      <td style="padding: 48px 24px 48px 24px; background-color: #fff8f0; border-radius: 12px; text-align: center;" class="animated-scale">
                         <h2 style="margin: 0; font-size: 44px; font-weight: bold; color: #121212; line-height: 1.1;">Hooray! Your order has been confirmed.</h2>
                         <p style="margin: 16px 0 24px; color: rgba(18, 18, 18, 0.8); font-size: 16px; line-height: 1.5;">KamiKoto will commence work on this immediately. You'll receive an email notification once it's shipped.</p>
                       </td>
@@ -340,15 +380,15 @@ const generateOrderConfirmationHTML = (order, user) => {
               <!-- Order Details Section -->
               <tr>
                 <td style="padding: 48px 32px 0px 32px; background-color: #ffffff;" bgcolor="#ffffff">
-                  <h2 style="margin: 0 0 8px; font-size: 32px; font-weight: bold; color: #121212; text-align: center;">Order details</h2>
-                  <p style="margin: 0 0 24px; font-size: 16px; font-weight: 600; color: #121212; text-align: center;">Confirmation number: <span style="color: #ff554a;">#${order.orderId}</span></p>
+                  <h2 style="margin: 0 0 8px; font-size: 32px; font-weight: bold; color: #121212; text-align: center;" class="animated">Order details</h2>
+                  <p style="margin: 0 0 24px; font-size: 16px; font-weight: 600; color: #121212; text-align: center;" class="animated">Confirmation number: <span style="color: #ff554a;">#${order.orderId}</span></p>
                   
                   <!-- Order Items Table -->
                   <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="border: 1px solid #d1dfe3; border-radius: 12px; margin-bottom: 30px;">
-                    <!-- Order Items -->
+                    <!-- Order Items - Optimized for up to 5 products -->
                     ${itemsHTML}
                     
-                    <!-- Order Summary -->
+                    <!-- Order Summary - Matching new summary design -->
                     <tr>
                       <td colspan="2" style="padding: 20px; border-bottom: 1px solid #d1dfe3;">
                         <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
@@ -415,16 +455,16 @@ const generateOrderConfirmationHTML = (order, user) => {
                     </tr>
                   </table>
                   
-                  <!-- Shipping and Payment Info -->
+                  <!-- Shipping and Payment Info - Matching new summary design -->
                   <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom: 30px;">
                     <tr>
                       <td width="50%" valign="top" style="padding-right: 15px;">
                         <h3 style="margin: 0 0 8px; font-size: 16px; font-weight: bold; color: #121212;">Shipping address</h3>
                         <p style="margin: 0 0 2px; font-size: 14px; font-weight: 600; color: rgba(18, 18, 18, 0.8);">
-                          ${order.shippingAddress.name}<br>
-                          ${order.shippingAddress.street}<br>
-                          ${order.shippingAddress.city}, ${order.shippingAddress.state} ${order.shippingAddress.zip}<br>
-                          ${order.shippingAddress.country}
+                          ${order.shippingAddress?.name || order.userName || 'Customer'}<br>
+                          ${order.shippingAddress?.street || ''}<br>
+                          ${order.shippingAddress?.city || ''}, ${order.shippingAddress?.state || ''} ${order.shippingAddress?.zip || ''}<br>
+                          ${order.shippingAddress?.country || ''}
                         </p>
                       </td>
                       <td width="50%" valign="top">
@@ -432,6 +472,14 @@ const generateOrderConfirmationHTML = (order, user) => {
                         <p style="margin: 0 0 2px; font-size: 14px; font-weight: 600; color: rgba(18, 18, 18, 0.8);">Subtotal: ${formatCurrency(subtotal)}</p>
                         <p style="margin: 0 0 2px; font-size: 14px; font-weight: 600; color: rgba(18, 18, 18, 0.8);">Tax (18% GST): ${formatCurrency(tax)}</p>
                         <p style="margin: 0 0 2px; font-size: 14px; font-weight: 600; color: rgba(18, 18, 18, 0.8);">Shipping: ${shipping === 0 ? 'Free' : formatCurrency(shipping)}</p>
+                        ${importDuty > 0 ? `
+                        <p style="margin: 0 0 2px; font-size: 14px; font-weight: 600; color: #EA580C;">Import Duty (69%): ${formatCurrency(importDuty)}</p>
+                        ` : ''}
+                        ${discount > 0 ? `
+                        <p style="margin: 0 0 2px; font-size: 14px; font-weight: 600; color: #16A34A;">Discount: -${formatCurrency(discount)}</p>
+                        ` : ''}
+                        <p style="margin: 8px 0 2px; font-size: 16px; font-weight: 700; color: #121212;">Total: ${formatCurrency(total)}</p>
+                        <p style="margin: 8px 0 2px; font-size: 14px; font-weight: 600; color: #10B981;">Payment Status: Completed</p>
                       </td>
                     </tr>
                   </table>
@@ -443,7 +491,7 @@ const generateOrderConfirmationHTML = (order, user) => {
                 <td style="padding: 48px 32px 48px 32px; background-color: #ffffff;" bgcolor="#ffffff">
                   <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
                     <tr>
-                      <td style="padding: 20px; background-color: #fff8f0; border-radius: 8px;">
+                      <td style="padding: 20px; background-color: #fff8f0; border-radius: 8px;" class="animated">
                         <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
                           <tr>
                             <td width="64" valign="top">
@@ -500,21 +548,40 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
     }).format(amount);
   };
   
-  // Generate the HTML for order items
-  const itemsHTML = order.items.map(item => `
-    <!-- Product Item Row -->
-    <tr>
+  /**
+   * Animation CSS for supported email clients
+   * Provides subtle animations for modern email clients
+   */
+  const animationCSS = `
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animated {
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+  `;
+  
+  // Generate the HTML for order items - optimized for consistent display
+  const itemsHTML = order.items.map((item, index) => {
+    // Truncate long product names to maintain layout consistency
+    const truncatedName = item.name.length > 35 ? item.name.substring(0, 32) + '...' : item.name;
+    
+    return `
+    <!-- Product Item Row - Optimized for up to 5 products -->
+    <tr style="animation-delay: ${index * 0.1}s;" class="animated">
       <td style="padding: 20px 0; border-bottom: 1px solid #E8ECF0;">
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
             <td width="80" style="vertical-align: top; padding-right: 15px;">
               ${item.image ? 
-                `<img src="${item.image}" alt="${item.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; background-color: #F5F7FA;">` : 
+                `<img src="${item.image}" alt="${truncatedName}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; background-color: #F5F7FA;">` : 
                 `<div style="width: 80px; height: 80px; border-radius: 8px; background-color: #F5F7FA;"></div>`
               }
             </td>
             <td style="vertical-align: top;">
-              <p style="margin: 0; font-weight: 600; font-size: 16px; color: #1A202C;">${item.name}</p>
+              <p style="margin: 0; font-weight: 600; font-size: 16px; color: #1A202C;">${truncatedName}</p>
               <p style="margin: 5px 0 0; font-size: 14px; color: #64748B;">Quantity: ${item.quantity}</p>
               ${item.price ? `<p style="margin: 5px 0 0; font-size: 14px; color: #64748B;">Price: ${formatCurrency(item.price)}</p>` : ''}
             </td>
@@ -522,7 +589,7 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
         </table>
       </td>
     </tr>
-  `).join('');
+  `}).join('');
   
   return `
     <!DOCTYPE html>
@@ -532,6 +599,15 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta http-equiv="X-UA-Compatible" content="ie=edge">
       <title>Your Order Has Shipped</title>
+      <style type="text/css">
+        /* Base styles */
+        body, table, td {
+          font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+        }
+        
+        /* Animation support for modern clients */
+        ${animationCSS}
+      </style>
       <!--[if mso]>
       <style type="text/css">
         body, table, td {font-family: Arial, Helvetica, sans-serif !important;}
@@ -565,7 +641,7 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
               <!-- Shipped Status Banner -->
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom: 30px;">
                 <tr>
-                  <td style="background-color: #EFF6FF; padding: 20px; border-radius: 8px; border-left: 4px solid #3B82F6;">
+                  <td style="background-color: #EFF6FF; padding: 20px; border-radius: 8px; border-left: 4px solid #3B82F6;" class="animated">
                     <h2 style="margin: 0; font-size: 22px; font-weight: 600; color: #2563EB;">Your order is on the way!</h2>
                     <p style="margin: 10px 0 0; color: #1E40AF; font-size: 16px;">Hello ${user.displayName || user.email},</p>
                     <p style="margin: 10px 0 0; color: #1E40AF; font-size: 16px;">Great news! Your order #${order.orderId} has been shipped and is on its way to you.</p>
@@ -574,7 +650,7 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
               </table>
 
               <!-- Tracking Information -->
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom: 30px;">
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom: 30px;" class="animated">
                 <tr>
                   <td style="padding-bottom: 15px; border-bottom: 1px solid #E8ECF0;">
                     <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #1A202C;">Shipment Details</h3>
@@ -590,7 +666,7 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
                         </td>
                         <td width="50%" style="vertical-align: top;">
                           <p style="margin: 0 0 10px; font-size: 15px; color: #64748B;">Tracking Number</p>
-                          <p style="margin: 0; font-size: 16px; font-weight: 600; color: #1A202C;">${shipmentInfo.trackingNumber}</p>
+                          <p style="margin: 0; font-size: 16px; font-weight: 600; color: #1A202C; word-break: break-all;">${shipmentInfo.trackingNumber}</p>
                         </td>
                       </tr>
                       <tr>
@@ -622,12 +698,12 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
                     <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #1A202C;">Items Shipped</h3>
                   </td>
                 </tr>
-                <!-- Product Items -->
+                <!-- Product Items - Optimized layout for up to 5 products -->
                 ${itemsHTML}
               </table>
 
               <!-- Shipping Info -->
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom: 30px;">
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom: 30px;" class="animated">
                 <tr>
                   <td style="padding-bottom: 15px; border-bottom: 1px solid #E8ECF0;">
                     <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #1A202C;">Shipping Address</h3>
@@ -636,11 +712,90 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
                 <tr>
                   <td style="padding-top: 15px;">
                     <p style="margin: 0; font-size: 16px; color: #1A202C; line-height: 1.6;">
-                      <span style="font-weight: 600;">${order.shippingAddress.name}</span><br>
-                      ${order.shippingAddress.street}<br>
-                      ${order.shippingAddress.city}, ${order.shippingAddress.state} ${order.shippingAddress.zip}<br>
-                      ${order.shippingAddress.country}
+                      <span style="font-weight: 600;">${order.shippingAddress?.name || order.userName || 'Customer'}</span><br>
+                      ${order.shippingAddress?.street || ''}<br>
+                      ${order.shippingAddress?.city || ''}, ${order.shippingAddress?.state || ''} ${order.shippingAddress?.zip || ''}<br>
+                      ${order.shippingAddress?.country || ''}
                     </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Order Summary Section -->
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom: 30px; border: 1px solid #E2E8F0; border-radius: 8px;" class="animated">
+                <tr>
+                  <td style="background-color: #F8FAFC; padding: 15px; border-bottom: 1px solid #E2E8F0; border-radius: 8px 8px 0 0;">
+                    <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #1A202C;">Order Summary</h3>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 15px;">
+                    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                      <tr>
+                        <td style="padding-bottom: 10px;">
+                          <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                            <tr>
+                              <td style="font-size: 14px; color: #64748B;">Subtotal</td>
+                              <td style="font-size: 14px; color: #1A202C; text-align: right;">${formatCurrency(order.subtotal || 0)}</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-bottom: 10px;">
+                          <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                            <tr>
+                              <td style="font-size: 14px; color: #64748B;">Shipping</td>
+                              <td style="font-size: 14px; color: #1A202C; text-align: right;">${formatCurrency(order.shipping?.cost || 0)}</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-bottom: 10px;">
+                          <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                            <tr>
+                              <td style="font-size: 14px; color: #64748B;">Tax</td>
+                              <td style="font-size: 14px; color: #1A202C; text-align: right;">${formatCurrency(order.tax || 0)}</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      ${order.importDuty > 0 ? `
+                      <tr>
+                        <td style="padding-bottom: 10px;">
+                          <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                            <tr>
+                              <td style="font-size: 14px; color: #EA580C;">Import Duty</td>
+                              <td style="font-size: 14px; color: #EA580C; text-align: right;">${formatCurrency(order.importDuty)}</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      ` : ''}
+                      ${order.discount > 0 ? `
+                      <tr>
+                        <td style="padding-bottom: 10px;">
+                          <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                            <tr>
+                              <td style="font-size: 14px; color: #16A34A;">Discount</td>
+                              <td style="font-size: 14px; color: #16A34A; text-align: right;">-${formatCurrency(order.discount)}</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      ` : ''}
+                      <tr>
+                        <td style="padding-top: 10px; border-top: 1px solid #E2E8F0;">
+                          <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                            <tr>
+                              <td style="font-size: 16px; font-weight: bold; color: #1A202C;">Total</td>
+                              <td style="font-size: 16px; font-weight: bold; color: #1A202C; text-align: right;">${formatCurrency(order.totalAmount || order.total || 0)}</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>
@@ -648,7 +803,7 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
               <!-- CTA Button -->
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
-                  <td style="padding: 30px; background-color: #F5F7FA; border-radius: 8px; text-align: center;">
+                  <td style="padding: 30px; background-color: #F5F7FA; border-radius: 8px; text-align: center;" class="animated">
                     <p style="margin: 0 0 20px; font-size: 16px; color: #64748B;">Have questions about your shipment?</p>
                     <a href="mailto:${featureConfig.email.supportEmail}" style="display: inline-block; background-color: #38BDF8; color: white; font-size: 16px; font-weight: 600; text-decoration: none; padding: 12px 30px; border-radius: 6px; transition: background-color 0.3s ease;">Contact Support</a>
                   </td>

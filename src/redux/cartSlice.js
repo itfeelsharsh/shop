@@ -77,6 +77,15 @@ const cartSlice = createSlice({
       state.items = [];
       state.coupon = null;
     },
+
+    /**
+     * Remove purchased items from the cart after successful order
+     * @param {Object} state - Current cart state
+     * @param {Object} action - Action with array of purchased product IDs
+     */
+    removePurchasedFromCart(state, action) {
+      state.items = state.items.filter(item => !action.payload.includes(item.productId));
+    },
   },
 });
 
@@ -86,7 +95,8 @@ export const {
   updateQuantity, 
   clearCart,
   applyCoupon,
-  removeCoupon
+  removeCoupon,
+  removePurchasedFromCart
 } = cartSlice.actions;
 
 export default cartSlice.reducer;

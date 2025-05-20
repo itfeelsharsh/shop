@@ -7,54 +7,42 @@
 
 import { sendOrderConfirmationEmail, sendOrderShippedEmail } from './emailService';
 import featureConfig from './featureConfig';
-import { doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
- * Processes a new order after payment is confirmed
+ * Process a new order and create the order record in Firestore
+ * 
  * @param {Object} orderData - The order data
  * @param {Object} userData - The user data
- * @returns {Promise<Object>} - Result of the order processing
+ * @returns {Promise<Object>} - Success status and order ID
  */
 const processNewOrder = async (orderData, userData) => {
   try {
-    // Validate order data
-    if (!orderData || !userData || !userData.uid) {
-      throw new Error('Invalid order or user data');
-    }
-
-    // Generate a unique order ID if not provided
-    const orderId = orderData.orderId || generateOrderId();
-    const fullOrderData = { ...orderData, orderId };
+    // Generate unique payment ID with timestamp prefix
+    const timestamp = new Date().getTime().toString().slice(-6);
+    const randomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const paymentId = `PAY-${timestamp}-${randomId}`;
     
-    // Save the order in Firestore
-    const orderRef = doc(db, "orders", orderId);
-    await setDoc(orderRef, fullOrderData);
-    
-    // Save the order in the user's orders collection
-    const userOrderRef = doc(db, "users", userData.uid, "orders", orderId);
-    await setDoc(userOrderRef, { 
-      orderId, 
-      timestamp: new Date().toISOString(),
-      status: fullOrderData.status || "Placed"
+    // Create a new document in the orders collection
+    const orderRef = await addDoc(collection(db, "orders"), {
+      ...orderData,
+      createdAt: serverTimestamp(),
+      paymentId: paymentId
     });
     
-    // Send confirmation email only if email feature is enabled
-    if (featureConfig.email.enabled) {
-      await sendOrderConfirmationEmail(fullOrderData, userData);
-      console.log('Order confirmation email sent successfully');
-    }
-    
-    return { 
-      success: true, 
-      orderId: orderId,
-      message: 'Order processed successfully' 
+    // Return success with order ID and payment ID
+    return {
+      success: true,
+      orderId: orderRef.id,
+      paymentId: paymentId
     };
   } catch (error) {
-    console.error('Error processing order:', error);
-    return { 
-      success: false, 
-      error: error.message || 'Failed to process order'
+    console.error("Error processing order:", error);
+    return {
+      success: false,
+      error: error.message
     };
   }
 };

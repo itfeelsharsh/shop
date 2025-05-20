@@ -8,115 +8,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '../firebase/config';
 import WishlistButton from './WishlistButton';
 import reviewUtils from '../utils/reviewUtils';
-
-/**
- * NotificationModal Component
- * 
- * Displays feedback to users for various actions like adding to cart,
- * sign-in requirements, or out-of-stock notifications
- * 
- * @param {Object} props
- * @param {boolean} props.isOpen - Controls modal visibility
- * @param {Function} props.onClose - Function to close the modal
- * @param {string} props.type - Type of notification (success, error, warning)
- * @param {string} props.message - Notification message to display
- */
-const NotificationModal = memo(({ isOpen, onClose, type, message }) => {
-  const navigate = useNavigate();
-  
-  // Animation variants for the modal
-  const modalVariants = {
-    hidden: { 
-      opacity: 0,
-      scale: 0.8,
-      y: 20
-    },
-    visible: { 
-      opacity: 1,
-      scale: 1,
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 300,
-        damping: 25
-      }
-    },
-    exit: {
-      opacity: 0,
-      scale: 0.8,
-      y: 20,
-      transition: {
-        duration: 0.2
-      }
-    }
-  };
-
-  /**
-   * Dynamically determines modal styling based on notification type
-   * @returns {string} CSS classes for the modal
-   */
-  const getModalStyles = () => {
-    switch (type) {
-      case 'success':
-        return 'bg-green-50 border-green-500 text-green-700';
-      case 'error':
-        return 'bg-red-50 border-red-500 text-red-700';
-      case 'warning':
-        return 'bg-yellow-50 border-yellow-500 text-yellow-700';
-      default:
-        return 'bg-blue-50 border-blue-500 text-blue-700';
-    }
-  };
-
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <m.div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-        >
-          <m.div
-            className={`relative p-6 rounded-xl shadow-xl border-2 max-w-md w-full ${getModalStyles()}`}
-            variants={modalVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            onClick={e => e.stopPropagation()}
-          >
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 p-1 rounded-full hover:bg-black/10 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <div className="text-center">
-              <p className="text-lg font-semibold mb-2">{message}</p>
-              {type === 'error' && (
-                <m.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => {
-                    onClose();
-                    navigate('/signin');
-                  }}
-                  className="mt-4 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Sign In
-                </m.button>
-              )}
-            </div>
-          </m.div>
-        </m.div>
-      )}
-    </AnimatePresence>
-  );
-});
-
-// Add display name for debugging
-NotificationModal.displayName = 'NotificationModal';
+import { toast } from 'react-toastify';
 
 /**
  * ProductCard Component
@@ -132,7 +24,7 @@ NotificationModal.displayName = 'NotificationModal';
  * - Stock status indicator
  * - Add to cart functionality with authentication check
  * - Wishlist functionality for saving products
- * - Notification system for user feedback
+ * - Toast notification system for user feedback
  * - Rating display showing product reviews
  * 
  * @param {Object} product - The product data to display
@@ -149,11 +41,6 @@ const ProductCard = memo(function ProductCard({
 }) {
   const [user] = useAuthState(auth);
   const navigate = useNavigate();
-  const [showModal, setShowModal] = useState(false);
-  const [modalConfig, setModalConfig] = useState({
-    type: 'success',
-    message: ''
-  });
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [productRating, setProductRating] = useState({ average: 0, total: 0 });
 
@@ -183,7 +70,7 @@ const ProductCard = memo(function ProductCard({
 
   /**
    * Handles adding product to cart with authentication and stock validation
-   * Shows appropriate notification messages based on action result
+   * Shows appropriate toast notifications based on action result
    * 
    * @param {Event} e - The click event
    */
@@ -193,21 +80,13 @@ const ProductCard = memo(function ProductCard({
 
     // Authentication check
     if (!user) {
-      setModalConfig({
-        type: 'error',
-        message: 'Please sign in to add items to your cart'
-      });
-      setShowModal(true);
+      toast.error('Please sign in to add items to your cart');
       return;
     }
 
     // Stock availability check
     if (!product?.stock || product.stock <= 0) {
-      setModalConfig({
-        type: 'warning',
-        message: 'This product is currently out of stock'
-      });
-      setShowModal(true);
+      toast.warning('This product is currently out of stock');
       return;
     }
 
@@ -215,17 +94,9 @@ const ProductCard = memo(function ProductCard({
     // Add to cart with error handling
     try {
       await onAddToCart(product);
-      setModalConfig({
-        type: 'success',
-        message: 'Product added to cart successfully!'
-      });
-      setShowModal(true);
+      toast.success('Product added to cart successfully!');
     } catch (error) {
-      setModalConfig({
-        type: 'error',
-        message: error.message || 'Failed to add product to cart'
-      });
-      setShowModal(true);
+      toast.error(error.message || 'Failed to add product to cart');
     } finally {
       setIsAddingToCart(false);
     }
@@ -427,14 +298,6 @@ const ProductCard = memo(function ProductCard({
         "
         onClick={handleViewDetails}
       >
-        {/* Notification Modal */}
-        <NotificationModal
-          isOpen={showModal}
-          onClose={() => setShowModal(false)}
-          type={modalConfig.type}
-          message={modalConfig.message}
-        />
-        
         {/* Discount Badge */}
         {product?.mrp && product.mrp > product.price && (
           <div className="absolute top-3 left-3 z-10">

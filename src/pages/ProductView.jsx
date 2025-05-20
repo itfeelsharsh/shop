@@ -4,7 +4,7 @@ import { doc, getDoc, collection, query, where, getDocs, limit } from 'firebase/
 import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart } from '../redux/cartSlice';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { Truck, ShieldCheck, ArrowLeft, Package2, ShoppingCart, ChevronDown, ChevronUp, Tag, Star, Globe, AlertTriangle, Info, Award, MessageSquare } from 'lucide-react';
 import 'react-toastify/dist/ReactToastify.css';
 import WishlistButton from '../components/WishlistButton';
@@ -661,7 +661,6 @@ function ProductView() {
             </div>
           )}
         </div>
-        <ToastContainer position="top-center" autoClose={3000} hideProgressBar={false} closeOnClick draggable pauseOnHover />
       </div>
     </>
   );

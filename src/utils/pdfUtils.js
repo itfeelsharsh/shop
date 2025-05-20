@@ -2,7 +2,8 @@
  * PDF Generation Utilities
  * 
  * This file contains utility functions for generating PDF documents
- * Used for creating order receipts and invoices
+ * Used for creating order receipts and invoices with a modern, elegant design
+ * Optimized for A4 paper size with proper pagination support
  * 
  * @dependencies jspdf, html2canvas
  */
@@ -29,11 +30,11 @@ export const generatePdfFromElement = async (elementId, fileName) => {
       throw new Error(`Element with ID ${elementId} not found`);
     }
 
-    // Set background color to white
+    // Set background color to white to ensure proper printing
     const originalBackground = element.style.background;
     element.style.background = 'white';
     
-    // Render the element to canvas
+    // Render the element to canvas with high quality settings
     const canvas = await html2canvas(element, {
       scale: 2, // Higher scale for better quality
       useCORS: true, // Allow loading of cross-origin images
@@ -45,14 +46,14 @@ export const generatePdfFromElement = async (elementId, fileName) => {
     // Restore original background
     element.style.background = originalBackground;
     
-    // Calculate dimensions
+    // Calculate dimensions - A4 size in mm
     const imgWidth = 210; // A4 width in mm
     const pageHeight = 297; // A4 height in mm
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
     let heightLeft = imgHeight;
     let position = 0;
     
-    // Create PDF document
+    // Create PDF document with A4 format
     const pdf = new jsPDF('p', 'mm', 'a4');
     let currentPage = 0;
     
@@ -69,6 +70,7 @@ export const generatePdfFromElement = async (elementId, fileName) => {
     );
     
     // Add multiple pages if content is too long
+    // This approach ensures the content flows correctly across pages
     heightLeft -= pageHeight;
     while (heightLeft > 0) {
       currentPage++;
@@ -166,9 +168,10 @@ export const createReceiptTemplate = (order, containerId) => {
     return order.shipping?.address?.country === 'United States' && order.importDuty > 0;
   };
   
-  // Create receipt HTML with enhanced styling
+  // Create receipt HTML with enhanced styling - based on the new summary design
   const receiptHtml = `
     <div class="receipt-container">
+      <!-- Modern Header Section with Company Logo and Order Info -->
       <div class="receipt-header">
         <div class="store-info">
           <div style="display: flex; align-items: center; gap: 8px;">
@@ -188,6 +191,7 @@ export const createReceiptTemplate = (order, containerId) => {
         </div>
       </div>
       
+      <!-- Customer Information Section with Address -->
       <div class="customer-info">
         <h3>Bill To:</h3>
         <p><strong>${order.userName || 'Valued Customer'}</strong></p>
@@ -213,6 +217,7 @@ export const createReceiptTemplate = (order, containerId) => {
         ` : ''}
       </div>
       
+      <!-- Order Items Section - Optimized to fit up to 5 products per page -->
       <div class="items-section">
         <table class="items-table">
           <thead>
@@ -236,6 +241,7 @@ export const createReceiptTemplate = (order, containerId) => {
         </table>
       </div>
       
+      <!-- Order Summary Section with Pricing Details -->
       <div class="summary-section">
         <div class="summary-row">
           <span>Subtotal:</span>
@@ -267,6 +273,7 @@ export const createReceiptTemplate = (order, containerId) => {
         </div>
       </div>
       
+      <!-- Payment Details Section -->
       <div class="payment-info">
         <h3>Payment Information</h3>
         <p><strong>Method:</strong> ${order.payment?.method || 'Not specified'}</p>
@@ -283,6 +290,7 @@ export const createReceiptTemplate = (order, containerId) => {
         ` : ''}
       </div>
       
+      <!-- Import Duty Notice (if applicable) -->
       ${hasImportDuty() ? `
       <div style="margin-top: 20px; padding: 15px; background-color: #fff8e1; border: 1px solid #ffecb3; border-radius: 8px;">
         <h3 style="margin-top: 0; color: #b45309;">Import Duty Notice</h3>
@@ -296,6 +304,11 @@ export const createReceiptTemplate = (order, containerId) => {
       </div>
       ` : ''}
 
+      <!-- Thank You Message -->
+      <div style="margin-top: 20px; text-align: center; border-top: 1px dashed #d1d5db; padding-top: 15px;">
+        <h3 style="color: #4f46e5; margin-bottom: 5px;">Thank You for Your Purchase!</h3>
+        <p style="color: #6b7280; font-size: 14px;">We appreciate your business and hope you enjoy your KamiKoto products.</p>
+      </div>
     </div>
   `;
   

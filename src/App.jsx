@@ -105,9 +105,16 @@ function App() {
               position="top-center"
               autoClose={3000}
               hideProgressBar={false}
+              newestOnTop={true}
               closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
               draggable
               pauseOnHover
+              theme="colored"
+              limit={3}
+              icon={true}
+              className="mt-16"
             />
 
             <div className="flex flex-col min-h-screen">

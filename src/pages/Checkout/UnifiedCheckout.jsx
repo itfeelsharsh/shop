@@ -6,7 +6,7 @@ import { auth, db } from '../../firebase/config';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { collection, getDocs } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { clearCart, applyCoupon, removeCoupon } from '../../redux/cartSlice';
+import { clearCart, applyCoupon, removeCoupon, removePurchasedFromCart, updateQuantity, removeFromCart } from '../../redux/cartSlice';
 import countriesStatesData from '../../countriesStates.json';
 import { ShoppingBag, Truck, CreditCard, CheckCircle, ChevronRight, ChevronLeft, Tag, RefreshCw, X } from 'lucide-react';
 import { toast } from 'react-toastify';
@@ -15,6 +15,7 @@ import OrderConfirmation from '../../components/OrderConfirmation';
 import CouponService from '../../utils/couponService';
 import featureConfig from '../../utils/featureConfig';
 import { processNewOrder } from '../../utils/orderService';
+import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 // Import card logos
 import VisaLogo from '../../assets/visa.png';
@@ -91,37 +92,17 @@ function UnifiedCheckout() {
   const [upi, setUpi] = useState('');
   const [processingPayment, setProcessingPayment] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
+  const [savePaymentInfo, setSavePaymentInfo] = useState(true);
   
   // Add state for order data and completion
   const [completedOrder, setCompletedOrder] = useState(null);
 
-  // Coupon validation with captcha
+  // Coupon validation with reCAPTCHA v3
   const [couponCode, setCouponCode] = useState('');
   const [validatingCoupon, setValidatingCoupon] = useState(false);
   const [couponError, setCouponError] = useState('');
-  const [captchaText, setCaptchaText] = useState('');
-  const [userCaptchaInput, setUserCaptchaInput] = useState('');
-  const [captchaError, setCaptchaError] = useState('');
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const couponInputRef = useRef(null);
-  
-  // Generate captcha on component mount
-  useEffect(() => {
-    generateCaptcha();
-  }, []);
-  
-  /**
-   * Generates a random captcha text
-   */
-  const generateCaptcha = () => {
-    // Generate a random 6-character alphanumeric string
-    const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let result = '';
-    for (let i = 0; i < 6; i++) {
-      result += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    setCaptchaText(result);
-    setUserCaptchaInput('');
-  };
   
   // Fetch products for cart
   useEffect(() => {
@@ -453,137 +434,222 @@ function UnifiedCheckout() {
   };
 
   /**
+   * Process the payment based on the selected payment method
+   * @returns {Promise<{success: boolean, error: string|null}>} Result of payment processing
+   */
+  const processPayment = async () => {
+    // In a real implementation, this would integrate with a payment gateway
+    // Here we'll just simulate a successful payment
+    console.log('Processing payment with method:', paymentMethod);
+    
+    // Return success for demo purposes
+    return { success: true, error: null };
+  };
+
+  /**
    * Process the order
    */
   const processOrder = async () => {
-    setProcessingPayment(true);
-    
-    // Log environment variables to help debug
-    logEnvironmentVars();
-    console.log('Starting order process...');
+    if (!isShippingComplete || !isPaymentComplete) {
+      toast.error("Please complete all required information");
+      return;
+    }
     
     try {
+      setProcessingPayment(true);
+      
+      // First, check for any purchased items in the cart and remove them
+      let removedProductIds = [];
+      if (user) {
+        try {
+          const purchaseResult = await dispatch(removePurchasedFromCart()).unwrap();
+          if (purchaseResult.removed && purchaseResult.removed.length > 0) {
+            removedProductIds = purchaseResult.removed;
+            toast.info(`${purchaseResult.removed.length} previously purchased item(s) were removed from your cart`);
+            
+            // If all items were removed, redirect to cart
+            if (cartDetails.length === purchaseResult.removed.length) {
+              toast.error("All items in your cart have already been purchased");
+              setProcessingPayment(false);
+              navigate('/cart');
+              return;
+            }
+          }
+        } catch (error) {
+          console.error("Error checking purchased items:", error);
+          // Continue with checkout even if this check fails
+        }
+      }
+      
+      // If payment method requires saving, save it
+      if (savePaymentInfo) {
+        await savePaymentMethod();
+      }
+      
+      // Get updated cart details after potentially removing purchased items
+      const updatedCartDetails = cartDetails.filter(item => {
+        // Filter out any items that were removed in the removePurchasedFromCart call
+        const wasRemoved = removedProductIds.includes(item.productId);
+        return !wasRemoved;
+      });
+      
+      // Validate stock one more time
+      const stockCheckPromises = updatedCartDetails.map(async (item) => {
+        const productRef = doc(db, "products", item.productId);
+        const productSnap = await getDoc(productRef);
+        
+        if (productSnap.exists()) {
+          const productData = productSnap.data();
+          if (productData.stock < item.quantity) {
+            return {
+              name: productData.name,
+              requested: item.quantity,
+              available: productData.stock,
+              productId: item.productId
+            };
+          }
+        }
+        return null;
+      });
+      
+      const stockResults = await Promise.all(stockCheckPromises);
+      const outOfStockItems = stockResults.filter(item => item !== null);
+      
+      if (outOfStockItems.length > 0) {
+        let message = "Some items in your cart are no longer available in the requested quantity:";
+        outOfStockItems.forEach(item => {
+          message += `\n${item.name}: Requested: ${item.requested}, Available: ${item.available}`;
+          
+          // Auto-update quantities for out of stock items
+          if (item.available > 0) {
+            dispatch(updateQuantity({ 
+              productId: item.productId, 
+              quantity: item.available 
+            }));
+          } else {
+            dispatch(removeFromCart(item.productId));
+          }
+        });
+        
+        throw new Error(message);
+      }
+      
+      // Process payment based on selected method
+      const paymentResult = await processPayment();
+      
+      if (!paymentResult.success) {
+        throw new Error(paymentResult.error || "Payment failed. Please try again.");
+      }
+      
+      // Log environment variables to help debug
+      logEnvironmentVars();
+      console.log('Starting order process...');
+      
       // Save shipping address
       await saveShippingAddress();
       console.log('Shipping address saved');
       
-      // Save payment method
-      const paymentMethodSaved = await savePaymentMethod();
-      if (!paymentMethodSaved) {
-        setProcessingPayment(false);
-        return;
-      }
-      console.log('Payment method saved');
-      
-          // Create order object with all required information
-    // Log if email feature is enabled
-    console.log('Email feature enabled?', featureConfig.email.enabled);
-    console.log('Email config:', featureConfig.email);
-    
-    // Create the order data object
-    const orderData = {
-      userId: user.uid,
-      userEmail: user.email,
-      userName: customerName || user.displayName || '',
-      userPhone: getFullPhoneNumber() || '',
-      orderDate: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      items: cartDetails.map(item => ({
-        productId: item.productId,
-        name: item.product.name,
-        price: item.product.price,
-        quantity: item.quantity,
-        image: item.product.image,
-      })),
-      shipping: {
-        address: address,
-        method: shippingMethod === 'express' ? "Express Shipping" : "Standard Shipping",
-        cost: shippingCost,
-        estimatedDelivery: shippingMethod === 'express' ? "2 days" : "7 days"
-      },
-      payment: {
-        method: paymentMethod,
-        details: paymentMethod === 'Card' ? {
-          cardType: card.type,
-          lastFour: card.number.slice(-4),
-        } : {
-          upiId: upi.split('@')[0] + '@xxxx' // Mask UPI ID for security
+      // Create the order data object
+      const orderData = {
+        userId: user.uid,
+        userEmail: user.email,
+        userName: customerName || user.displayName || '',
+        userPhone: getFullPhoneNumber() || '',
+        orderDate: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        items: updatedCartDetails.map(item => ({
+          productId: item.productId,
+          name: item.product.name,
+          price: item.product.price,
+          quantity: item.quantity,
+          image: item.product.image,
+        })),
+        shipping: {
+          address: address,
+          method: shippingMethod === 'express' ? "Express Shipping" : "Standard Shipping",
+          cost: shippingCost,
+          estimatedDelivery: shippingMethod === 'express' ? "2 days" : "7 days"
+        },
+        payment: {
+          method: paymentMethod,
+          details: paymentMethod === 'Card' ? {
+            cardType: card.type,
+            lastFour: card.number.slice(-4),
+          } : {
+            upiId: upi.split('@')[0] + '@xxxx' // Mask UPI ID for security
+          }
+        },
+        subtotal,
+        tax,
+        importDuty,
+        discount: discountAmount,
+        totalAmount: total + importDuty,
+        status: "Placed",
+        statusHistory: [
+          {
+            status: "Placed",
+            timestamp: new Date().toISOString(),
+            note: "Order placed successfully"
+          }
+        ],
+        tracking: {
+          code: null,
+          carrier: address.country === 'India' ? "IndiaPost" : "DHL",
+          url: null
+        },
+        shippingAddress: {
+          name: customerName,
+          street: `${address.houseNo}, ${address.line1}${address.line2 ? ', ' + address.line2 : ''}`,
+          city: address.city,
+          state: address.state,
+          zip: address.pin,
+          country: address.country
         }
-      },
-      subtotal,
-      tax,
-      importDuty,
-      discount: discountAmount,
-      totalAmount: total + importDuty,
-      status: "Placed",
-      statusHistory: [
-        {
-          status: "Placed",
-          timestamp: new Date().toISOString(),
-          note: "Order placed successfully"
-        }
-      ],
-      tracking: {
-        code: null,
-        carrier: address.country === 'India' ? "IndiaPost" : "DHL",
-        url: null
-      },
-      shippingAddress: {
-        name: customerName,
-        street: `${address.houseNo}, ${address.line1}${address.line2 ? ', ' + address.line2 : ''}`,
-        city: address.city,
-        state: address.state,
-        zip: address.pin,
-        country: address.country
-      }
-    };
-    
-    // Add coupon information if applied
-    if (appliedCoupon && appliedCoupon.code) {
-      orderData.coupon = {
-        code: appliedCoupon.code,
-        discountAmount: appliedCoupon.discountAmount,
-        discountType: appliedCoupon.discountType,
-        discountValue: appliedCoupon.discountValue
       };
-    }
-    
-    // Record coupon usage if applied
-    if (appliedCoupon && appliedCoupon.couponId) {
-      await CouponService.recordCouponUsage(appliedCoupon.couponId);
-    }
-    
-    // Prepare user data for email
-    const userData = {
-      uid: user.uid,
-      email: user.email,
-      displayName: customerName || user.displayName || user.email
-    };
-    
-    // Process the order using the order service
-    console.log('Processing order...');
-    const orderResult = await processNewOrder(orderData, userData);
-    
-    if (!orderResult.success) {
-      throw new Error(orderResult.error || 'Failed to process order');
-    }
-    
-    console.log('Order processed successfully:', orderResult.orderId);
       
-          // Finalize the order and transition to confirmation
-    setTimeout(() => {
-      // Clear the cart
-      dispatch(clearCart());
+      // Add coupon information if applied
+      if (appliedCoupon && appliedCoupon.code) {
+        orderData.coupon = {
+          code: appliedCoupon.code,
+          discountAmount: appliedCoupon.discountAmount,
+          discountType: appliedCoupon.discountType,
+          discountValue: appliedCoupon.discountValue
+        };
+      }
       
-      // Set completed order with orderId from the result
-      setCompletedOrder({
-        ...orderData,
-        orderId: orderResult.orderId
-      });
-      setOrderComplete(true);
-      setProcessingPayment(false);
-      console.log('Order process completed successfully with ID:', orderResult.orderId);
-    }, 1500);
+      // Record coupon usage if applied
+      if (appliedCoupon && appliedCoupon.couponId) {
+        await CouponService.recordCouponUsage(appliedCoupon.couponId);
+      }
+      
+      // Prepare user data for email
+      const userData = {
+        uid: user.uid,
+        email: user.email,
+        displayName: customerName || user.displayName || user.email
+      };
+      
+      // Process the order using the order service
+      console.log('Processing order...');
+      const orderResult = await processNewOrder(orderData, userData);
+      
+      if (!orderResult.success) {
+        throw new Error(orderResult.error || 'Failed to process order');
+      }
+      
+      console.log('Order processed successfully:', orderResult.orderId);
+      
+      // Finalize the order and transition to confirmation
+      setTimeout(() => {
+        // Clear the cart
+        dispatch(clearCart());
+        
+        // Redirect to order summary page with order ID
+        navigate(`/summary?orderId=${orderResult.orderId}&paymentId=${orderResult.paymentId || 'direct'}`);
+        
+        setProcessingPayment(false);
+        console.log('Order process completed successfully with ID:', orderResult.orderId);
+      }, 1500);
     } catch (error) {
       console.error("Detailed error processing order:", error);
       toast.error("There was an error processing your order. Please try again.");
@@ -615,6 +681,12 @@ function UnifiedCheckout() {
 
     return true;
   };
+  
+  // Check if shipping and payment sections are complete
+  const isShippingComplete = areAllRequiredFieldsFilled();
+  const isPaymentComplete = paymentMethod === 'Card' 
+    ? Boolean(card.number && card.cvv && card.expiry) 
+    : Boolean(upi);
   
   /**
    * Move to next step in checkout
@@ -702,16 +774,8 @@ function UnifiedCheckout() {
       return;
     }
     
-    // Validate the captcha
-    if (userCaptchaInput !== captchaText) {
-      setCaptchaError("Incorrect captcha. Please try again.");
-      generateCaptcha(); // Generate a new captcha
-      return;
-    }
-    
     // Clear any previous errors
     setCouponError('');
-    setCaptchaError('');
     
     if (!couponCode.trim()) {
       setCouponError("Please enter a coupon code");
@@ -723,15 +787,29 @@ function UnifiedCheckout() {
       return;
     }
     
+    if (!executeRecaptcha) {
+      setCouponError("reCAPTCHA not available. Please try again later.");
+      return;
+    }
+    
     setValidatingCoupon(true);
     
     try {
+      // Execute reCAPTCHA and get token
+      const recaptchaToken = await executeRecaptcha('apply_coupon');
+      
+      if (!recaptchaToken) {
+        setCouponError("Could not verify human interaction. Please try again.");
+        return;
+      }
+      
       // Pass cart items to validateCoupon for product-specific validation
       const result = await CouponService.validateCoupon(
         couponCode, 
         cartDetails,  // Pass full cart details for product-specific validation
         subtotal,
-        user.uid
+        user.uid,
+        recaptchaToken  // Pass the recaptcha token for server-side verification
       );
       
       if (result.valid) {
@@ -749,19 +827,15 @@ function UnifiedCheckout() {
         
         // Clear the input fields
         setCouponCode('');
-        setUserCaptchaInput('');
-        generateCaptcha(); // Generate a new captcha for next use
         
         // Show success message
         toast.success(result.message);
       } else {
         setCouponError(result.message);
-        generateCaptcha(); // Generate a new captcha on failure
       }
     } catch (error) {
       console.error("Error validating coupon:", error);
       setCouponError("An error occurred. Please try again.");
-      generateCaptcha(); // Generate a new captcha on error
     } finally {
       setValidatingCoupon(false);
     }
@@ -1360,6 +1434,18 @@ function UnifiedCheckout() {
                                 <option value="AMEX">AMEX (1% fee)</option>
                               </select>
                             </div>
+                            
+                            <div className="mt-2">
+                              <label className="flex items-center">
+                                <input
+                                  type="checkbox"
+                                  checked={savePaymentInfo}
+                                  onChange={() => setSavePaymentInfo(!savePaymentInfo)}
+                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                />
+                                <span className="ml-2 text-sm text-gray-600">Save card for future purchases</span>
+                              </label>
+                            </div>
                           </div>
                         ) : (
                           <div>
@@ -1373,6 +1459,18 @@ function UnifiedCheckout() {
                               required
                             />
                             <p className="mt-2 text-sm text-gray-500">Enter your UPI ID in the format username@bank</p>
+                            
+                            <div className="mt-4">
+                              <label className="flex items-center">
+                                <input
+                                  type="checkbox"
+                                  checked={savePaymentInfo}
+                                  onChange={() => setSavePaymentInfo(!savePaymentInfo)}
+                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                />
+                                <span className="ml-2 text-sm text-gray-600">Save UPI ID for future purchases</span>
+                              </label>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -1398,75 +1496,48 @@ function UnifiedCheckout() {
 
                   {!appliedCoupon ? (
                     <form onSubmit={handleApplyCoupon} className="space-y-3">
-                      {/* Coupon Input */}
-                      <div>
-                        <label htmlFor="couponCode" className="block text-xs text-gray-500 mb-1">
-                          Enter coupon code (uppercase letters & numbers only)
+                      {/* Coupon Input with Enhanced UI */}
+                      <div className="relative">
+                        <label htmlFor="couponCode" className="block text-sm font-medium text-gray-700 mb-2">
+                          Enter coupon code 
                         </label>
-                        <input
-                          id="couponCode"
-                          type="text"
-                          ref={couponInputRef}
-                          value={couponCode}
-                          onChange={handleCouponInputChange}
-                          placeholder="COUPONCODE"
-                          className="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
-                          autoComplete="off"
-                          autoCapitalize="characters"
-                          style={{ textTransform: 'uppercase' }}
-                        />
-                        {couponError && <p className="text-xs text-red-500 mt-1">{couponError}</p>}
-                      </div>
-
-                      {/* Captcha */}
-                      <div className="pt-2 border-t border-gray-100">
-                        <label className="block text-xs text-gray-500 mb-1">
-                          Enter the characters you see below
-                        </label>
-                        <div className="flex space-x-2 items-center mb-2">
-                          <div className="bg-blue-50 px-3 py-2 rounded-md select-none flex-grow text-center font-mono tracking-wider text-gray-700" style={{ letterSpacing: '0.25em' }}>
-                            {captchaText.split('').map((char, idx) => (
-                              <span 
-                                key={idx} 
-                                style={{ 
-                                  display: 'inline-block',
-                                  transform: `rotate(${Math.random() * 20 - 10}deg)`,
-                                  marginRight: '2px'
-                                }}
-                              >
-                                {char}
-                              </span>
-                            ))}
-                          </div>
-                          <button 
-                            type="button" 
-                            onClick={generateCaptcha}
-                            className="p-2 text-gray-500 hover:text-blue-600 bg-gray-100 hover:bg-gray-200 rounded-md" 
-                            aria-label="Refresh captcha"
+                        <div className="flex">
+                          <input
+                            id="couponCode"
+                            type="text"
+                            ref={couponInputRef}
+                            value={couponCode}
+                            onChange={handleCouponInputChange}
+                            placeholder="SUMMER20"
+                            className="w-full border border-gray-300 rounded-l-md p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase bg-white"
+                            autoComplete="off"
+                            autoCapitalize="characters"
+                            style={{ textTransform: 'uppercase' }}
+                          />
+                          <button
+                            type="submit"
+                            disabled={validatingCoupon}
+                            className={`px-4 rounded-r-md text-white font-medium text-sm transition-colors flex items-center justify-center ${
+                              validatingCoupon ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
+                            }`}
                           >
-                            <RefreshCw size={16} />
+                            {validatingCoupon ? (
+                              <div className="h-5 w-5 border-t-2 border-b-2 border-white rounded-full animate-spin"></div>
+                            ) : (
+                              "Apply"
+                            )}
                           </button>
                         </div>
-                        <input
-                          type="text"
-                          value={userCaptchaInput}
-                          onChange={(e) => setUserCaptchaInput(e.target.value.toUpperCase())}
-                          placeholder="Enter captcha text"
-                          className="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          autoComplete="off"
-                        />
-                        {captchaError && <p className="text-xs text-red-500 mt-1">{captchaError}</p>}
+                        {couponError && (
+                          <m.p 
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-sm text-red-500 mt-2">
+                            {couponError}
+                          </m.p>
+                        )}
+                        <p className="text-xs text-gray-500 mt-2">Protected by Google reCAPTCHA v3</p>
                       </div>
-
-                      <button
-                        type="submit"
-                        disabled={validatingCoupon}
-                        className={`w-full py-2 rounded-md text-white font-medium text-sm transition-colors ${
-                          validatingCoupon ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
-                        }`}
-                      >
-                        {validatingCoupon ? "Validating..." : "Apply Coupon"}
-                      </button>
                     </form>
                   ) : (
                     <div className="bg-green-50 p-3 rounded-md">
@@ -1585,4 +1656,17 @@ const logEnvironmentVars = () => {
   });
 };
 
-export default UnifiedCheckout; 
+/**
+ * Main UnifiedCheckout component wrapped with GoogleReCaptchaProvider
+ */
+function UnifiedCheckoutWithRecaptcha() {
+  return (
+    <GoogleReCaptchaProvider
+      reCaptchaKey={process.env.REACT_APP_RECAPTCHA_SITE_KEY || "6LcXXXXXXXXXXXXXXXXXXXXX"} // Replace with your actual site key
+    >
+      <UnifiedCheckout />
+    </GoogleReCaptchaProvider>
+  );
+}
+
+export default UnifiedCheckoutWithRecaptcha;

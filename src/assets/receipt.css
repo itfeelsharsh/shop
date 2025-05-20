@@ -3,10 +3,14 @@
  * 
  * Enhanced styling for receipt PDFs with warm, elegant design
  * Includes print-specific styles for optimal PDF output
+ * Optimized for A4 size to fit up to 5 products per page
+ * 
+ * Note: These styles target both on-screen preview and PDF generation
  */
 
 /* Base Receipt Container */
 .receipt-container {
+  /* Core container styles */
   font-family: 'Helvetica', 'Arial', sans-serif;
   max-width: 800px;
   margin: 0 auto;
@@ -16,6 +20,8 @@
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
   line-height: 1.5;
+  /* Ensure all content fits nicely on A4 page */
+  box-sizing: border-box;
 }
 
 /* Receipt Header with Logo and Order Info */
@@ -76,7 +82,7 @@
 
 /* Customer Information */
 .customer-info {
-  margin-bottom: 30px;
+  margin-bottom: 25px; /* Reduced margin for better spacing */
   padding: 15px;
   background: #f9fafb;
   border-radius: 8px;
@@ -86,21 +92,21 @@
 .customer-info h3 {
   font-size: 16px;
   font-weight: bold;
-  margin-bottom: 10px;
+  margin-bottom: 8px; /* Reduced margin for better spacing */
   color: #8B4513; /* Warm brown color */
 }
 
 .customer-info p {
-  margin: 5px 0;
+  margin: 4px 0; /* Reduced margin for better spacing */
   font-size: 14px;
 }
 
-/* Items Section */
+/* Items Section - Optimized to fit 5 products per page */
 .items-section {
-  margin-bottom: 30px;
+  margin-bottom: 25px; /* Reduced margin for better spacing */
 }
 
-/* Items Table */
+/* Items Table - Optimized for 5 products */
 .items-table {
   width: 100%;
   border-collapse: collapse;
@@ -112,16 +118,22 @@
 .items-table th {
   background: #8B4513; /* Warm brown color for table header */
   color: white;
-  padding: 12px;
+  padding: 10px; /* Reduced padding for better fit */
   text-align: left;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px; /* Reduced font size for better fit */
 }
 
 .items-table td {
-  padding: 12px;
+  padding: 8px 10px; /* Reduced padding for better fit */
   border-bottom: 1px solid #e5e7eb;
-  font-size: 14px;
+  font-size: 13px; /* Reduced font size for better fit */
+  vertical-align: middle; /* Ensure vertical alignment is consistent */
+}
+
+/* Create more compact table rows for product items */
+.items-table tr {
+  height: 36px; /* Fixed height for consistent rows */
 }
 
 .items-table tr:nth-child(even) td {
@@ -132,9 +144,17 @@
   border-bottom: none;
 }
 
+/* Handle long product names with ellipsis to prevent overflow */
+.items-table td:first-child {
+  max-width: 250px; /* Limit width of product name column */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Order Summary Section */
 .summary-section {
-  margin-bottom: 30px;
+  margin-bottom: 25px; /* Reduced margin for better spacing */
   padding: 15px;
   background: #f9f6f3; /* Light warm background */
   border-radius: 8px;
@@ -144,8 +164,8 @@
 .summary-row {
   display: flex;
   justify-content: space-between;
-  padding: 8px 0;
-  font-size: 14px;
+  padding: 6px 0; /* Reduced padding for better fit */
+  font-size: 13px; /* Slightly smaller font size */
 }
 
 .summary-row:not(:last-child) {
@@ -155,15 +175,15 @@
 .summary-row.total {
   font-weight: bold;
   font-size: 18px;
-  margin-top: 10px;
-  padding-top: 10px;
+  margin-top: 8px;
+  padding-top: 8px;
   border-top: 2px solid #e5e7eb;
   color: #8B4513; /* Warm brown color for total */
 }
 
 /* Payment Information */
 .payment-info {
-  margin-bottom: 30px;
+  margin-bottom: 25px; /* Reduced margin for better spacing */
   padding: 15px;
   background: #f9f6f3; /* Light warm background */
   border-radius: 8px;
@@ -173,15 +193,15 @@
 .payment-info h3 {
   font-size: 16px;
   font-weight: bold;
-  margin-bottom: 15px;
+  margin-bottom: 12px; /* Reduced margin for better spacing */
   color: #8B4513; /* Warm brown color */
   border-bottom: 1px solid #e5e7eb;
   padding-bottom: 8px;
 }
 
 .payment-info p {
-  margin: 8px 0;
-  font-size: 14px;
+  margin: 6px 0; /* Reduced margin for better spacing */
+  font-size: 13px; /* Reduced font size for better fit */
 }
 
 .payment-info p strong {
@@ -190,34 +210,55 @@
   color: #555;
 }
 
-/* Receipt Footer */
-.footer {
+/* Thank You Message - Added for better customer experience */
+.thank-you-message {
   text-align: center;
-  padding-top: 20px;
-  border-top: 2px solid #f0f0f0;
-  color: #666;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px dashed #d1d5db;
+}
+
+.thank-you-message h3 {
+  color: #4f46e5;
+  margin-bottom: 5px;
+  font-size: 18px;
+}
+
+.thank-you-message p {
+  color: #6b7280;
   font-size: 14px;
 }
 
+/* Receipt Footer */
+.footer {
+  text-align: center;
+  padding-top: 15px; /* Reduced padding for better fit */
+  border-top: 2px solid #f0f0f0;
+  color: #666;
+  font-size: 13px; /* Reduced font size for better fit */
+}
+
 .footer p {
-  margin: 5px 0;
+  margin: 4px 0; /* Reduced margin for better spacing */
 }
 
 .footer p:first-child {
   font-weight: bold;
-  margin-bottom: 10px;
-  font-size: 16px;
+  margin-bottom: 8px;
+  font-size: 15px; /* Reduced font size for better fit */
   color: #8B4513; /* Warm brown color */
 }
 
-/* Print Specific Styles */
+/* Print Specific Styles - Crucial for PDF generation */
 @media print {
+  /* Remove decorations when printing */
   .receipt-container {
     box-shadow: none;
     padding: 0;
     max-width: 100%;
   }
   
+  /* Force background colors to print */
   .items-table th {
     background-color: #8B4513 !important; /* Ensure color prints in PDF */
     color: white !important;
@@ -225,20 +266,33 @@
     print-color-adjust: exact;
   }
   
+  /* Ensure brand colors print properly */
   .receipt-info h2, 
   .store-info h1,
   .customer-info h3,
   .payment-info h3,
   .summary-row.total,
-  .footer p:first-child {
+  .footer p:first-child,
+  .thank-you-message h3 {
     color: #8B4513 !important; /* Ensure color prints in PDF */
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
   
+  /* Ensure border colors print properly */
   .customer-info {
     border-left-color: #8B4513 !important; /* Ensure color prints in PDF */
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+  
+  /* Optimize page breaks - avoid breaking inside product rows */
+  .items-table tr {
+    page-break-inside: avoid;
+  }
+  
+  /* Ensure summary section stays together */
+  .summary-section {
+    page-break-inside: avoid;
   }
 } 
