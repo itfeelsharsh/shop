@@ -203,6 +203,11 @@ function UnifiedCheckout() {
     }
   }, [user]);
   
+  // Debug: Log email configuration
+  useEffect(() => {
+    logEnvironmentVars();
+  }, []);
+  
   // Cart details with product info
   const cartDetails = cartItems.map(item => {
     const product = products.find(p => p.id === item.productId);
@@ -638,13 +643,22 @@ function UnifiedCheckout() {
       
       console.log('Order processed successfully:', orderResult.orderId);
       
+      // Log email sending result for debugging
+      if (orderResult.emailSent) {
+        console.log('✅ Order confirmation email sent successfully');
+        toast.success('Order confirmed! Check your email for confirmation details.');
+      } else {
+        console.warn('⚠️ Order confirmation email failed to send:', orderResult.emailError);
+        toast.warning('Order confirmed! Email confirmation may be delayed - please check your account for order details.');
+      }
+      
       // Finalize the order and transition to confirmation
       setTimeout(() => {
         // Clear the cart
         dispatch(clearCart());
         
-        // Redirect to order summary page with order ID
-        navigate(`/summary?orderId=${orderResult.orderId}&paymentId=${orderResult.paymentId || 'direct'}`);
+        // Redirect to order summary page with order ID and email status
+        navigate(`/summary?orderId=${orderResult.orderId}&paymentId=${orderResult.paymentId || 'direct'}&emailSent=${orderResult.emailSent || 'false'}`);
         
         setProcessingPayment(false);
         console.log('Order process completed successfully with ID:', orderResult.orderId);

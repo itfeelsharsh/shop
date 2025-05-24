@@ -33,16 +33,26 @@ const getApiFunctionBaseUrl = () => {
 const isEmailEnabled = () => {
   // Check if email is enabled in the config
   if (!featureConfig.email.enabled) {
-    console.log('Email functionality is disabled in configuration');
+    console.log('❌ Email functionality is disabled in configuration');
+    console.log('To enable email, set REACT_APP_EMAIL_ENABLED=true in your environment variables');
     return false;
   }
 
   // Log email configuration for debugging
-  console.log('Email Configuration:', {
-    enabled: featureConfig.email.enabled,
-    useEmailServer: false, // Always use our API endpoint
-    fromAddress: featureConfig.email.fromAddress,
-  });
+  console.log('📧 Email Configuration Debug:');
+  console.log('- Email enabled:', featureConfig.email.enabled);
+  console.log('- Use email server:', featureConfig.email.useEmailServer);
+  console.log('- From address:', featureConfig.email.fromAddress || 'Not set');
+  console.log('- Support email:', featureConfig.email.supportEmail || 'Not set');
+  
+  // Check environment variables more thoroughly
+  console.log('🔧 Environment Variables:');
+  console.log('- REACT_APP_EMAIL_ENABLED:', process.env.REACT_APP_EMAIL_ENABLED);
+  console.log('- EMAIL_ENABLED:', process.env.EMAIL_ENABLED);
+  console.log('- REACT_APP_EMAIL_FROM:', process.env.REACT_APP_EMAIL_FROM);
+  console.log('- EMAIL_FROM:', process.env.EMAIL_FROM);
+  console.log('- REACT_APP_RESEND_API_KEY exists:', !!process.env.REACT_APP_RESEND_API_KEY);
+  console.log('- RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY);
 
   return true;
 };

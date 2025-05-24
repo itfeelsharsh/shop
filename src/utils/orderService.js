@@ -5,43 +5,105 @@
  * It uses the email service to send emails based on configuration settings.
  */
 
-import { sendOrderShippedEmail } from './emailService';
+import { sendOrderShippedEmail, sendOrderConfirmationEmail } from './emailService';
 import featureConfig from './featureConfig';
 import { doc, updateDoc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
 /**
  * Process a new order and create the order record in Firestore
+ * Also handles sending order confirmation email
  * 
  * @param {Object} orderData - The order data
  * @param {Object} userData - The user data
- * @returns {Promise<Object>} - Success status and order ID
+ * @returns {Promise<Object>} - Success status, order ID, and email status
  */
 const processNewOrder = async (orderData, userData) => {
+  console.log('orderService: Processing new order for user:', userData?.email);
+  
   try {
     // Generate unique payment ID with timestamp prefix
     const timestamp = new Date().getTime().toString().slice(-6);
     const randomId = Math.random().toString(36).substring(2, 8).toUpperCase();
     const paymentId = `PAY-${timestamp}-${randomId}`;
     
-    // Create a new document in the orders collection
-    const orderRef = await addDoc(collection(db, "orders"), {
+    // Add additional metadata to order
+    const completeOrderData = {
       ...orderData,
       createdAt: serverTimestamp(),
-      paymentId: paymentId
-    });
+      paymentId: paymentId,
+      // Ensure orderId is available for email template
+      orderId: orderData.orderId || `ORDER-${timestamp}-${randomId}`,
+      // Add user info to order for easier access
+      userName: userData?.displayName || userData?.name || userData?.email || 'Valued Customer',
+      userEmail: userData?.email || orderData.userEmail,
+      userPhone: userData?.phone || orderData.userPhone,
+    };
     
-    // Return success with order ID and payment ID
+    console.log('orderService: Creating order document in Firestore');
+    
+    // Create a new document in the orders collection
+    const orderRef = await addDoc(collection(db, "orders"), completeOrderData);
+    
+    console.log('orderService: Order created successfully with ID:', orderRef.id);
+    
+    // Prepare order data for email (include generated ID)
+    const orderForEmail = {
+      ...completeOrderData,
+      id: orderRef.id,
+      orderId: orderRef.id, // Use the Firestore ID as the order ID for consistency
+    };
+    
+    // Send order confirmation email if email feature is enabled
+    let emailResult = { success: false, error: 'Email not attempted' };
+    
+    if (featureConfig.email.enabled) {
+      console.log('orderService: Email is enabled, sending order confirmation');
+      
+      try {
+        // Prepare user data for email service
+        const userForEmail = {
+          email: userData?.email || orderData.userEmail,
+          displayName: userData?.displayName || userData?.name || userData?.email || 'Valued Customer',
+          name: userData?.name || userData?.displayName || 'Valued Customer'
+        };
+        
+        console.log('orderService: Calling sendOrderConfirmationEmail with:', {
+          orderId: orderForEmail.orderId,
+          userEmail: userForEmail.email
+        });
+        
+        emailResult = await sendOrderConfirmationEmail(orderForEmail, userForEmail);
+        
+        if (emailResult.success) {
+          console.log('orderService: Order confirmation email sent successfully');
+        } else {
+          console.error('orderService: Failed to send order confirmation email:', emailResult.error);
+        }
+      } catch (emailError) {
+        console.error('orderService: Error sending order confirmation email:', emailError);
+        emailResult = { success: false, error: emailError.message };
+      }
+    } else {
+      console.log('orderService: Email is disabled in configuration, skipping email');
+      emailResult = { success: false, error: 'Email disabled in configuration' };
+    }
+    
+    // Return success with order ID, payment ID, and email status
     return {
       success: true,
       orderId: orderRef.id,
-      paymentId: paymentId
+      paymentId: paymentId,
+      emailSent: emailResult.success,
+      emailError: emailResult.success ? null : emailResult.error
     };
   } catch (error) {
-    console.error("Error processing order:", error);
+    console.error("orderService: Error processing order:", error);
     return {
       success: false,
-      error: error.message
+      error: error.message,
+      emailSent: false,
+      emailError: 'Order processing failed'
     };
   }
 };
