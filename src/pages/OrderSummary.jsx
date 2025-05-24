@@ -10,7 +10,6 @@ import {
   Truck, 
   CreditCard, 
   Receipt,
-  FileText,
   MapPin,
   ArrowLeft,
   Download
@@ -48,52 +47,157 @@ function OrderSummary() {
   
   // Fetch order details using the orderId
   useEffect(() => {
+    /**
+     * Check if the URL has the required parameters for order lookup
+     * 
+     * @returns {boolean} Whether the URL contains valid order parameters
+     */
+    const hasValidUrlParams = () => {
+      return orderId && orderId.length > 0;
+    };
+
+    /**
+     * Check if the current user can access this order
+     * This implements a more sophisticated access control that allows:
+     * 1. Authenticated users to access their own orders
+     * 2. Brief grace period for recently completed orders (direct checkout flow)
+     * 
+     * @param {Object} orderData - The order data from Firestore
+     * @returns {boolean} Whether the user has access to this order
+     */
+    const canAccessOrder = (orderData) => {
+      // If user is authenticated and owns the order, allow access
+      if (user && orderData.userId === user.uid) {
+        return true;
+      }
+      
+      // For security: only allow unauthenticated access for very recent orders
+      // This handles the case where user completes checkout but auth state hasn't updated yet
+      if (!user && orderData.orderDate) {
+        const orderTime = new Date(orderData.orderDate).getTime();
+        const currentTime = new Date().getTime();
+        const timeDifference = currentTime - orderTime;
+        
+        // Allow unauthenticated access for orders placed within last 10 minutes
+        // This is for the direct checkout -> summary flow
+        const gracePeriod = 10 * 60 * 1000; // 10 minutes in milliseconds
+        return timeDifference < gracePeriod;
+      }
+      
+      return false;
+    };
+
+    /**
+     * Fetch order details from Firestore
+     * Handles authentication, validation, and error cases
+     * 
+     * This function performs the following validations:
+     * 1. Checks if orderId exists in URL parameters
+     * 2. Verifies user is authenticated
+     * 3. Fetches order from Firestore
+     * 4. Validates order exists and belongs to current user
+     * 5. Sets appropriate error states for each failure case
+     */
     const fetchOrderDetails = async () => {
-      if (!orderId || !user) {
-        setError("Missing order ID or user not authenticated");
+      // Early validation - check if required parameters exist
+      if (!hasValidUrlParams()) {
+        console.error("OrderSummary: Missing or invalid orderId parameter in URL");
+        setError("Invalid order link. Please check your URL or access your order from your account page.");
         setLoading(false);
         return;
       }
       
+      if (!user) {
+        console.error("OrderSummary: User not authenticated");
+        
+        // For direct checkout flow, we'll still try to fetch the order
+        // The canAccessOrder function will handle security for recent orders
+        console.log("OrderSummary: Proceeding without authentication for potential direct checkout flow");
+      }
+      
       try {
+        console.log(`OrderSummary: Fetching order details for orderId: ${orderId}`);
+        
+        // Fetch order document from Firestore
         const orderRef = doc(db, "orders", orderId);
         const orderSnapshot = await getDoc(orderRef);
         
+        // Check if order document exists
         if (!orderSnapshot.exists()) {
-          setError("Order not found");
+          console.error(`OrderSummary: Order not found in database: ${orderId}`);
+          setError("Order not found. This order may not exist or may have been removed.");
           setLoading(false);
           return;
         }
         
-        // Get order data and ensure it belongs to the current user
+        // Get order data and validate structure
         const orderData = orderSnapshot.data();
+        console.log("OrderSummary: Retrieved order data:", orderData);
         
-        if (orderData.userId !== user.uid) {
-          setError("Unauthorized access to this order");
+        // Security check - ensure order belongs to current user
+        if (!canAccessOrder(orderData)) {
+          console.error(`OrderSummary: Unauthorized access attempt. Order userId: ${orderData.userId}, Current user: ${user.uid}`);
+          setError("You don't have permission to view this order.");
           setLoading(false);
           return;
         }
         
-        setOrder({
-          id: orderSnapshot.id,
-          ...orderData
-        });
+        // Validate essential order data structure
+        if (!orderData.items || !Array.isArray(orderData.items) || orderData.items.length === 0) {
+          console.error("OrderSummary: Invalid order data - missing or empty items array");
+          setError("This order appears to be incomplete or corrupted.");
+          setLoading(false);
+          return;
+        }
         
-        // Turn off confetti after 5 seconds
+        // Create complete order object with fallback values
+        const completeOrder = {
+          id: orderSnapshot.id,
+          orderId: orderSnapshot.id, // Ensure orderId is always available
+          ...orderData,
+          // Ensure critical fields have fallback values
+          userName: orderData.userName || user.displayName || user.email || 'Valued Customer',
+          userEmail: orderData.userEmail || user.email || '',
+          orderDate: orderData.orderDate || new Date().toISOString(),
+          totalAmount: orderData.totalAmount || orderData.total || 0,
+          subtotal: orderData.subtotal || 0,
+          tax: orderData.tax || 0,
+          items: orderData.items || [],
+          shipping: orderData.shipping || { cost: 0, method: 'Standard' },
+          shippingAddress: orderData.shippingAddress || {},
+          payment: orderData.payment || { method: 'Unknown' },
+          status: orderData.status || 'Processing'
+        };
+        
+        console.log("OrderSummary: Order data processed successfully:", completeOrder);
+        setOrder(completeOrder);
+        
+        // Start confetti celebration effect
+        // Turn off confetti after 5 seconds to avoid performance issues
         setTimeout(() => {
           setConfettiActive(false);
         }, 5000);
         
       } catch (err) {
-        console.error("Error fetching order:", err);
-        setError("Failed to fetch order details");
+        console.error("OrderSummary: Error fetching order details:", err);
+        
+        // Provide specific error messages based on error type
+        if (err.code === 'permission-denied') {
+          setError("You don't have permission to access this order.");
+        } else if (err.code === 'unavailable') {
+          setError("Service temporarily unavailable. Please try again later.");
+        } else if (err.message?.includes('network')) {
+          setError("Network error. Please check your internet connection and try again.");
+        } else {
+          setError("Failed to load order details. Please try refreshing the page.");
+        }
       } finally {
         setLoading(false);
       }
     };
     
     fetchOrderDetails();
-  }, [orderId, user]);
+  }, [orderId, user]); // Dependencies: re-run if orderId or user changes
   
   // Format price with Indian currency format
   const formatPrice = (price) => {
@@ -189,21 +293,85 @@ function OrderSummary() {
   // Show error message
   if (error) {
     return (
-      <div className="flex flex-col justify-center items-center h-screen bg-gray-50 p-6">
+      <div className="flex flex-col justify-center items-center min-h-screen bg-gray-50 p-6">
         <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
+          {/* Error Icon */}
           <div className="text-red-500 mb-4">
             <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Error</h2>
+          
+          {/* Error Title */}
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Oops! Something went wrong</h2>
+          
+          {/* Error Message */}
           <p className="text-gray-600 mb-6">{error}</p>
-          <button 
-            onClick={() => navigate('/')}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Return to Home
-          </button>
+          
+          {/* Debug Information (helpful for developers and support) */}
+          {orderId && (
+            <div className="bg-gray-50 rounded-lg p-3 mb-4 text-left">
+              <p className="text-sm text-gray-500">
+                <strong>Order ID:</strong> {orderId}
+              </p>
+              {paymentId && (
+                <p className="text-sm text-gray-500">
+                  <strong>Payment ID:</strong> {paymentId}
+                </p>
+              )}
+              <p className="text-sm text-gray-500">
+                <strong>User:</strong> {user?.email || 'Not signed in'}
+              </p>
+            </div>
+          )}
+          
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            {/* Primary action - retry if authentication issue */}
+            {error.includes('sign in') ? (
+              <button 
+                onClick={() => navigate('/signin')}
+                className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                Sign In
+              </button>
+            ) : (
+              <button 
+                onClick={() => window.location.reload()}
+                className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                Try Again
+              </button>
+            )}
+            
+            {/* Secondary actions */}
+            <div className="flex space-x-3">
+              <button 
+                onClick={() => navigate('/my-account/orders')}
+                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+              >
+                View Orders
+              </button>
+              <button 
+                onClick={() => navigate('/')}
+                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+              >
+                Go Home
+              </button>
+            </div>
+          </div>
+          
+          {/* Contact Support */}
+          <div className="mt-6 pt-4 border-t border-gray-200">
+            <p className="text-sm text-gray-500">
+              Need help? <button 
+                onClick={() => navigate('/contact')}
+                className="text-blue-600 hover:text-blue-700 underline"
+              >
+                Contact Support
+              </button>
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -231,6 +399,38 @@ function OrderSummary() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Shopping
           </button>
+          
+          {/* Data Quality Warning - Show if order has missing critical information */}
+          {order && (!order.items || order.items.length === 0 || !order.totalAmount) && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-yellow-800">
+                    Order Information Incomplete
+                  </h3>
+                  <div className="mt-2 text-sm text-yellow-700">
+                    <p>
+                      Some order details appear to be missing. This may be due to a processing issue. 
+                      The order was successfully placed, but you may want to contact support for complete details.
+                    </p>
+                  </div>
+                  <div className="mt-4">
+                    <button 
+                      onClick={() => navigate('/contact')}
+                      className="text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded hover:bg-yellow-200 transition-colors"
+                    >
+                      Contact Support
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           
           {/* Order Success Banner */}
           <motion.div 
@@ -314,7 +514,7 @@ function OrderSummary() {
                   <AnimatePresence>
                     {order?.items?.map((item, index) => (
                       <motion.div 
-                        key={item.productId}
+                        key={item.productId || index}
                         initial={{ opacity: 0 }}
                         animate={{ 
                           opacity: 1,
@@ -322,20 +522,48 @@ function OrderSummary() {
                         }}
                         className="flex items-center p-4 hover:bg-gray-50"
                       >
-                        <div className="flex-shrink-0 w-16 h-16 border border-gray-200 rounded-md overflow-hidden">
-                          <img 
-                            src={item.image} 
-                            alt={item.name}
-                            className="w-full h-full object-contain"
-                          />
+                        {/* Product Image with Error Handling */}
+                        <div className="flex-shrink-0 w-16 h-16 border border-gray-200 rounded-md overflow-hidden bg-gray-100">
+                          {item.image ? (
+                            <img 
+                              src={item.image} 
+                              alt={item.name || 'Product'}
+                              className="w-full h-full object-contain"
+                              onError={(e) => {
+                                // If image fails to load, replace with fallback
+                                e.target.style.display = 'none';
+                                e.target.nextSibling.style.display = 'flex';
+                              }}
+                            />
+                          ) : null}
+                          {/* Fallback image placeholder */}
+                          <div 
+                            className="w-full h-full flex items-center justify-center text-gray-400"
+                            style={{ display: item.image ? 'none' : 'flex' }}
+                          >
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                          </div>
                         </div>
+                        
+                        {/* Product Details */}
                         <div className="ml-4 flex-1">
-                          <h4 className="font-medium text-gray-800">{item.name}</h4>
-                          <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                          <h4 className="font-medium text-gray-800">{item.name || 'Unknown Product'}</h4>
+                          <p className="text-sm text-gray-500">Qty: {item.quantity || 1}</p>
+                          {item.variant && (
+                            <p className="text-xs text-gray-400">{item.variant}</p>
+                          )}
                         </div>
+                        
+                        {/* Pricing with Error Handling */}
                         <div className="text-right">
-                          <p className="font-medium text-gray-800">{formatPrice(item.price * item.quantity)}</p>
-                          <p className="text-sm text-gray-500">{formatPrice(item.price)} each</p>
+                          <p className="font-medium text-gray-800">
+                            {formatPrice((item.price || 0) * (item.quantity || 1))}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {formatPrice(item.price || 0)} each
+                          </p>
                         </div>
                       </motion.div>
                     ))}

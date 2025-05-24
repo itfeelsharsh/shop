@@ -26,6 +26,7 @@ import { useDispatch } from "react-redux";
 import { setUser, clearUser } from "./redux/userSlice";
 import "react-toastify/dist/ReactToastify.css";
 import PasswordReset from './pages/PasswordReset'; 
+import OrderSummary from './pages/OrderSummary';
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { HelmetProvider } from 'react-helmet-async';
 import { LazyMotion, domAnimation } from "framer-motion";
@@ -149,6 +150,11 @@ function App() {
                     </ProtectedRoute>
                   } />
                   <Route path="/checkout" element={<UnifiedCheckout />} />
+                  
+                  {/* Post-checkout order summary page - displays order confirmation */}
+                  {/* Accessible after successful payment with orderId and paymentId query parameters */}
+                  <Route path="/summary" element={<OrderSummary />} />
+                  
                   <Route path="/about" element={<AboutUs />} />
                   <Route path="/contact" element={<ContactUs />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
