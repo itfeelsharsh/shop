@@ -39,7 +39,11 @@ service cloud.firestore {
     // Products
     match /products/{productId} {
       allow read: if true; 
-      allow create, update, delete: if request.auth != null && isAdmin(); 
+      allow create, delete: if request.auth != null && isAdmin();
+      // Allow authenticated users to update stock and lastSold fields during order processing
+      allow update: if request.auth != null && 
+                     (isAdmin() || 
+                      (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock', 'lastSold'])));
     }
 
     // Coupons

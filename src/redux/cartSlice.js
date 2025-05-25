@@ -84,7 +84,11 @@ const cartSlice = createSlice({
      * @param {Object} action - Action with array of purchased product IDs
      */
     removePurchasedFromCart(state, action) {
-      state.items = state.items.filter(item => !action.payload.includes(item.productId));
+      // Ensure payload is an array before using includes method
+      const productIdsToRemove = Array.isArray(action.payload) ? action.payload : [];
+      if (productIdsToRemove.length > 0) {
+        state.items = state.items.filter(item => !productIdsToRemove.includes(item.productId));
+      }
     },
   },
 });

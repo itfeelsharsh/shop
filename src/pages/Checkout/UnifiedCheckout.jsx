@@ -3,8 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { m, AnimatePresence } from 'framer-motion';
 import { auth, db } from '../../firebase/config';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { collection, getDocs } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { clearCart, applyCoupon, removeCoupon, removePurchasedFromCart, updateQuantity, removeFromCart } from '../../redux/cartSlice';
 import countriesStatesData from '../../countriesStates.json';
@@ -462,17 +461,40 @@ function UnifiedCheckout() {
     try {
       setProcessingPayment(true);
       
-      // First, check for any purchased items in the cart and remove them
+      // Check for any previously purchased items in the cart and remove them
       let removedProductIds = [];
       if (user) {
         try {
-          const purchaseResult = await dispatch(removePurchasedFromCart()).unwrap();
-          if (purchaseResult.removed && purchaseResult.removed.length > 0) {
-            removedProductIds = purchaseResult.removed;
-            toast.info(`${purchaseResult.removed.length} previously purchased item(s) were removed from your cart`);
+          // Get user's order history to check for previously purchased items
+          const userOrdersQuery = query(
+            collection(db, 'users', user.uid, 'orders'),
+            where('status', 'in', ['Delivered', 'Shipped'])
+          );
+          const userOrdersSnapshot = await getDocs(userOrdersQuery);
+          
+          const purchasedProductIds = new Set();
+          userOrdersSnapshot.docs.forEach(doc => {
+            const orderData = doc.data();
+            if (orderData.items) {
+              orderData.items.forEach(item => {
+                purchasedProductIds.add(item.productId);
+              });
+            }
+          });
+          
+          // Find items in cart that were previously purchased
+          const itemsToRemove = cartDetails.filter(item => 
+            purchasedProductIds.has(item.productId)
+          ).map(item => item.productId);
+          
+          if (itemsToRemove.length > 0) {
+            // Remove purchased items from cart
+            dispatch(removePurchasedFromCart(itemsToRemove));
+            removedProductIds = itemsToRemove;
+            toast.info(`${itemsToRemove.length} previously purchased item(s) were removed from your cart`);
             
             // If all items were removed, redirect to cart
-            if (cartDetails.length === purchaseResult.removed.length) {
+            if (cartDetails.length === itemsToRemove.length) {
               toast.error("All items in your cart have already been purchased");
               setProcessingPayment(false);
               navigate('/cart');
@@ -621,9 +643,15 @@ function UnifiedCheckout() {
         };
       }
       
-      // Record coupon usage if applied
+      // Record coupon usage if applied (with error handling)
       if (appliedCoupon && appliedCoupon.couponId) {
-        await CouponService.recordCouponUsage(appliedCoupon.couponId);
+        try {
+          await CouponService.recordCouponUsage(appliedCoupon.couponId);
+          console.log('✅ Coupon usage recorded successfully');
+        } catch (couponError) {
+          console.warn('⚠️ Failed to record coupon usage, but continuing with order:', couponError);
+          // Don't fail the entire order if coupon recording fails
+        }
       }
       
       // Prepare user data for email
@@ -638,7 +666,10 @@ function UnifiedCheckout() {
       const orderResult = await processNewOrder(orderData, userData);
       
       if (!orderResult.success) {
-        throw new Error(orderResult.error || 'Failed to process order');
+        console.error("Order processing failed:", orderResult);
+        // Use user-friendly error message if available, fallback to technical error
+        const errorMessage = orderResult.error || orderResult.technicalError || 'Failed to process order';
+        throw new Error(errorMessage);
       }
       
       console.log('Order processed successfully:', orderResult.orderId);
