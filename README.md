@@ -5,6 +5,24 @@
 
 Welcome to KamiKoto, a beautifully crafted e-commerce platform offering a seamless shopping experience for stationery. This project is built using **React.js** and **Firebase**, delivering a delightful UI/UX and mobile-friendly experience for all users.
 
+## 📸 Screenshots
+
+<div align="center">
+  <img src="screenshots/1.png" alt="KamiKoto Screenshot 1" width="100%">
+  <img src="screenshots/2.png" alt="KamiKoto Screenshot 2" width="100%">
+  <img src="screenshots/3.png" alt="KamiKoto Screenshot 3" width="100%">
+  <img src="screenshots/4.png" alt="KamiKoto Screenshot 4" width="100%">
+  <img src="screenshots/5.png" alt="KamiKoto Screenshot 5" width="100%">
+  <img src="screenshots/6.png" alt="KamiKoto Screenshot 6" width="100%">
+  <img src="screenshots/7.png" alt="KamiKoto Screenshot 7" width="100%">
+  <img src="screenshots/8.png" alt="KamiKoto Screenshot 8" width="100%">
+  <img src="screenshots/9.png" alt="KamiKoto Screenshot 9" width="100%">
+  <img src="screenshots/10.png" alt="KamiKoto Screenshot 10" width="100%">
+  <img src="screenshots/11.png" alt="KamiKoto Screenshot 11" width="100%">
+</div>
+
+**Live Demo:** [kamikoto.pages.dev](https://kamikoto.pages.dev)
+
 ---
 
 ## 🌟 Features
@@ -94,42 +112,9 @@ Set up Firebase Firestore by following these steps:
 1.  Go to [Firebase Console](https://console.firebase.google.com) and enable **Firestore** and **Authentication**.
 
 2.  Set Firestore rules for secure data access:
-
- ```json
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-
-    match /users/{userId} {
-      allow read: if request.auth != null && 
-                  (request.auth.uid == userId || 
-                   get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userRole == 'Admin');
-      allow write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    match /products/{productId} {
-      allow read: if true;
-      allow create, update, delete: if request.auth != null && 
-                                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userRole == 'Admin';
-    }
-
-    match /users/{userId}/cart/{cartItemId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    match /users/{userId}/orders/{orderId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    match /products/{productId}/reviews/{reviewId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
-    }
-
-  }
-}
-```
+    - Go to Firestore Console and click on `Rules` tab.
+    - Copy the rules from `firestore.rules.txt` file and paste it in the rules editor.
+    - Click on `Publish` button to publish the rules.
 
 3.  For **Admin Panel Access**, go to Firestore and add the following field to any user you want to give admin rights:
 
