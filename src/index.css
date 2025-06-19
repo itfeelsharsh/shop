@@ -2,6 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Loading animations */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s infinite;
+}
+
+/* Enhanced loading screen styles */
+.loading-screen {
+  background: linear-gradient(135deg, #8B4513 0%, #A0522D 50%, #D2691E 100%);
+}
+
+/* Pulse animation for loading indicators */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
 /* Receipt PDF Styling */
 .receipt-container {
   font-family: 'Helvetica', 'Arial', sans-serif;

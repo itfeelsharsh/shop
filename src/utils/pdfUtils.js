@@ -168,35 +168,36 @@ export const createReceiptTemplate = (order, containerId) => {
     return order.shipping?.address?.country === 'United States' && order.importDuty > 0;
   };
   
-  // Create receipt HTML with enhanced styling - based on the new summary design
+  // Create receipt HTML with enhanced styling for a compact, modern look
+  // All styles are inline to ensure they are applied in the PDF.
   const receiptHtml = `
-    <div class="receipt-container">
-      <!-- Modern Header Section with Company Logo and Order Info -->
-      <div class="receipt-header">
-        <div class="store-info">
+    <div class="receipt-container" style="font-family: 'Arial', sans-serif; color: #333; margin: 0 auto; max-width: 800px; padding: 15px; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+      
+      <!-- Header Section -->
+      <div class="receipt-header" style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 10px; border-bottom: 2px solid #4f46e5;">
+        <div class="store-info" style="text-align: left;">
           <div style="display: flex; align-items: center; gap: 8px;">
-            <img src="${logoImage}" alt="KamiKoto Logo" style="width: 40px; height: 40px;" />
-            <h1 style="font-size: 24px; margin: 0; transform: translateY(-2px);">KamiKoto</h1>
+            <img src="${logoImage}" alt="KamiKoto Logo" style="width: 35px; height: 35px;" />
+            <h1 style="font-size: 22px; margin: 0; color: #4f46e5; transform: translateY(-1px);">KamiKoto</h1>
           </div>
-          <p>North Sentinel Island, A&N Islands, India</p>
-          <p>please.help.me@kamikoto.nsl</p>
-          <p>+91 1800-69-69-69-69</p>
+          <p style="font-size: 10px; margin: 2px 0;">North Sentinel Island, A&N Islands, India</p>
+          <p style="font-size: 10px; margin: 2px 0;">please.help.me@kamikoto.nsl</p>
+          <p style="font-size: 10px; margin: 2px 0;">+91 1800-69-69-69-69</p>
         </div>
-        <div class="receipt-info">
-          <h2>PAYMENT RECEIPT</h2>
-          <p><strong>Order ID:</strong> ${order.orderId}</p>
-          <p><strong>Date:</strong> ${formatDate(order.orderDate)}</p>
-          <p><strong>Invoice Date:</strong> ${getCurrentDate()}</p>
-          <p><strong>Status:</strong> Paid</p>
+        <div class="receipt-info" style="text-align: right;">
+          <h2 style="font-size: 18px; margin: 0 0 5px 0; color: #4f46e5;">PAYMENT RECEIPT</h2>
+          <p style="font-size: 10px; margin: 2px 0;"><strong>Order ID:</strong> ${order.orderId}</p>
+          <p style="font-size: 10px; margin: 2px 0;"><strong>Date:</strong> ${formatDate(order.orderDate)}</p>
+          <p style="font-size: 10px; margin: 2px 0;"><strong>Invoice Date:</strong> ${getCurrentDate()}</p>
         </div>
       </div>
       
-      <!-- Customer Information Section with Address -->
-      <div class="customer-info">
-        <h3>Bill To:</h3>
-        <p><strong>${order.userName || 'Valued Customer'}</strong></p>
-        <p>${order.userEmail}</p>
-        <p>
+      <!-- Customer Information Section -->
+      <div class="customer-info" style="padding: 25px 0 10px 0; border-bottom: 1px solid #eee;">
+        <h3 style="font-size: 12px; margin: 0 0 5px 0; color: #4f46e5;">BILL TO:</h3>
+        <p style="font-size: 11px; margin: 2px 0;"><strong>${order.userName || 'Valued Customer'}</strong></p>
+        <p style="font-size: 11px; margin: 2px 0;">${order.userEmail}</p>
+        <p style="font-size: 11px; margin: 2px 0;">
           ${order.shipping?.address ? (
             `${order.shipping.address.houseNo ? order.shipping.address.houseNo + ', ' : ''}
             ${order.shipping.address.line1 ? order.shipping.address.line1 + ', ' : ''}
@@ -208,106 +209,112 @@ export const createReceiptTemplate = (order, containerId) => {
           ) : 'Address not provided'}
         </p>
         ${hasImportDuty() ? `
-        <div style="margin-top: 10px; padding: 8px; background-color: #fff8e1; border: 1px solid #ffecb3; border-radius: 4px;">
-          <p style="margin: 0; color: #775700; font-weight: bold;">US Import Duty Information</p>
-          <p style="margin: 5px 0 0; color: #775700; font-size: 13px;">
+        <div style="margin-top: 8px; padding: 6px; background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 3px;">
+          <p style="margin: 0; color: #92400e; font-weight: bold; font-size: 10px;">US Import Duty Information</p>
+          <p style="margin: 3px 0 0; color: #92400e; font-size: 9px;">
             This order includes a 69% import duty fee as required for shipments to the United States.
           </p>
         </div>
         ` : ''}
       </div>
       
-      <!-- Order Items Section - Optimized to fit up to 5 products per page -->
-      <div class="items-section">
-        <table class="items-table">
+      <!-- Order Items Section -->
+      <div class="items-section" style="padding: 10px 0;">
+        <h3 style="font-size: 12px; margin: 0 0 8px 0; color: #4f46e5;">ORDER ITEMS:</h3>
+        <table class="items-table" style="width: 100%; border-collapse: collapse; font-size: 10px;">
           <thead>
-            <tr>
-              <th style="width: 45%">Item</th>
-              <th style="width: 15%">Quantity</th>
-              <th style="width: 20%">Price</th>
-              <th style="width: 20%">Total</th>
+            <tr style="background-color: #f3f4f6;">
+              <th style="text-align: left; padding: 6px; border-bottom: 1px solid #ddd; width: 40%;">Item</th>
+              <th style="text-align: right; padding: 6px; border-bottom: 1px solid #ddd; width: 15%;">Qty</th>
+              <th style="text-align: right; padding: 6px; border-bottom: 1px solid #ddd; width: 20%;">Price</th>
+              <th style="text-align: right; padding: 6px; border-bottom: 1px solid #ddd; width: 25%;">Total</th>
             </tr>
           </thead>
           <tbody>
             ${order.items.map(item => `
-              <tr>
-                <td>${item.name}</td>
-                <td>${item.quantity}</td>
-                <td>${formatPrice(item.price)}</td>
-                <td>${formatPrice(item.price * item.quantity)}</td>
+              <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 6px; vertical-align: top;">${item.name}</td>
+                <td style="padding: 6px; text-align: right; vertical-align: top;">${item.quantity}</td>
+                <td style="padding: 6px; text-align: right; vertical-align: top;">${formatPrice(item.price)}</td>
+                <td style="padding: 6px; text-align: right; vertical-align: top;">${formatPrice(item.price * item.quantity)}</td>
               </tr>
             `).join('')}
           </tbody>
         </table>
       </div>
       
-      <!-- Order Summary Section with Pricing Details -->
-      <div class="summary-section">
-        <div class="summary-row">
-          <span>Subtotal:</span>
-          <span>${formatPrice(order.subtotal)}</span>
+      <!-- Order Summary & Payment Details Section (Side-by-Side) -->
+      <div class="summary-payment-section" style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #eee; gap: 15px;">
+        
+        <div class="summary-section" style="width: 55%;">
+          <h3 style="font-size: 12px; color: #4f46e5; font-weight: normal; border-bottom: 1px solid #eee; padding-bottom: 5px; margin: 0 0 8px 0;">ORDER SUMMARY:</h3>
+          <div style="font-size: 9px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+              <span>Subtotal:</span>
+              <span>${formatPrice(order.subtotal)}</span>
+            </div>
+            ${order.coupon ? `
+            <div style="display: flex; justify-content: space-between; margin-bottom: 3px; color: #10b981;">
+              <span>Coupon (${order.coupon.code}):</span>
+              <span>-${formatPrice(order.coupon.discountAmount || 0)}</span>
+            </div>
+            ` : ''}
+            <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+              <span>Tax (18% GST):</span>
+              <span>${formatPrice(order.tax)}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+              <span>Shipping:</span>
+              <span>${formatPrice(order.shipping?.cost || 0)}</span>
+            </div>
+            ${hasImportDuty() ? `
+            <div style="display: flex; justify-content: space-between; margin-bottom: 3px; color: #b45309;">
+              <span>US Import Duty (69%):</span>
+              <span>${formatPrice(order.importDuty)}</span>
+            </div>
+            ` : ''}
+            <div style="display: flex; justify-content: space-between; margin-top: 5px; padding-top: 5px; border-top: 1px solid #ddd; font-weight: bold; font-size: 10px;">
+              <span>TOTAL:</span>
+              <span>${formatPrice(order.totalAmount || order.total || 0)}</span>
+            </div>
+          </div>
         </div>
-        ${order.coupon ? `
-        <div class="summary-row" style="color: #10b981;">
-          <span>Coupon (${order.coupon.code}):</span>
-          <span>-${formatPrice(order.coupon.discountAmount || 0)}</span>
+
+        <div class="payment-info" style="width: 45%;">
+          <h3 style="font-size: 12px; color: #4f46e5; font-weight: normal; border-bottom: 1px solid #eee; padding-bottom: 5px; margin: 0 0 8px 0;">PAYMENT INFORMATION:</h3>
+          <div style="font-size: 9px;">
+            <p style="margin: 2px 0; font-size: 9px;"><strong>Payment Status:</strong> <span style="color: #10b981;">Completed</span></p>
+            <p style="margin: 2px 0; font-size: 9px;"><strong>Method:</strong> ${order.payment?.method || 'Not specified'}</p>
+            ${order.payment?.method === 'Card' ? `
+              <p style="margin: 2px 0; font-size: 9px;"><strong>Card Type:</strong> ${order.payment.details?.cardType || 'Not specified'}</p>
+              <p style="margin: 2px 0; font-size: 9px;"><strong>Card Number:</strong> xxxx-xxxx-xxxx-${order.payment.details?.lastFour || 'xxxx'}</p>
+              <p style="margin: 2px 0; font-size: 9px;"><strong>Transaction ID:</strong> TXN${order.orderId.substring(5)}</p>
+            ` : ''}
+            ${order.payment?.method === 'UPI' ? `
+              <p style="margin: 2px 0; font-size: 9px;"><strong>UPI ID:</strong> ${order.payment.details?.upiId || 'Not specified'}</p>
+              <p style="margin: 2px 0; font-size: 9px;"><strong>Transaction ID:</strong> UPI${order.orderId.substring(5)}</p>
+            ` : ''}
+          </div>
         </div>
-        ` : ''}
-        <div class="summary-row">
-          <span>Tax (18% GST):</span>
-          <span>${formatPrice(order.tax)}</span>
-        </div>
-        <div class="summary-row">
-          <span>Shipping:</span>
-          <span>${formatPrice(order.shipping?.cost || 0)}</span>
-        </div>
-        ${hasImportDuty() ? `
-        <div class="summary-row" style="color: #b45309;">
-          <span>US Import Duty (69%):</span>
-          <span>${formatPrice(order.importDuty)}</span>
-        </div>
-        ` : ''}
-        <div class="summary-row total">
-          <span>Total:</span>
-          <span>${formatPrice(order.totalAmount || order.total || 0)}</span>
-        </div>
-      </div>
-      
-      <!-- Payment Details Section -->
-      <div class="payment-info">
-        <h3>Payment Information</h3>
-        <p><strong>Method:</strong> ${order.payment?.method || 'Not specified'}</p>
-        ${order.payment?.method === 'Card' ? `
-          <p><strong>Card Type:</strong> ${order.payment.details?.cardType || 'Not specified'}</p>
-          <p><strong>Card Number:</strong> xxxx-xxxx-xxxx-${order.payment.details?.lastFour || 'xxxx'}</p>
-          <p><strong>Payment Status:</strong> Completed</p>
-          <p><strong>Transaction ID:</strong> TXN${order.orderId.substring(5)}</p>
-        ` : ''}
-        ${order.payment?.method === 'UPI' ? `
-          <p><strong>UPI ID:</strong> ${order.payment.details?.upiId || 'Not specified'}</p>
-          <p><strong>Payment Status:</strong> Completed</p>
-          <p><strong>Transaction ID:</strong> UPI${order.orderId.substring(5)}</p>
-        ` : ''}
       </div>
       
       <!-- Import Duty Notice (if applicable) -->
       ${hasImportDuty() ? `
-      <div style="margin-top: 20px; padding: 15px; background-color: #fff8e1; border: 1px solid #ffecb3; border-radius: 8px;">
-        <h3 style="margin-top: 0; color: #b45309;">Import Duty Notice</h3>
-        <p style="margin: 8px 0; color: #775700;">
+      <div style="margin-top: 15px; padding: 8px; background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 4px; font-size: 10px;">
+        <h3 style="margin-top: 0; margin-bottom: 5px; color: #92400e; font-size: 11px;">Import Duty Notice</h3>
+        <p style="margin: 3px 0; color: #92400e;">
           This order includes a 69% import duty fee of ${formatPrice(order.importDuty)} as required by US customs regulations for shipments to the United States.
         </p>
-        <p style="margin: 8px 0; color: #775700; font-size: 13px;">
-          Import duties are collected to allow international shipments to clear customs in the destination country. 
+        <p style="margin: 3px 0; color: #92400e; font-size: 9px;">
           This fee has been collected upfront to prevent delivery delays or additional payments upon delivery.
         </p>
       </div>
       ` : ''}
 
-      <!-- Thank You Message -->
-      <div style="margin-top: 20px; text-align: center; border-top: 1px dashed #d1d5db; padding-top: 15px;">
-        <h3 style="color: #4f46e5; margin-bottom: 5px;">Thank You for Your Purchase!</h3>
-        <p style="color: #6b7280; font-size: 14px;">We appreciate your business and hope you enjoy your KamiKoto products.</p>
+      <!-- Thank You Message & Footer -->
+      <div style="margin-top: 15px; text-align: center; border-top: 2px solid #4f46e5; padding-top: 10px;">
+        <h3 style="color: #4f46e5; margin-bottom: 3px; font-size: 14px;">Thank You for Your Purchase!</h3>
+        <p style="color: #aaa; font-size: 8px; margin-top: 5px;">Generated on: ${getCurrentDate()}</p>
       </div>
     </div>
   `;

@@ -1552,7 +1552,7 @@ function UnifiedCheckout() {
                             ref={couponInputRef}
                             value={couponCode}
                             onChange={handleCouponInputChange}
-                            placeholder="SUMMER20"
+                            placeholder="FREE10"
                             className="w-full border border-gray-300 rounded-l-md p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase bg-white"
                             autoComplete="off"
                             autoCapitalize="characters"
@@ -1580,7 +1580,6 @@ function UnifiedCheckout() {
                             {couponError}
                           </m.p>
                         )}
-                        <p className="text-xs text-gray-500 mt-2">Protected by Google reCAPTCHA v3</p>
                       </div>
                     </form>
                   ) : (

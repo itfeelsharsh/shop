@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import { ToastContainer } from "react-toastify";
@@ -24,6 +24,7 @@ import { auth } from "./firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
 import { useDispatch } from "react-redux";
 import { setUser, clearUser } from "./redux/userSlice";
+import { useContentLoader } from "./hooks/useContentLoader";
 import "react-toastify/dist/ReactToastify.css";
 import PasswordReset from './pages/PasswordReset'; 
 import OrderSummary from './pages/OrderSummary';
@@ -33,13 +34,23 @@ import { LazyMotion, domAnimation } from "framer-motion";
 
 /**
  * Main application component with routing and providers setup
- * Includes support for prerendering, social media embeds, and PWA
+ * Features comprehensive content loading that waits for all critical assets
+ * before displaying the website to ensure optimal user experience
  * 
  * @returns {JSX.Element} The main application component
  */
 function App() {
-  const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
+  
+  // Use the comprehensive content loader hook
+  const {
+    isLoading,
+    loadingProgress,
+    loadingStates,
+    errors,
+    markAuthLoaded,
+    forceComplete
+  } = useContentLoader();
   
   /**
    * Detects if the current visitor is a social media crawler/bot
@@ -61,13 +72,15 @@ function App() {
     return botPatterns.some(pattern => userAgent.indexOf(pattern) !== -1);
   };
 
+  // Handle authentication state changes
   useEffect(() => {
     // Skip loading screen for search engine bots and social media crawlers
     if (isBotOrCrawler()) {
-      setLoading(false);
+      markAuthLoaded();
       return;
     }
     
+    // Set up authentication state listener
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         const { uid, email } = user; 
@@ -76,14 +89,43 @@ function App() {
         dispatch(clearUser()); 
       }
       
+      // Mark authentication as loaded after a brief delay for smooth UX
       setTimeout(() => {
-        setLoading(false);
-      }, 1500);
+        markAuthLoaded();
+      }, 500);
     });
+    
     return unsubscribe;
-  }, [dispatch]);
+  }, [dispatch, markAuthLoaded]);
 
-  if (loading && !isBotOrCrawler()) return <LoadingScreen message="Welcome to KamiKoto" showTips={true} />;
+  // Emergency loading completion for development/testing
+  useEffect(() => {
+    // Add keyboard shortcut for emergency loading completion (Ctrl+Shift+L)
+    const handleKeyPress = (event) => {
+      if (event.ctrlKey && event.shiftKey && event.key === 'L') {
+        console.log('🔧 Emergency loading completion triggered');
+        forceComplete();
+      }
+    };
+    
+    if (process.env.NODE_ENV === 'development') {
+      window.addEventListener('keydown', handleKeyPress);
+      return () => window.removeEventListener('keydown', handleKeyPress);
+    }
+  }, [forceComplete]);
+
+  // Show comprehensive loading screen with progress
+  if (isLoading && !isBotOrCrawler()) {
+    return (
+      <LoadingScreen 
+        message="Preparing your shopping experience"
+        progress={loadingProgress}
+        showTips={true}
+        loadingStates={loadingStates}
+        errors={errors}
+      />
+    );
+  }
 
   return (
     <LazyMotion features={domAnimation}>
