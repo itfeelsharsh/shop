@@ -121,7 +121,7 @@ function PasswordReset() {
         <div className="mb-4 text-center text-xs text-gray-500">
           {captchaUnavailable 
             ? "reCAPTCHA verification bypassed due to unavailability." 
-            : "This site is protected by reCAPTCHA v3."}
+            : " "}
         </div>
 
         <button

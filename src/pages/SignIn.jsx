@@ -8,7 +8,7 @@ import {
   GithubAuthProvider,
 } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { setUser } from "../redux/userSlice";
@@ -191,7 +191,7 @@ function SignIn() {
           <div className="mb-4 text-center text-xs text-gray-500">
             {captchaUnavailable 
               ? "reCAPTCHA verification bypassed due to unavailability." 
-              : "This site is protected by reCAPTCHA v3."}
+              : " "}
           </div>
           
           <button
@@ -222,14 +222,14 @@ function SignIn() {
           </div>
           <p className="mt-4 text-center text-gray-600">
             Don't have an account?{" "}
-            <a href="/signup" className="text-blue-600 hover:underline">
+            <Link to="/signup" className="text-blue-600 hover:underline">
               Sign Up
-            </a>
+            </Link>
           </p>
           <p className="mt-2 text-center text-gray-600">
-            <a href="/password-reset" className="text-blue-600 hover:underline">
+            <Link to="/password-reset" className="text-blue-600 hover:underline">
               Forgot your password?
-            </a>
+            </Link>
           </p>
         </form>
       </div>
