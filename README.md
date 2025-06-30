@@ -5,9 +5,13 @@
 
 Welcome to KamiKoto, a beautifully crafted e-commerce platform offering a seamless shopping experience for stationery. This project is built using **React.js** and **Firebase**, delivering a delightful UI/UX and mobile-friendly experience for all users.
 
+## 📸 Application Screenshots
 
-
-
+<div align="center">
+  <iframe src="https://kamikoto-admin-screenshots.pages.dev/" width="100%" height="600" frameborder="0" style="border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); max-width: 1000px;"></iframe>
+  
+  <p><em>📱 Interactive screenshot slideshow - Navigate through all application features</em></p>
+</div>
 
 **Live Demo:** [kamikoto.pages.dev](https://kamikoto.pages.dev)
 
