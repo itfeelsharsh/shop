@@ -5,30 +5,130 @@
 
 Welcome to KamiKoto, a beautifully crafted e-commerce platform offering a seamless shopping experience for stationery. This project is built using **React.js** and **Firebase**, delivering a delightful UI/UX and mobile-friendly experience for all users.
 
-## 📸 Screenshots
+## 📸 Application Screenshots
 
 <div align="center">
-  <!-- Main featured image -->
-  <img src="screenshots/1.png" alt="KamiKoto Screenshot" width="800px" id="featured-image">
   
-  <br>
-  <h4>🔄 Slideshow Navigation</h4>
+### 🏠 Main Application Preview
   
-  <p>
-    <a href="screenshots/1.png"><img src="screenshots/1.png" width="80px" alt="1"></a>
-    <a href="screenshots/2.png"><img src="screenshots/2.png" width="80px" alt="2"></a>
-    <a href="screenshots/3.png"><img src="screenshots/3.png" width="80px" alt="3"></a>
-    <a href="screenshots/4.png"><img src="screenshots/4.png" width="80px" alt="4"></a>
-    <a href="screenshots/5.png"><img src="screenshots/5.png" width="80px" alt="5"></a>
-    <a href="screenshots/6.png"><img src="screenshots/6.png" width="80px" alt="6"></a>
-    <a href="screenshots/7.png"><img src="screenshots/7.png" width="80px" alt="7"></a>
-    <a href="screenshots/8.png"><img src="screenshots/8.png" width="80px" alt="8"></a>
-    <a href="screenshots/9.png"><img src="screenshots/9.png" width="80px" alt="9"></a>
-    <a href="screenshots/10.png"><img src="screenshots/10.png" width="80px" alt="10"></a>
-    <a href="screenshots/11.png"><img src="screenshots/11.png" width="80px" alt="11"></a>
-  </p>
+<img src="screenshots/1.png" alt="KamiKoto Home Page - Main Landing Page" width="100%" style="max-width: 900px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin: 20px 0;">
+
+---
+
+### 📱 Complete Application Gallery
+
+<table align="center" style="border-collapse: collapse; margin: 20px 0;">
+  <tr>
+    <td align="center" style="padding: 15px;">
+      <a href="screenshots/1.png">
+        <img src="screenshots/1.png" alt="Home Page" width="280px" style="border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+      </a>
+      <br><strong>🏠 Home Page</strong>
+      <br><small>Main landing page with featured products</small>
+    </td>
+    <td align="center" style="padding: 15px;">
+      <a href="screenshots/2.png">
+        <img src="screenshots/2.png" alt="Product Catalog" width="280px" style="border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+      </a>
+      <br><strong>📋 Product Catalog</strong>
+      <br><small>Browse all available products</small>
+    </td>
+    <td align="center" style="padding: 15px;">
+      <a href="screenshots/3.png">
+        <img src="screenshots/3.png" alt="Product Details" width="280px" style="border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+      </a>
+      <br><strong>🔍 Product Details</strong>
+      <br><small>Detailed product information view</small>
+    </td>
+  </tr>
   
-  <p><i>Click thumbnails to view full screenshots</i></p>
+  <tr>
+    <td align="center" style="padding: 15px;">
+      <a href="screenshots/4.png">
+        <img src="screenshots/4.png" alt="Shopping Cart" width="280px" style="border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+      </a>
+      <br><strong>🛒 Shopping Cart</strong>
+      <br><small>Cart management and item review</small>
+    </td>
+    <td align="center" style="padding: 15px;">
+      <a href="screenshots/5.png">
+        <img src="screenshots/5.png" alt="Checkout Process" width="280px" style="border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+      </a>
+      <br><strong>💳 Checkout Process</strong>
+      <br><small>Secure payment and shipping details</small>
+    </td>
+    <td align="center" style="padding: 15px;">
+      <a href="screenshots/6.png">
+        <img src="screenshots/6.png" alt="User Authentication" width="280px" style="border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+      </a>
+      <br><strong>🔐 User Authentication</strong>
+      <br><small>Sign in and registration pages</small>
+    </td>
+  </tr>
+  
+  <tr>
+    <td align="center" style="padding: 15px;">
+      <a href="screenshots/7.png">
+        <img src="screenshots/7.png" alt="User Profile" width="280px" style="border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+      </a>
+      <br><strong>👤 User Profile</strong>
+      <br><small>Personal information management</small>
+    </td>
+    <td align="center" style="padding: 15px;">
+      <a href="screenshots/8.png">
+        <img src="screenshots/8.png" alt="Order History" width="280px" style="border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+      </a>
+      <br><strong>📦 Order Management</strong>
+      <br><small>Order history and tracking</small>
+    </td>
+    <td align="center" style="padding: 15px;">
+      <a href="screenshots/9.png">
+        <img src="screenshots/9.png" alt="Wishlist" width="280px" style="border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+      </a>
+      <br><strong>❤️ Wishlist</strong>
+      <br><small>Save favorite products for later</small>
+    </td>
+  </tr>
+  
+  <tr>
+    <td align="center" style="padding: 15px;">
+      <a href="screenshots/10.png">
+        <img src="screenshots/10.png" alt="Mobile Responsive" width="280px" style="border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+      </a>
+      <br><strong>📱 Mobile Experience</strong>
+      <br><small>Responsive design for mobile devices</small>
+    </td>
+    <td align="center" style="padding: 15px;">
+      <a href="screenshots/11.png">
+        <img src="screenshots/11.png" alt="Additional Features" width="280px" style="border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+      </a>
+      <br><strong>⚡ Additional Features</strong>
+      <br><small>More app functionality showcase</small>
+    </td>
+    <td align="center" style="padding: 15px;">
+      <div style="opacity: 0.3; padding: 20px;">
+        <div style="width: 280px; height: 180px; border: 2px dashed #ccc; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 14px;">
+          <span>More screenshots<br>coming soon...</span>
+        </div>
+      </div>
+    </td>
+  </tr>
+</table>
+
+<br>
+
+### 🎯 Key Highlights Visible in Screenshots:
+- **🎨 Modern UI/UX Design** - Clean, professional interface with smooth animations
+- **📱 Fully Responsive** - Seamless experience across desktop, tablet, and mobile
+- **🔒 Secure Authentication** - Multiple sign-in options including Google & GitHub
+- **🛍️ Complete E-commerce Flow** - From browsing to checkout and order management
+- **⚡ Fast Performance** - Optimized loading and smooth user interactions
+- **💎 Professional Quality** - Production-ready application with attention to detail
+
+<p align="center">
+  <em>💡 Click on any screenshot above to view it in full size</em>
+</p>
+
 </div>
 
 **Live Demo:** [kamikoto.pages.dev](https://kamikoto.pages.dev)

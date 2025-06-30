@@ -306,7 +306,7 @@ export const createReceiptTemplate = (order, containerId) => {
             letter-spacing: 0.5px;
           ">From</h3>
           <div style="color: #1d1d1f; font-size: 11px; line-height: 1.5;">
-            <div style="font-weight: 600; margin-bottom: 4px;">KamiKoto</div>
+            <div style="font-weight: 600; margin-bottom: 4px;">KamiKoto Stationeries Pvt. Ltd.</div>
             <div style="color: #86868b; margin-bottom: 2px;">North Sentinel Island, Andaman and Nicobar Islands, India</div>
             <div style="color: #86868b; margin-bottom: 2px;">support@kamikoto.nsi</div>
             <div style="color: #86868b;">+91 1800-6969-6969</div>
