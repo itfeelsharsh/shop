@@ -451,45 +451,7 @@ function OrderSummary() {
             </div>
           </motion.div>
           
-          {/* Email Status Banner */}
-          <motion.div 
-            className={`p-4 ${emailSent ? 'bg-blue-50 border-l-4 border-blue-400' : 'bg-yellow-50 border-l-4 border-yellow-400'}`}
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                {emailSent ? (
-                  <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                )}
-              </div>
-              <div className="ml-3">
-                <h3 className={`text-sm font-medium ${emailSent ? 'text-blue-800' : 'text-yellow-800'}`}>
-                  {emailSent ? 'Confirmation Email Sent' : 'Email Notification Status'}
-                </h3>
-                <div className={`mt-2 text-sm ${emailSent ? 'text-blue-700' : 'text-yellow-700'}`}>
-                  {emailSent ? (
-                    <p>
-                      A confirmation email has been sent to your email address with your order details and receipt.
-                    </p>
-                  ) : (
-                    <p>
-                      Your order confirmation email may be delayed. You can view your order details on this page 
-                      and download your invoice using the button above.
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </motion.div>
+
           
           {/* Main Content */}
           <div className="bg-white rounded-b-2xl shadow-lg p-6 md:p-8">

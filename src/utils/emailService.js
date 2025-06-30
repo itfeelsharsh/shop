@@ -267,54 +267,125 @@ const generateOrderConfirmationHTML = (order, user) => {
   };
   
   /**
-   * Generate animated CSS for modern email clients
-   * Note: Not all email clients support animations, but this
-   * provides a nice visual effect in those that do
+   * Professional CSS styling for email clients
+   * Optimized for better compatibility across email clients including Outlook, Gmail, Apple Mail
+   * Focus on professional appearance with consistent spacing and typography
    */
-  const animationCSS = `
+  const professionalCSS = `
+    /* Reset and base styles for better email client compatibility */
+    table, td, div, h1, h2, h3, p, a {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    }
+    
+    /* Professional animations for modern email clients */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
     
     @keyframes scaleIn {
-      from { transform: scale(0.95); opacity: 0; }
+      from { transform: scale(0.98); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
     
     .animated {
-      animation: fadeIn 0.5s ease-out forwards;
+      animation: fadeIn 0.6s ease-out forwards;
     }
     
     .animated-scale {
-      animation: scaleIn 0.5s ease-out forwards;
+      animation: scaleIn 0.6s ease-out forwards;
     }
+    
+    /* Professional button styling */
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    /* Enhanced card styling */
+    .card {
+      border-radius: 12px;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+      background: #ffffff;
+    }
+    
+    /* Professional spacing utilities */
+    .spacer-sm { height: 16px; }
+    .spacer-md { height: 24px; }
+    .spacer-lg { height: 32px; }
   `;
   
-  // Generate the HTML for order items - optimized for consistent display
-  // Limits product name length to ensure consistent layout
+  /**
+   * Process image URL to ensure compatibility with email clients
+   * Handles i.imgur.com and other image hosting services for better email delivery
+   * @param {string} imageUrl - Original image URL
+   * @returns {string} - Processed image URL optimized for email clients
+   */
+  const processImageForEmail = (imageUrl) => {
+    if (!imageUrl) return null;
+    
+    // Handle i.imgur.com URLs - ensure they use direct image links
+    if (imageUrl.includes('i.imgur.com')) {
+      // Ensure the URL ends with a proper image extension for email clients
+      if (!imageUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+        return `${imageUrl}.jpg`; // Add .jpg extension for email client compatibility
+      }
+    }
+    
+    return imageUrl;
+  };
+
+  // Generate the HTML for order items - optimized for professional display
+  // Enhanced for better email client compatibility and professional appearance
   const itemsHTML = order.items.map((item, index) => {
-    // Trim long product names to maintain consistent layout
-    const truncatedName = item.name.length > 35 ? item.name.substring(0, 32) + '...' : item.name;
+    // Professional product name truncation for consistent layout
+    const truncatedName = item.name.length > 40 ? item.name.substring(0, 37) + '...' : item.name;
+    
+    // Process image URL for email client compatibility
+    const processedImageUrl = processImageForEmail(item.image);
     
     return `
-    <!-- Product Item Row - Optimized for up to 5 products per email -->
+    <!-- Professional Product Item Row - Optimized for up to 5 products -->
     <tr style="animation-delay: ${index * 0.1}s;" class="animated">
-      <td style="padding: 20px 0; border-bottom: 1px solid #E8ECF0;">
+      <td style="padding: 24px 0; border-bottom: 1px solid #E2E8F0;">
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
-            <td width="80" style="vertical-align: top; padding-right: 15px;">
-              ${item.image ? 
-                `<img src="${item.image}" alt="${truncatedName}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; background-color: #F5F7FA;">` : 
-                `<div style="width: 80px; height: 80px; border-radius: 8px; background-color: #F5F7FA;"></div>`
+            <td width="90" style="vertical-align: top; padding-right: 20px;">
+              ${processedImageUrl ? 
+                `<img src="${processedImageUrl}" alt="${truncatedName}" style="
+                  width: 90px; 
+                  height: 90px; 
+                  object-fit: cover; 
+                  border-radius: 12px; 
+                  background-color: #F8FAFC;
+                  border: 1px solid #E2E8F0;
+                  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                  display: block;
+                " />` : 
+                `<div style="
+                  width: 90px; 
+                  height: 90px; 
+                  border-radius: 12px; 
+                  background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
+                  border: 1px solid #E2E8F0;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  color: #64748B;
+                  font-size: 12px;
+                  font-weight: 500;
+                ">No Image</div>`
               }
             </td>
             <td style="vertical-align: top;">
-              <p style="margin: 0; font-weight: 600; font-size: 16px; color: #1A202C;">${truncatedName}</p>
-              <p style="margin: 5px 0 0; font-size: 14px; color: #64748B;">Quantity: ${item.quantity}</p>
+              <h4 style="margin: 0 0 6px 0; font-weight: 600; font-size: 17px; color: #1E293B; line-height: 1.3;">${truncatedName}</h4>
+              <p style="margin: 0 0 4px 0; font-size: 14px; color: #64748B; font-weight: 500;">Qty: ${item.quantity}</p>
+              <p style="margin: 0; font-size: 13px; color: #94A3B8;">Item Price: ${formatCurrency(item.price)}</p>
             </td>
-            <td width="100" style="vertical-align: top; text-align: right;">
-              <p style="margin: 0; font-weight: 600; font-size: 16px; color: #1A202C;">${formatCurrency(item.price * item.quantity)}</p>
+            <td width="120" style="vertical-align: top; text-align: right;">
+              <p style="margin: 0; font-weight: 700; font-size: 18px; color: #1E293B;">${formatCurrency(item.price * item.quantity)}</p>
+              <p style="margin: 4px 0 0 0; font-size: 12px; color: #64748B;">Total</p>
             </td>
           </tr>
         </table>
@@ -341,8 +412,8 @@ const generateOrderConfirmationHTML = (order, user) => {
       font-family: 'Nunito Sans', Arial, Helvetica, sans-serif !important;
     }
     
-    /* Animation support */
-    ${animationCSS}
+            /* Professional styling and animation support */
+        ${professionalCSS}
   </style>
   <!--[if mso]>
   <style type="text/css">
@@ -359,43 +430,63 @@ const generateOrderConfirmationHTML = (order, user) => {
           <!-- Main Email Container -->
           <table style="width: 600px; max-width: 600px;" align="center" border="0" cellpadding="0" cellspacing="0" role="presentation">
             <tbody>
-              <!-- Email Header -->
+              <!-- Professional Email Header -->
               <tr>
-                <td style="padding: 26px 32px 16px 32px; background-color: #ffffff;" bgcolor="#ffffff">
+                <td style="padding: 32px 40px 24px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" bgcolor="#667eea">
                   <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
                     <tr>
                       <td align="left">
-                        <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #121212; letter-spacing: -0.5px;">KamiKoto</h1>
-                        <p style="margin: 8px 0 0; font-size: 16px; color: rgba(18, 18, 18, 0.8); font-weight: 500;">Perfect Online Stationery Store</p>
+                        <h1 style="margin: 0; font-size: 32px; font-weight: 700; color: #ffffff; letter-spacing: -0.6px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">KamiKoto</h1>
+                        <p style="margin: 8px 0 0; font-size: 16px; color: rgba(255, 255, 255, 0.9); font-weight: 500; letter-spacing: 0.3px;">Your Premium Stationery Store</p>
+                      </td>
+                      <td align="right" width="80">
+                        <div style="width: 60px; height: 60px; background: rgba(255,255,255,0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+                          <div style="width: 24px; height: 24px; background: #ffffff; border-radius: 4px;"></div>
+                        </div>
                       </td>
                     </tr>
                   </table>
                 </td>
               </tr>
               
-              <!-- Order Confirmation Banner -->
+              <!-- Professional Order Confirmation Banner -->
               <tr>
-                <td style="padding: 0px 32px 0px 32px; background-color: #FFFFFF;" bgcolor="#FFFFFF">
-                  <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
+                <td style="padding: 24px 40px; background-color: #FFFFFF;" bgcolor="#FFFFFF">
+                  <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" class="card">
                     <tr>
-                      <td style="padding: 48px 24px 48px 24px; background-color: #fff8f0; border-radius: 12px; text-align: center;" class="animated-scale">
-                        <h2 style="margin: 0; font-size: 44px; font-weight: bold; color: #121212; line-height: 1.1;">Hooray! Your order has been confirmed.</h2>
-                        <p style="margin: 16px 0 24px; color: rgba(18, 18, 18, 0.8); font-size: 16px; line-height: 1.5;">KamiKoto will commence work on this immediately. You'll receive an email notification once it's shipped.</p>
+                      <td style="padding: 40px 32px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 16px; text-align: center; border: 1px solid #e0f2fe;" class="animated-scale">
+                        <div style="display: inline-block; width: 80px; height: 80px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%; margin-bottom: 24px; position: relative;">
+                          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 36px; font-weight: bold;">✓</div>
+                        </div>
+                        <h2 style="margin: 0 0 16px 0; font-size: 32px; font-weight: 700; color: #0f172a; line-height: 1.2; letter-spacing: -0.5px;">Order Confirmed Successfully!</h2>
+                        <p style="margin: 0 0 8px 0; color: #334155; font-size: 18px; line-height: 1.5; font-weight: 500;">Hello ${user.displayName || user.email?.split('@')[0] || 'Valued Customer'},</p>
+                        <p style="margin: 0; color: #64748b; font-size: 16px; line-height: 1.6;">Thank you for your order! We're processing it right now and will send you tracking information once it ships.</p>
                       </td>
                     </tr>
                   </table>
                 </td>
               </tr>
               
-              <!-- Order Details Section -->
+              <!-- Professional Order Details Section -->
               <tr>
-                <td style="padding: 48px 32px 0px 32px; background-color: #ffffff;" bgcolor="#ffffff">
-                  <h2 style="margin: 0 0 8px; font-size: 32px; font-weight: bold; color: #121212; text-align: center;" class="animated">Order details</h2>
-                  <p style="margin: 0 0 24px; font-size: 16px; font-weight: 600; color: #121212; text-align: center;" class="animated">Confirmation number: <span style="color: #ff554a;">#${order.orderId}</span></p>
+                <td style="padding: 32px 40px 0px 40px; background-color: #ffffff;" bgcolor="#ffffff">
+                  <div style="text-align: center; margin-bottom: 32px;" class="animated">
+                    <h2 style="margin: 0 0 12px; font-size: 28px; font-weight: 700; color: #0f172a; letter-spacing: -0.4px;">Order Details</h2>
+                    <div style="display: inline-block; padding: 12px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50px; margin-bottom: 8px;">
+                      <p style="margin: 0; font-size: 16px; font-weight: 600; color: #ffffff;">Order #${order.orderId}</p>
+                    </div>
+                    <p style="margin: 0; font-size: 14px; color: #64748b;">Placed on ${new Date(order.orderDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                  </div>
                   
-                  <!-- Order Items Table -->
-                  <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="border: 1px solid #d1dfe3; border-radius: 12px; margin-bottom: 30px;">
-                    <!-- Order Items - Optimized for up to 5 products -->
+                  <!-- Professional Order Items Table -->
+                  <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="border: 1px solid #e2e8f0; border-radius: 16px; margin-bottom: 32px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);" class="card">
+                    <!-- Table Header -->
+                    <tr>
+                      <td style="padding: 20px 24px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-bottom: 1px solid #e2e8f0;">
+                        <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #1e293b;">Your Items</h3>
+                      </td>
+                    </tr>
+                    <!-- Order Items - Enhanced for professional appearance -->
                     ${itemsHTML}
                     
                     <!-- Order Summary - Matching new summary design -->
@@ -521,13 +612,33 @@ const generateOrderConfirmationHTML = (order, user) => {
                 </td>
               </tr>
               
-              <!-- Footer -->
+              <!-- Professional Footer -->
               <tr>
-                <td style="padding: 50px 40px 50px 40px; background-color: #1d1b2d; text-align: center; background-image: url('https://cloudfilesdm.com/postcards/image-1702463485006.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
-                  <p style="margin: 0 0 10px; font-size: 14px; color: rgba(255, 255, 255, 0.8); line-height: 1.3;">
-                    © ${new Date().getFullYear()} KamiKoto. All Rights Reserved.<br>
-                    Perfect Online Stationery Store.
-                  </p>
+                <td style="padding: 40px; background: linear-gradient(135deg, #1e293b 0%, #334155 100%); text-align: center;">
+                  <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                    <tr>
+                      <td style="text-align: center; padding-bottom: 24px;">
+                        <h3 style="margin: 0; font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">KamiKoto</h3>
+                        <p style="margin: 8px 0 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">Your Premium Stationery Store</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="text-align: center; padding: 20px 0; border-top: 1px solid rgba(255, 255, 255, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                        <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.9); line-height: 1.6;">
+                          Questions? Email us at <a href="mailto:${featureConfig.email.supportEmail}" style="color: #60a5fa; text-decoration: none; font-weight: 600;">${featureConfig.email.supportEmail}</a><br>
+                          <span style="color: rgba(255, 255, 255, 0.7);">We're here to help!</span>
+                        </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="text-align: center; padding-top: 20px;">
+                        <p style="margin: 0; font-size: 13px; color: rgba(255, 255, 255, 0.6); line-height: 1.4;">
+                          © ${new Date().getFullYear()} KamiKoto. All Rights Reserved.<br>
+                          <span style="font-size: 12px;">This email was sent because you placed an order with us.</span>
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
                 </td>
               </tr>
             </tbody>
@@ -573,27 +684,70 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
     }
   `;
   
-  // Generate the HTML for order items - optimized for consistent display
+  /**
+   * Process image URL for email client compatibility (same function as order confirmation)
+   * @param {string} imageUrl - Original image URL
+   * @returns {string} - Processed image URL optimized for email clients
+   */
+  const processImageForEmailShipped = (imageUrl) => {
+    if (!imageUrl) return null;
+    
+    // Handle i.imgur.com URLs - ensure they use direct image links
+    if (imageUrl.includes('i.imgur.com')) {
+      // Ensure the URL ends with a proper image extension for email clients
+      if (!imageUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+        return `${imageUrl}.jpg`; // Add .jpg extension for email client compatibility
+      }
+    }
+    
+    return imageUrl;
+  };
+
+  // Generate professional HTML for order items in shipping notification
   const itemsHTML = order.items.map((item, index) => {
-    // Truncate long product names to maintain layout consistency
-    const truncatedName = item.name.length > 35 ? item.name.substring(0, 32) + '...' : item.name;
+    // Professional product name truncation for consistent layout
+    const truncatedName = item.name.length > 40 ? item.name.substring(0, 37) + '...' : item.name;
+    
+    // Process image URL for email client compatibility
+    const processedImageUrl = processImageForEmailShipped(item.image);
     
     return `
-    <!-- Product Item Row - Optimized for up to 5 products -->
+    <!-- Professional Product Item Row - Optimized for shipping emails -->
     <tr style="animation-delay: ${index * 0.1}s;" class="animated">
-      <td style="padding: 20px 0; border-bottom: 1px solid #E8ECF0;">
+      <td style="padding: 24px 0; border-bottom: 1px solid #E2E8F0;">
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
-            <td width="80" style="vertical-align: top; padding-right: 15px;">
-              ${item.image ? 
-                `<img src="${item.image}" alt="${truncatedName}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; background-color: #F5F7FA;">` : 
-                `<div style="width: 80px; height: 80px; border-radius: 8px; background-color: #F5F7FA;"></div>`
+            <td width="90" style="vertical-align: top; padding-right: 20px;">
+              ${processedImageUrl ? 
+                `<img src="${processedImageUrl}" alt="${truncatedName}" style="
+                  width: 90px; 
+                  height: 90px; 
+                  object-fit: cover; 
+                  border-radius: 12px; 
+                  background-color: #F8FAFC;
+                  border: 1px solid #E2E8F0;
+                  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                  display: block;
+                " />` : 
+                `<div style="
+                  width: 90px; 
+                  height: 90px; 
+                  border-radius: 12px; 
+                  background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
+                  border: 1px solid #E2E8F0;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  color: #64748B;
+                  font-size: 12px;
+                  font-weight: 500;
+                ">No Image</div>`
               }
             </td>
             <td style="vertical-align: top;">
-              <p style="margin: 0; font-weight: 600; font-size: 16px; color: #1A202C;">${truncatedName}</p>
-              <p style="margin: 5px 0 0; font-size: 14px; color: #64748B;">Quantity: ${item.quantity}</p>
-              ${item.price ? `<p style="margin: 5px 0 0; font-size: 14px; color: #64748B;">Price: ${formatCurrency(item.price)}</p>` : ''}
+              <h4 style="margin: 0 0 6px 0; font-weight: 600; font-size: 17px; color: #1E293B; line-height: 1.3;">${truncatedName}</h4>
+              <p style="margin: 0 0 4px 0; font-size: 14px; color: #64748B; font-weight: 500;">Qty: ${item.quantity}</p>
+              ${item.price ? `<p style="margin: 0; font-size: 13px; color: #94A3B8;">Price: ${formatCurrency(item.price)}</p>` : ''}
             </td>
           </tr>
         </table>
