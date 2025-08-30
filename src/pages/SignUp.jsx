@@ -142,7 +142,7 @@ function SignUp() {
         >
           <h2 className="text-3xl font-semibold text-center mb-6">Sign Up</h2>
           <p className="text-center text-red-500 mb-4">
-            To prevent abuse, email login/signup has been sunsetted.
+            Sorry, sign up via email has been disabled to prevent abuse. Please use social sign-up options below.
           </p>
           
           {/* Protected by reCAPTCHA v3 - No UI needed */}
