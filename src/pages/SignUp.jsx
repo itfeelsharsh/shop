@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { auth, db } from '../firebase/config';
 import {
-  createUserWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
   GithubAuthProvider,
@@ -16,11 +15,6 @@ import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { m } from "framer-motion";
 
 function SignUp() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [profilePic, setProfilePic] = useState('');
-  const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState({ google: false, github: false });
   const [recaptchaChecking, setRecaptchaChecking] = useState(false);
   const [captchaUnavailable, setCaptchaUnavailable] = useState(false);
@@ -67,39 +61,6 @@ function SignUp() {
       return true; // Allow the user to continue despite the error
     } finally {
       setRecaptchaChecking(false);
-    }
-  };
-
-  const handleSignUp = async (e) => {
-    e.preventDefault();
-    
-    // Verify recaptcha first
-    if (!await verifyRecaptchaToken()) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      await setDoc(doc(db, "users", user.uid), {
-        uid: user.uid,
-        email: user.email,
-        name: name || user.displayName || '',
-        profilePic: profilePic || '',
-        cart: [],
-      });
-
-      dispatch(setUser(user));
-      toast.success("Sign up successful!");
-      // Redirect to intended destination or home
-      navigate(from, { replace: true });
-    } catch (error) {
-      console.error("Error signing up:", error);
-      toast.error(error.message || "An error occurred. Please try again.");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -176,42 +137,13 @@ function SignUp() {
       className="container mx-auto px-4 py-8 bg-gray-50"
     >
       <div className="flex justify-center items-center min-h-screen bg-gray-50 pt-20">
-        <form
-          onSubmit={handleSignUp}
+        <div
           className="w-full max-w-md bg-white p-8 rounded-lg shadow-md"
         >
           <h2 className="text-3xl font-semibold text-center mb-6">Sign Up</h2>
-          <input
-            type="text"
-            placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            className="w-full p-4 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="url"
-            placeholder="Profile Picture URL \\ use GuGL/GHub to skip this"
-            value={profilePic}
-            onChange={(e) => setProfilePic(e.target.value)}
-            className="w-full p-4 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full p-4 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full p-4 mb-6 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <p className="text-center text-red-500 mb-4">
+            To prevent abuse, email login/signup has been sunsetted.
+          </p>
           
           {/* Protected by reCAPTCHA v3 - No UI needed */}
           <div className="mb-4 text-center text-xs text-gray-500">
@@ -220,13 +152,6 @@ function SignUp() {
               : " "}
           </div>
           
-          <button
-            type="submit"
-            className={`w-full bg-blue-600 text-white py-2 rounded-lg font-semibold transition-all duration-200 ${loading || recaptchaChecking ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}`}
-            disabled={loading || recaptchaChecking}
-          >
-            {loading ? "Processing..." : recaptchaChecking ? "Verifying..." : "Sign Up"}
-          </button>
           <div className="mt-4">
             <button 
               type="button"
@@ -248,7 +173,7 @@ function SignUp() {
           <p className="mt-4 text-center text-gray-600">
             Already have an account? <a href="/signin" className="text-blue-600 hover:underline">Sign In</a>
           </p>
-        </form>
+        </div>
       </div>
     </m.div>
   );

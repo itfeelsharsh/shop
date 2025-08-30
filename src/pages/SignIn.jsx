@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { auth, db } from "../firebase/config";
 import {
-  signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
   GithubAuthProvider,
@@ -16,9 +15,6 @@ import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { m } from "framer-motion";
 
 function SignIn() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState({ google: false, github: false });
   const [recaptchaChecking, setRecaptchaChecking] = useState(false);
   const [captchaUnavailable, setCaptchaUnavailable] = useState(false);
@@ -65,30 +61,6 @@ function SignIn() {
       return true; // Allow the user to continue despite the error
     } finally {
       setRecaptchaChecking(false);
-    }
-  };
-
-  const handleSignIn = async (e) => {
-    e.preventDefault();
-
-    // Verify recaptcha first
-    if (!await verifyRecaptchaToken()) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      dispatch(setUser(user));
-      toast.success("Sign in successful!");
-      // Redirect to intended destination or home
-      navigate(from, { replace: true });
-    } catch (error) {
-      console.error("Error signing in:", error);
-      toast.error(error.message || "An error occurred. Please try again.");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -165,27 +137,13 @@ function SignIn() {
       className="container mx-auto px-4 py-8 bg-gray-50"
     >
       <div className="flex justify-center items-center min-h-screen bg-gray-50">
-        <form
-          onSubmit={handleSignIn}
+        <div
           className="w-full max-w-md bg-white p-8 rounded-lg shadow-md"
         >
           <h2 className="text-3xl font-semibold text-center mb-6">Sign In</h2>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full p-4 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full p-4 mb-6 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <p className="text-center text-red-500 mb-4">
+            To prevent abuse, email login/signup has been sunsetted.
+          </p>
           
           {/* Protected by reCAPTCHA v3 - No UI needed */}
           <div className="mb-4 text-center text-xs text-gray-500">
@@ -193,14 +151,6 @@ function SignIn() {
               ? "reCAPTCHA verification bypassed due to unavailability." 
               : " "}
           </div>
-          
-          <button
-            type="submit"
-            className={`w-full bg-blue-600 text-white py-2 rounded-lg font-semibold transition-all duration-200 ${loading || recaptchaChecking ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"}`}
-            disabled={loading || recaptchaChecking}
-          >
-            {loading ? "Processing..." : recaptchaChecking ? "Verifying..." : "Sign In"}
-          </button>
           
           <div className="mt-4">
             <button
@@ -226,12 +176,7 @@ function SignIn() {
               Sign Up
             </Link>
           </p>
-          <p className="mt-2 text-center text-gray-600">
-            <Link to="/password-reset" className="text-blue-600 hover:underline">
-              Forgot your password?
-            </Link>
-          </p>
-        </form>
+        </div>
       </div>
     </m.div>
   );
