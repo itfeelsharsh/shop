@@ -348,7 +348,7 @@ const generateOrderConfirmationHTML = (order, user) => {
     return `
     <!-- Professional Product Item Row - Optimized for up to 5 products -->
     <tr style="animation-delay: ${index * 0.1}s;" class="animated">
-      <td style="padding: 24px 0; border-bottom: 1px solid #E2E8F0;">
+      <td style="padding: 24px 20px; border-bottom: 1px solid #E2E8F0;">
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
             <td width="90" style="vertical-align: top; padding-right: 20px;">
@@ -403,6 +403,7 @@ const generateOrderConfirmationHTML = (order, user) => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
   <meta name="x-apple-disable-message-reformatting">
+  <link rel="dns-prefetch" href="https://cdn.harshbanker.com">
   <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:ital,wght@0,400;0,400;0,600;0,700;0,800" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Nunito:ital,wght@0,400;0,700" rel="stylesheet">
   <title>Order Confirmation</title>
@@ -440,49 +441,43 @@ const generateOrderConfirmationHTML = (order, user) => {
                         <p style="margin: 8px 0 0; font-size: 16px; color: rgba(255, 255, 255, 0.9); font-weight: 500; letter-spacing: 0.3px;">Your Premium Stationery Store</p>
                       </td>
                       <td align="right" width="80">
-                        <div style="width: 60px; height: 60px; background: rgba(255,255,255,0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
-                          <div style="width: 24px; height: 24px; background: #ffffff; border-radius: 4px;"></div>
-                        </div>
+                        <img src="https://cdn.harshbanker.com/kamikoto-logo.png" alt="KamiKoto Logo" style="width: 60px; height: auto; border-radius: 8px;">
                       </td>
                     </tr>
                   </table>
                 </td>
               </tr>
               
-              <!-- Professional Order Confirmation Banner -->
+              <!-- Combined Order Confirmation Section -->
               <tr>
-                <td style="padding: 24px 40px; background-color: #FFFFFF;" bgcolor="#FFFFFF">
+                <td style="padding: 24px 40px 0px 40px; background-color: #FFFFFF;" bgcolor="#FFFFFF">
                   <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" class="card">
                     <tr>
                       <td style="padding: 40px 32px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 16px; text-align: center; border: 1px solid #e0f2fe;" class="animated-scale">
-                        <div style="display: inline-block; width: 80px; height: 80px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%; margin-bottom: 24px; position: relative;">
-                          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 36px; font-weight: bold;">✓</div>
+                        <h2 style="margin: 0 0 16px 0; font-size: 32px; font-weight: 700; color: #0f172a; line-height: 1.2; letter-spacing: -0.5px;">Order Confirmed!</h2>
+                        <p style="margin: 0 0 24px 0; color: #334155; font-size: 18px; line-height: 1.5; font-weight: 500;">Hello ${user.displayName || user.email?.split('@')[0] || 'Valued Customer'}, thank you for your order!</p>
+                        
+                        <div style="margin-bottom: 24px;">
+                            <div style="display: inline-block; padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50px; margin-bottom: 12px;">
+                              <p style="margin: 0; font-size: 15px; font-weight: 600; color: #ffffff;">Order #${order.orderId}</p>
+                            </div>
+                            <p style="margin: 0; font-size: 14px; color: #64748b;">Placed on ${new Date(order.orderDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                         </div>
-                        <h2 style="margin: 0 0 16px 0; font-size: 32px; font-weight: 700; color: #0f172a; line-height: 1.2; letter-spacing: -0.5px;">Order Confirmed Successfully!</h2>
-                        <p style="margin: 0 0 8px 0; color: #334155; font-size: 18px; line-height: 1.5; font-weight: 500;">Hello ${user.displayName || user.email?.split('@')[0] || 'Valued Customer'},</p>
-                        <p style="margin: 0; color: #64748b; font-size: 16px; line-height: 1.6;">Thank you for your order! We're processing it right now and will send you tracking information once it ships.</p>
+
+                        <p style="margin: 0; color: #64748b; font-size: 16px; line-height: 1.6;">We're processing it right now and will send you tracking information once it ships.</p>
                       </td>
                     </tr>
                   </table>
                 </td>
               </tr>
               
-              <!-- Professional Order Details Section -->
+              <!-- Professional Order Items Table -->
               <tr>
                 <td style="padding: 32px 40px 0px 40px; background-color: #ffffff;" bgcolor="#ffffff">
-                  <div style="text-align: center; margin-bottom: 32px;" class="animated">
-                    <h2 style="margin: 0 0 12px; font-size: 28px; font-weight: 700; color: #0f172a; letter-spacing: -0.4px;">Order Details</h2>
-                    <div style="display: inline-block; padding: 12px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50px; margin-bottom: 8px;">
-                      <p style="margin: 0; font-size: 16px; font-weight: 600; color: #ffffff;">Order #${order.orderId}</p>
-                    </div>
-                    <p style="margin: 0; font-size: 14px; color: #64748b;">Placed on ${new Date(order.orderDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                  </div>
-                  
-                  <!-- Professional Order Items Table -->
                   <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="border: 1px solid #e2e8f0; border-radius: 16px; margin-bottom: 32px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);" class="card">
                     <!-- Table Header -->
                     <tr>
-                      <td style="padding: 20px 24px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-bottom: 1px solid #e2e8f0;">
+                      <td style="padding: 20px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-bottom: 1px solid #e2e8f0;">
                         <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #1e293b;">Your Items</h3>
                       </td>
                     </tr>
