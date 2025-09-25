@@ -1,11 +1,11 @@
 /**
  * Email Service
- * 
+ *
  * This utility provides functions for sending various types of emails to users using Resend API via Cloudflare Functions.
  * It checks the featureConfig to determine if emails should be sent.
  */
 
-import featureConfig from './featureConfig';
+import featureConfig from "./featureConfig"
 // No need for Resend import as we're using server-side functions
 
 /**
@@ -14,17 +14,17 @@ import featureConfig from './featureConfig';
  */
 const getApiFunctionBaseUrl = () => {
   // Check if we're in a development environment
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  
+  const isDevelopment = process.env.NODE_ENV === "development"
+
   if (isDevelopment) {
     // In development, use a local URL that can be proxied to the real endpoint
     // This should be configured in your package.json proxy field
-    return '/api';
+    return "/api"
   } else {
     // In production, use the same domain as the application
-    return '';
+    return ""
   }
-};
+}
 
 /**
  * Checks if the email functionality is properly configured and enabled
@@ -33,29 +33,29 @@ const getApiFunctionBaseUrl = () => {
 const isEmailEnabled = () => {
   // Check if email is enabled in the config
   if (!featureConfig.email.enabled) {
-    console.log('❌ Email functionality is disabled in configuration');
-    console.log('To enable email, set REACT_APP_EMAIL_ENABLED=true in your environment variables');
-    return false;
+    console.log("❌ Email functionality is disabled in configuration")
+    console.log("To enable email, set REACT_APP_EMAIL_ENABLED=true in your environment variables")
+    return false
   }
 
   // Log email configuration for debugging
-  console.log('📧 Email Configuration Debug:');
-  console.log('- Email enabled:', featureConfig.email.enabled);
-  console.log('- Use email server:', featureConfig.email.useEmailServer);
-  console.log('- From address:', featureConfig.email.fromAddress || 'Not set');
-  console.log('- Support email:', featureConfig.email.supportEmail || 'Not set');
-  
-  // Check environment variables more thoroughly
-  console.log('🔧 Environment Variables:');
-  console.log('- REACT_APP_EMAIL_ENABLED:', process.env.REACT_APP_EMAIL_ENABLED);
-  console.log('- EMAIL_ENABLED:', process.env.EMAIL_ENABLED);
-  console.log('- REACT_APP_EMAIL_FROM:', process.env.REACT_APP_EMAIL_FROM);
-  console.log('- EMAIL_FROM:', process.env.EMAIL_FROM);
-  console.log('- REACT_APP_RESEND_API_KEY exists:', !!process.env.REACT_APP_RESEND_API_KEY);
-  console.log('- RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY);
+  console.log("📧 Email Configuration Debug:")
+  console.log("- Email enabled:", featureConfig.email.enabled)
+  console.log("- Use email server:", featureConfig.email.useEmailServer)
+  console.log("- From address:", featureConfig.email.fromAddress || "Not set")
+  console.log("- Support email:", featureConfig.email.supportEmail || "Not set")
 
-  return true;
-};
+  // Check environment variables more thoroughly
+  console.log("🔧 Environment Variables:")
+  console.log("- REACT_APP_EMAIL_ENABLED:", process.env.REACT_APP_EMAIL_ENABLED)
+  console.log("- EMAIL_ENABLED:", process.env.EMAIL_ENABLED)
+  console.log("- REACT_APP_EMAIL_FROM:", process.env.REACT_APP_EMAIL_FROM)
+  console.log("- EMAIL_FROM:", process.env.EMAIL_FROM)
+  console.log("- REACT_APP_RESEND_API_KEY exists:", !!process.env.REACT_APP_RESEND_API_KEY)
+  console.log("- RESEND_API_KEY exists:", !!process.env.RESEND_API_KEY)
+
+  return true
+}
 
 /**
  * Sends an email using the server API endpoint
@@ -63,84 +63,84 @@ const isEmailEnabled = () => {
  * @returns {Promise<Object>} - Result of the email sending operation
  */
 const sendEmail = async (emailData) => {
-  console.log('sendEmail function called with:', {
+  console.log("sendEmail function called with:", {
     to: emailData.to,
     subject: emailData.subject,
-    bodyLength: emailData.body?.length || 0
-  });
+    bodyLength: emailData.body?.length || 0,
+  })
 
   if (!isEmailEnabled()) {
-    console.log('Email functionality is disabled, returning early from sendEmail');
-    return { success: false, error: 'Email functionality is disabled or not properly configured' };
+    console.log("Email functionality is disabled, returning early from sendEmail")
+    return { success: false, error: "Email functionality is disabled or not properly configured" }
   }
 
   try {
-    console.log('Using API endpoint method');
-    return await sendViaApiEndpoint(emailData);
+    console.log("Using API endpoint method")
+    return await sendViaApiEndpoint(emailData)
   } catch (error) {
-    console.error('Error in sendEmail function:', error);
-    return { success: false, error: error.message || 'Failed to send email' };
+    console.error("Error in sendEmail function:", error)
+    return { success: false, error: error.message || "Failed to send email" }
   }
-};
+}
 
 /**
  * Sends an email using our server API endpoint instead of calling Resend directly
  * This avoids CORS issues when calling from the client side
- * 
+ *
  * @param {Object} emailData - Email data
  * @returns {Promise<Object>} - Result of the email sending operation
  */
 const sendViaApiEndpoint = async (emailData) => {
   try {
-    console.log('Attempting to send email via API endpoint with data:', {
+    console.log("Attempting to send email via API endpoint with data:", {
       to: emailData.to,
       subject: emailData.subject,
-      fromAddress: emailData.from || featureConfig.email.fromAddress
-    });
-    
+      fromAddress: emailData.from || featureConfig.email.fromAddress,
+    })
+
     // Prepare the sender with proper format
-    const fromEmail = emailData.from || featureConfig.email.fromAddress;
+    const fromEmail = emailData.from || featureConfig.email.fromAddress
     // Ensure proper "From" format with name - Resend requires this format
-    const formattedFrom = fromEmail.includes('<') ? fromEmail : `KamiKoto <${fromEmail}>`;
-    
+    const formattedFrom = fromEmail.includes("<") ? fromEmail : `KamiKoto <${fromEmail}>`
+
     // Prepare the email payload for our API
     const emailPayload = {
       from: formattedFrom,
       to: emailData.to,
       subject: emailData.subject,
       html: emailData.body,
-    };
-    
-    console.log('Sending email with payload:', emailPayload);
-    
+    }
+
+    console.log("Sending email with payload:", emailPayload)
+
     // Use the Cloudflare Function endpoint
-    const apiEndpoint = `${getApiFunctionBaseUrl()}/send-email`;
-    console.log('Using API endpoint:', apiEndpoint);
-    
+    const apiEndpoint = `${getApiFunctionBaseUrl()}/send-email`
+    console.log("Using API endpoint:", apiEndpoint)
+
     // Send the request to our server-side function
     const response = await fetch(apiEndpoint, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(emailPayload),
-    });
-    
+    })
+
     // Parse the response
-    const result = await response.json();
-    console.log('API endpoint response:', result);
-    
+    const result = await response.json()
+    console.log("API endpoint response:", result)
+
     if (!response.ok || result.error) {
-      console.error('API endpoint returned an error:', result.error);
-      throw new Error(result.error?.message || 'Failed to send email via API endpoint');
+      console.error("API endpoint returned an error:", result.error)
+      throw new Error(result.error?.message || "Failed to send email via API endpoint")
     }
-    
-    return { success: true, data: result.data };
+
+    return { success: true, data: result.data }
   } catch (error) {
-    console.error('Detailed error sending email via API endpoint:', error);
-    throw error;
+    console.error("Detailed error sending email via API endpoint:", error)
+    throw error
   }
-};
+}
 
 /**
  * Email server method is not implemented
@@ -158,44 +158,44 @@ const sendViaApiEndpoint = async (emailData) => {
  * @returns {Promise<Object>} - Result of the email sending operation
  */
 const sendOrderConfirmationEmail = async (order, user) => {
-  console.log('sendOrderConfirmationEmail called with:', {
+  console.log("sendOrderConfirmationEmail called with:", {
     orderId: order?.orderId,
-    userEmail: user?.email
-  });
-  
+    userEmail: user?.email,
+  })
+
   if (!user || !user.email) {
-    console.error('Cannot send order confirmation: Missing user email');
-    return { success: false, error: 'Missing user email' };
+    console.error("Cannot send order confirmation: Missing user email")
+    return { success: false, error: "Missing user email" }
   }
-  
+
   if (!order || !order.orderId) {
-    console.error('Cannot send order confirmation: Invalid order data');
-    return { success: false, error: 'Invalid order data' };
+    console.error("Cannot send order confirmation: Invalid order data")
+    return { success: false, error: "Invalid order data" }
   }
-  
+
   if (!isEmailEnabled()) {
-    console.log('Email functionality is disabled, skipping order confirmation email');
-    return { success: false, error: 'Email functionality is disabled' };
+    console.log("Email functionality is disabled, skipping order confirmation email")
+    return { success: false, error: "Email functionality is disabled" }
   }
 
   try {
-    console.log('Generating email HTML template');
-    const emailBody = generateOrderConfirmationHTML(order, user);
-    console.log('Email template generated, length:', emailBody.length);
-    
+    console.log("Generating email HTML template")
+    const emailBody = generateOrderConfirmationHTML(order, user)
+    console.log("Email template generated, length:", emailBody.length)
+
     const emailData = {
       to: user.email,
       subject: `KamiKoto - Order Confirmation #${order.orderId}`,
       body: emailBody,
-    };
-    
-    console.log('Calling sendEmail function with email data');
-    return await sendEmail(emailData);
+    }
+
+    console.log("Calling sendEmail function with email data")
+    return await sendEmail(emailData)
   } catch (error) {
-    console.error('Error in sendOrderConfirmationEmail function:', error);
-    return { success: false, error: error.message || 'Failed to send order confirmation email' };
+    console.error("Error in sendOrderConfirmationEmail function:", error)
+    return { success: false, error: error.message || "Failed to send order confirmation email" }
   }
-};
+}
 
 /**
  * Sends an order shipment notification email to the customer
@@ -206,66 +206,66 @@ const sendOrderConfirmationEmail = async (order, user) => {
  */
 const sendOrderShippedEmail = async (order, user, shipmentInfo) => {
   if (!user || !user.email) {
-    console.error('Cannot send shipping notification: Missing user email');
-    return { success: false, error: 'Missing user email' };
+    console.error("Cannot send shipping notification: Missing user email")
+    return { success: false, error: "Missing user email" }
   }
 
   if (!order || !order.orderId) {
-    console.error('Cannot send shipping notification: Invalid order data');
-    return { success: false, error: 'Invalid order data' };
+    console.error("Cannot send shipping notification: Invalid order data")
+    return { success: false, error: "Invalid order data" }
   }
 
   if (!shipmentInfo) {
-    console.error('Cannot send shipping notification: Missing shipment information');
-    return { success: false, error: 'Missing shipment information' };
+    console.error("Cannot send shipping notification: Missing shipment information")
+    return { success: false, error: "Missing shipment information" }
   }
 
   if (!isEmailEnabled()) {
-    console.log('Email functionality is disabled, skipping shipping notification email');
-    return { success: false, error: 'Email functionality is disabled' };
+    console.log("Email functionality is disabled, skipping shipping notification email")
+    return { success: false, error: "Email functionality is disabled" }
   }
 
   try {
-    const emailBody = generateOrderShippedHTML(order, user, shipmentInfo);
-    
+    const emailBody = generateOrderShippedHTML(order, user, shipmentInfo)
+
     const emailData = {
       to: user.email,
       subject: `Your Order #${order.orderId} Has Shipped`,
       body: emailBody,
-    };
+    }
 
-    return await sendEmail(emailData);
+    return await sendEmail(emailData)
   } catch (error) {
-    console.error('Error sending order shipped email:', error);
-    return { success: false, error: error.message || 'Failed to send order shipped email' };
+    console.error("Error sending order shipped email:", error)
+    return { success: false, error: error.message || "Failed to send order shipped email" }
   }
-};
+}
 
 /**
  * Generates HTML content for order confirmation emails
- * 
+ *
  * @param {Object} order - Order details
  * @param {Object} user - User details
  * @returns {string} - HTML content for the email
  */
 const generateOrderConfirmationHTML = (order, user) => {
   // Calculate order summary values
-  const subtotal = order.subtotal || 0;
-  const tax = order.tax || 0;
-  const shipping = order.shipping?.cost || 0;
-  const discount = order.discount || 0;
-  const total = order.totalAmount || 0;
-  const importDuty = order.importDuty || 0;
-  
+  const subtotal = order.subtotal || 0
+  const tax = order.tax || 0
+  const shipping = order.shipping?.cost || 0
+  const discount = order.discount || 0
+  const total = order.totalAmount || 0
+  const importDuty = order.importDuty || 0
+
   // Format currency
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
       minimumFractionDigits: 2,
-    }).format(amount);
-  };
-  
+    }).format(amount)
+  }
+
   /**
    * Professional CSS styling for email clients
    * Optimized for better compatibility across email clients including Outlook, Gmail, Apple Mail
@@ -314,8 +314,45 @@ const generateOrderConfirmationHTML = (order, user) => {
     .spacer-sm { height: 16px; }
     .spacer-md { height: 24px; }
     .spacer-lg { height: 32px; }
-  `;
-  
+
+    /* Added responsive styles for mobile */
+    @media only screen and (max-width: 600px) {
+      .email-container {
+        width: 100% !important;
+        min-width: 100% !important;
+      }
+      .content-area {
+        padding: 20px !important;
+      }
+      .header-logo {
+        width: 40px !important;
+        height: 40px !important;
+      }
+      .header-title {
+        font-size: 24px !important;
+      }
+      .order-id-text {
+        font-size: 13px !important;
+      }
+      .item-image {
+        width: 70px !important;
+        height: 70px !important;
+      }
+      .item-name {
+        font-size: 15px !important;
+      }
+      .item-qty, .item-price {
+        font-size: 12px !important;
+      }
+      .total-amount {
+        font-size: 18px !important;
+      }
+      .footer-text {
+        font-size: 12px !important;
+      }
+    }
+  `
+
   /**
    * Process image URL to ensure compatibility with email clients
    * Handles i.imgur.com and other image hosting services for better email delivery
@@ -323,37 +360,39 @@ const generateOrderConfirmationHTML = (order, user) => {
    * @returns {string} - Processed image URL optimized for email clients
    */
   const processImageForEmail = (imageUrl) => {
-    if (!imageUrl) return null;
-    
+    if (!imageUrl) return null
+
     // Handle i.imgur.com URLs - ensure they use direct image links
-    if (imageUrl.includes('i.imgur.com')) {
+    if (imageUrl.includes("i.imgur.com")) {
       // Ensure the URL ends with a proper image extension for email clients
       if (!imageUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-        return `${imageUrl}.jpg`; // Add .jpg extension for email client compatibility
+        return `${imageUrl}.jpg` // Add .jpg extension for email client compatibility
       }
     }
-    
-    return imageUrl;
-  };
+
+    return imageUrl
+  }
 
   // Generate the HTML for order items - optimized for professional display
   // Enhanced for better email client compatibility and professional appearance
-  const itemsHTML = order.items.map((item, index) => {
-    // Professional product name truncation for consistent layout
-    const truncatedName = item.name.length > 40 ? item.name.substring(0, 37) + '...' : item.name;
-    
-    // Process image URL for email client compatibility
-    const processedImageUrl = processImageForEmail(item.image);
-    
-    return `
+  const itemsHTML = order.items
+    .map((item, index) => {
+      // Professional product name truncation for consistent layout
+      const truncatedName = item.name.length > 40 ? item.name.substring(0, 37) + "..." : item.name
+
+      // Process image URL for email client compatibility
+      const processedImageUrl = processImageForEmail(item.image)
+
+      return `
     <!-- Professional Product Item Row - Optimized for up to 5 products -->
     <tr style="animation-delay: ${index * 0.1}s;" class="animated">
       <td style="padding: 24px 20px; border-bottom: 1px solid #E2E8F0;">
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
             <td width="90" style="vertical-align: top; padding-right: 20px;">
-              ${processedImageUrl ? 
-                `<img src="${processedImageUrl}" alt="${truncatedName}" style="
+              ${
+                processedImageUrl
+                  ? `<img src="${processedImageUrl}" alt="${truncatedName}" style="
                   width: 90px; 
                   height: 90px; 
                   object-fit: cover; 
@@ -362,8 +401,8 @@ const generateOrderConfirmationHTML = (order, user) => {
                   border: 1px solid #E2E8F0;
                   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
                   display: block;
-                " />` : 
-                `<div style="
+                " class="item-image" />`
+                  : `<div style="
                   width: 90px; 
                   height: 90px; 
                   border-radius: 12px; 
@@ -375,24 +414,26 @@ const generateOrderConfirmationHTML = (order, user) => {
                   color: #64748B;
                   font-size: 12px;
                   font-weight: 500;
-                ">No Image</div>`
+                " class="item-image">No Image</div>`
               }
             </td>
             <td style="vertical-align: top;">
-              <h4 style="margin: 0 0 6px 0; font-weight: 600; font-size: 17px; color: #1E293B; line-height: 1.3;">${truncatedName}</h4>
-              <p style="margin: 0 0 4px 0; font-size: 14px; color: #64748B; font-weight: 500;">Qty: ${item.quantity}</p>
-              <p style="margin: 0; font-size: 13px; color: #94A3B8;">Item Price: ${formatCurrency(item.price)}</p>
+              <h4 style="margin: 0 0 6px 0; font-weight: 600; font-size: 17px; color: #1E293B; line-height: 1.3;" class="item-name">${truncatedName}</h4>
+              <p style="margin: 0 0 4px 0; font-size: 14px; color: #64748B; font-weight: 500;" class="item-qty">Qty: ${item.quantity}</p>
+              <p style="margin: 0; font-size: 13px; color: #94A3B8;" class="item-price">Item Price: ${formatCurrency(item.price)}</p>
             </td>
             <td width="120" style="vertical-align: top; text-align: right;">
-              <p style="margin: 0; font-weight: 700; font-size: 18px; color: #1E293B;">${formatCurrency(item.price * item.quantity)}</p>
+              <p style="margin: 0; font-weight: 700; font-size: 18px; color: #1E293B;" class="total-amount">${formatCurrency(item.price * item.quantity)}</p>
               <p style="margin: 4px 0 0 0; font-size: 12px; color: #64748B;">Total</p>
             </td>
           </tr>
         </table>
       </td>
     </tr>
-  `}).join('');
-  
+  `
+    })
+    .join("")
+
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -419,29 +460,39 @@ const generateOrderConfirmationHTML = (order, user) => {
   <!--[if mso]>
   <style type="text/css">
     body, table, td {font-family: Arial, Helvetica, sans-serif !important;}
+    .email-container { width: 600px !important; }
+    .content-area { padding: 40px !important; }
+    .header-logo { width: 60px !important; height: 60px !important; }
+    .header-title { font-size: 32px !important; }
+    .order-id-text { font-size: 15px !important; }
+    .item-image { width: 90px !important; height: 90px !important; }
+    .item-name { font-size: 17px !important; }
+    .item-qty, .item-price { font-size: 14px !important; }
+    .total-amount { font-size: 18px !important; }
+    .footer-text { font-size: 13px !important; }
   </style>
   <![endif]-->
 </head>
 <body style="margin: 0; padding: 0; background-color: #ffefcf; font-family: 'Nunito Sans', Arial, Helvetica, sans-serif; color: #2D3A41; width: 100%; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
   <!-- Email Container -->
-  <table style="width: 100%; min-width: 600px; background-color: #ffefcf;" border="0" cellspacing="0" cellpadding="0" role="presentation">
+  <table style="width: 100%; min-width: 600px; background-color: #ffefcf;" border="0" cellspacing="0" cellpadding="0" role="presentation" class="email-container">
     <tbody>
       <tr>
         <td align="center" valign="top">
           <!-- Main Email Container -->
-          <table style="width: 600px; max-width: 600px;" align="center" border="0" cellpadding="0" cellspacing="0" role="presentation">
+          <table style="width: 600px; max-width: 600px;" align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" class="email-container">
             <tbody>
               <!-- Professional Email Header -->
               <tr>
-                <td style="padding: 32px 40px 24px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" bgcolor="#667eea">
+                <td style="padding: 32px 40px 24px 40px; background: linear-gradient(135deg, #FF4136 0%, #E02B20 100%);" bgcolor="#FF4136"> <!-- Updated to red gradient -->
                   <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
                     <tr>
                       <td align="left">
-                        <h1 style="margin: 0; font-size: 32px; font-weight: 700; color: #ffffff; letter-spacing: -0.6px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">KamiKoto</h1>
+                        <h1 style="margin: 0; font-size: 32px; font-weight: 700; color: #ffffff; letter-spacing: -0.6px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);" class="header-title">KamiKoto</h1>
                         <p style="margin: 8px 0 0; font-size: 16px; color: rgba(255, 255, 255, 0.9); font-weight: 500; letter-spacing: 0.3px;">Your Premium Stationery Store</p>
                       </td>
                       <td align="right" width="80">
-                        <img src="https://cdn.harshbanker.com/kamikoto-logo.png" alt="KamiKoto Logo" style="width: 60px; height: auto; border-radius: 8px;">
+                        <img src="https://yeet.lmao.bruh.mom.said.i.couldnt.have.more.cookies.but.i.did.anyway.and.now.my.cat.is.a.dragon.socks.love.cheese.and.hate.rain.aliens.play.guitar.in.libraries.funny.times.locha.qzz.io/logo.png" alt="KamiKoto Logo" style="width: 60px; height: auto; border-radius: 8px;" class="header-logo"> <!-- Updated logo URL -->
                       </td>
                     </tr>
                   </table>
@@ -450,18 +501,18 @@ const generateOrderConfirmationHTML = (order, user) => {
               
               <!-- Combined Order Confirmation Section -->
               <tr>
-                <td style="padding: 24px 40px 0px 40px; background-color: #FFFFFF;" bgcolor="#FFFFFF">
+                <td style="padding: 24px 40px 0px 40px; background-color: #FFFFFF;" bgcolor="#FFFFFF" class="content-area">
                   <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" class="card">
                     <tr>
                       <td style="padding: 40px 32px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 16px; text-align: center; border: 1px solid #e0f2fe;" class="animated-scale">
                         <h2 style="margin: 0 0 16px 0; font-size: 32px; font-weight: 700; color: #0f172a; line-height: 1.2; letter-spacing: -0.5px;">Order Confirmed!</h2>
-                        <p style="margin: 0 0 24px 0; color: #334155; font-size: 18px; line-height: 1.5; font-weight: 500;">Hello ${user.displayName || user.email?.split('@')[0] || 'Valued Customer'}, thank you for your order!</p>
+                        <p style="margin: 0 0 24px 0; color: #334155; font-size: 18px; line-height: 1.5; font-weight: 500;">Hello ${user.displayName || user.email?.split("@")[0] || "Valued Customer"}, thank you for your order!</p>
                         
                         <div style="margin-bottom: 24px;">
-                            <div style="display: inline-block; padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50px; margin-bottom: 12px;">
-                              <p style="margin: 0; font-size: 15px; font-weight: 600; color: #ffffff;">Order #${order.orderId}</p>
+                            <div style="display: inline-block; padding: 10px 20px; background: linear-gradient(135deg, #FF4136 0%, #E02B20 100%); border-radius: 50px; margin-bottom: 12px;"> <!-- Updated to red gradient -->
+                              <p style="margin: 0; font-size: 15px; font-weight: 600; color: #ffffff;" class="order-id-text">Order #${order.orderId}</p>
                             </div>
-                            <p style="margin: 0; font-size: 14px; color: #64748b;">Placed on ${new Date(order.orderDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                            <p style="margin: 0; font-size: 14px; color: #64748b;">Placed on ${new Date(order.orderDate).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
                         </div>
 
                         <p style="margin: 0; color: #64748b; font-size: 16px; line-height: 1.6;">We're processing it right now and will send you tracking information once it ships.</p>
@@ -473,7 +524,7 @@ const generateOrderConfirmationHTML = (order, user) => {
               
               <!-- Professional Order Items Table -->
               <tr>
-                <td style="padding: 32px 40px 0px 40px; background-color: #ffffff;" bgcolor="#ffffff">
+                <td style="padding: 32px 40px 0px 40px; background-color: #ffffff;" bgcolor="#ffffff" class="content-area">
                   <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="border: 1px solid #e2e8f0; border-radius: 16px; margin-bottom: 32px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);" class="card">
                     <!-- Table Header -->
                     <tr>
@@ -509,18 +560,20 @@ const generateOrderConfirmationHTML = (order, user) => {
                             </td>
                           </tr>
                           <tr>
-                            <td style="padding-bottom: ${importDuty > 0 || discount > 0 ? '10px' : '0'};">
+                            <td style="padding-bottom: ${importDuty > 0 || discount > 0 ? "10px" : "0"};">
                               <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
                                 <tr>
                                   <td style="font-size: 15px; color: #64748B;">Shipping</td>
-                                  <td style="font-size: 15px; color: #1A202C; text-align: right;">${shipping === 0 ? 'Free' : formatCurrency(shipping)}</td>
+                                  <td style="font-size: 15px; color: #1A202C; text-align: right;">${shipping === 0 ? "Free" : formatCurrency(shipping)}</td>
                                 </tr>
                               </table>
                             </td>
                           </tr>
-                          ${importDuty > 0 ? `
+                          ${
+                            importDuty > 0
+                              ? `
                           <tr>
-                            <td style="padding-bottom: ${discount > 0 ? '10px' : '0'};">
+                            <td style="padding-bottom: ${discount > 0 ? "10px" : "0"};">
                               <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
                                 <tr>
                                   <td style="font-size: 15px; color: #EA580C;">Import Duty (69%)</td>
@@ -529,8 +582,12 @@ const generateOrderConfirmationHTML = (order, user) => {
                               </table>
                             </td>
                           </tr>
-                          ` : ''}
-                          ${discount > 0 ? `
+                          `
+                              : ""
+                          }
+                          ${
+                            discount > 0
+                              ? `
                           <tr>
                             <td style="padding-bottom: 0;">
                               <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
@@ -541,13 +598,15 @@ const generateOrderConfirmationHTML = (order, user) => {
                               </table>
                             </td>
                           </tr>
-                          ` : ''}
+                          `
+                              : ""
+                          }
                         </table>
                       </td>
                     </tr>
                     <tr>
-                      <td style="padding: 20px; font-size: 16px; font-weight: bold; color: #121212;">Total (${order.items.length} ${order.items.length === 1 ? 'item' : 'items'})</td>
-                      <td style="padding: 20px; font-size: 20px; font-weight: 800; color: #121212; text-align: right;">${formatCurrency(total)}</td>
+                      <td style="padding: 20px; font-size: 16px; font-weight: bold; color: #121212;">Total (${order.items.length} ${order.items.length === 1 ? "item" : "items"})</td>
+                      <td style="padding: 20px; font-size: 20px; font-weight: 800; color: #121212; text-align: right;" class="total-amount">${formatCurrency(total)}</td>
                     </tr>
                   </table>
                   
@@ -557,23 +616,31 @@ const generateOrderConfirmationHTML = (order, user) => {
                       <td width="50%" valign="top" style="padding-right: 15px;">
                         <h3 style="margin: 0 0 8px; font-size: 16px; font-weight: bold; color: #121212;">Shipping address</h3>
                         <p style="margin: 0 0 2px; font-size: 14px; font-weight: 600; color: rgba(18, 18, 18, 0.8);">
-                          ${order.shippingAddress?.name || order.userName || 'Customer'}<br>
-                          ${order.shippingAddress?.street || ''}<br>
-                          ${order.shippingAddress?.city || ''}, ${order.shippingAddress?.state || ''} ${order.shippingAddress?.zip || ''}<br>
-                          ${order.shippingAddress?.country || ''}
+                          ${order.shippingAddress?.name || order.userName || "Customer"}<br>
+                          ${order.shippingAddress?.street || ""}<br>
+                          ${order.shippingAddress?.city || ""}, ${order.shippingAddress?.state || ""} ${order.shippingAddress?.zip || ""}<br>
+                          ${order.shippingAddress?.country || ""}
                         </p>
                       </td>
                       <td width="50%" valign="top">
-                        <h3 style="margin: 0 0 8px; font-size: 16px; font-weight: bold; color: #121212;">Paid with ${order.payment?.method || 'Credit card'}</h3>
+                        <h3 style="margin: 0 0 8px; font-size: 16px; font-weight: bold; color: #121212;">Paid with ${order.payment?.method || "Credit card"}</h3>
                         <p style="margin: 0 0 2px; font-size: 14px; font-weight: 600; color: rgba(18, 18, 18, 0.8);">Subtotal: ${formatCurrency(subtotal)}</p>
                         <p style="margin: 0 0 2px; font-size: 14px; font-weight: 600; color: rgba(18, 18, 18, 0.8);">Tax (18% GST): ${formatCurrency(tax)}</p>
-                        <p style="margin: 0 0 2px; font-size: 14px; font-weight: 600; color: rgba(18, 18, 18, 0.8);">Shipping: ${shipping === 0 ? 'Free' : formatCurrency(shipping)}</p>
-                        ${importDuty > 0 ? `
+                        <p style="margin: 0 0 2px; font-size: 14px; font-weight: 600; color: rgba(18, 18, 18, 0.8);">Shipping: ${shipping === 0 ? "Free" : formatCurrency(shipping)}</p>
+                        ${
+                          importDuty > 0
+                            ? `
                         <p style="margin: 0 0 2px; font-size: 14px; font-weight: 600; color: #EA580C;">Import Duty (69%): ${formatCurrency(importDuty)}</p>
-                        ` : ''}
-                        ${discount > 0 ? `
+                        `
+                            : ""
+                        }
+                        ${
+                          discount > 0
+                            ? `
                         <p style="margin: 0 0 2px; font-size: 14px; font-weight: 600; color: #16A34A;">Discount: -${formatCurrency(discount)}</p>
-                        ` : ''}
+                        `
+                            : ""
+                        }
                         <p style="margin: 8px 0 2px; font-size: 16px; font-weight: 700; color: #121212;">Total: ${formatCurrency(total)}</p>
                         <p style="margin: 8px 0 2px; font-size: 14px; font-weight: 600; color: #10B981;">Payment Status: Completed</p>
                       </td>
@@ -584,7 +651,7 @@ const generateOrderConfirmationHTML = (order, user) => {
               
               <!-- Any Questions Section -->
               <tr>
-                <td style="padding: 48px 32px 48px 32px; background-color: #ffffff;" bgcolor="#ffffff">
+                <td style="padding: 48px 32px 48px 32px; background-color: #ffffff;" bgcolor="#ffffff" class="content-area">
                   <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
                     <tr>
                       <td style="padding: 20px; background-color: #fff8f0; border-radius: 8px;" class="animated">
@@ -609,17 +676,17 @@ const generateOrderConfirmationHTML = (order, user) => {
               
               <!-- Professional Footer -->
               <tr>
-                <td style="padding: 40px; background: linear-gradient(135deg, #1e293b 0%, #334155 100%); text-align: center;">
+                <td style="padding: 40px; background: linear-gradient(135deg, #1e293b 0%, #334155 100%); text-align: center;" class="content-area">
                   <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                     <tr>
                       <td style="text-align: center; padding-bottom: 24px;">
                         <h3 style="margin: 0; font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">KamiKoto</h3>
-                        <p style="margin: 8px 0 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">Your Premium Stationery Store</p>
+                        <p style="margin: 8px 0 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);" class="footer-text">Your Premium Stationery Store</p>
                       </td>
                     </tr>
                     <tr>
                       <td style="text-align: center; padding: 20px 0; border-top: 1px solid rgba(255, 255, 255, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-                        <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.9); line-height: 1.6;">
+                        <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.9); line-height: 1.6;" class="footer-text">
                           Questions? Email us at <a href="mailto:${featureConfig.email.supportEmail}" style="color: #60a5fa; text-decoration: none; font-weight: 600;">${featureConfig.email.supportEmail}</a><br>
                           <span style="color: rgba(255, 255, 255, 0.7);">We're here to help!</span>
                         </p>
@@ -627,7 +694,7 @@ const generateOrderConfirmationHTML = (order, user) => {
                     </tr>
                     <tr>
                       <td style="text-align: center; padding-top: 20px;">
-                        <p style="margin: 0; font-size: 13px; color: rgba(255, 255, 255, 0.6); line-height: 1.4;">
+                        <p style="margin: 0; font-size: 13px; color: rgba(255, 255, 255, 0.6); line-height: 1.4;" class="footer-text">
                           © ${new Date().getFullYear()} KamiKoto. All Rights Reserved.<br>
                           <span style="font-size: 12px;">This email was sent because you placed an order with us.</span>
                         </p>
@@ -644,8 +711,8 @@ const generateOrderConfirmationHTML = (order, user) => {
   </table>
 </body>
 </html>
-  `;
-};
+  `
+}
 
 /**
  * Generates HTML content for order shipped emails
@@ -657,13 +724,13 @@ const generateOrderConfirmationHTML = (order, user) => {
 const generateOrderShippedHTML = (order, user, shipmentInfo) => {
   // Format currency
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
       minimumFractionDigits: 2,
-    }).format(amount);
-  };
-  
+    }).format(amount)
+  }
+
   /**
    * Animation CSS for supported email clients
    * Provides subtle animations for modern email clients
@@ -677,44 +744,70 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
     .animated {
       animation: fadeIn 0.5s ease-out forwards;
     }
-  `;
-  
+
+    /* Added responsive styles for mobile */
+    @media only screen and (max-width: 600px) {
+      .email-container {
+        width: 100% !important;
+        min-width: 100% !important;
+      }
+      .content-area {
+        padding: 20px !important;
+      }
+      .header-title {
+        font-size: 24px !important;
+      }
+      .item-image {
+        width: 70px !important;
+        height: 70px !important;
+      }
+      .item-name {
+        font-size: 15px !important;
+      }
+      .footer-text {
+        font-size: 12px !important;
+      }
+    }
+  `
+
   /**
    * Process image URL for email client compatibility (same function as order confirmation)
    * @param {string} imageUrl - Original image URL
    * @returns {string} - Processed image URL optimized for email clients
    */
   const processImageForEmailShipped = (imageUrl) => {
-    if (!imageUrl) return null;
-    
+    if (!imageUrl) return null
+
     // Handle i.imgur.com URLs - ensure they use direct image links
-    if (imageUrl.includes('i.imgur.com')) {
+    if (imageUrl.includes("i.imgur.com")) {
       // Ensure the URL ends with a proper image extension for email clients
       if (!imageUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-        return `${imageUrl}.jpg`; // Add .jpg extension for email client compatibility
+        return `${imageUrl}.jpg` // Add .jpg extension for email client compatibility
       }
     }
-    
-    return imageUrl;
-  };
+
+    return imageUrl
+  }
 
   // Generate professional HTML for order items in shipping notification
-  const itemsHTML = order.items.map((item, index) => {
-    // Professional product name truncation for consistent layout
-    const truncatedName = item.name.length > 40 ? item.name.substring(0, 37) + '...' : item.name;
-    
-    // Process image URL for email client compatibility
-    const processedImageUrl = processImageForEmailShipped(item.image);
-    
-    return `
+  const itemsHTML = order.items
+    .map((item, index) => {
+      // Professional product name truncation for consistent layout
+      const truncatedName = item.name.length > 40 ? item.name.substring(0, 37) + "..." : item.name
+
+      // Process image URL for email client compatibility
+      const processedImageUrl = processImageForEmailShipped(item.image)
+
+      return `
     <!-- Professional Product Item Row - Optimized for shipping emails -->
     <tr style="animation-delay: ${index * 0.1}s;" class="animated">
       <td style="padding: 24px 0; border-bottom: 1px solid #E2E8F0;">
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
             <td width="90" style="vertical-align: top; padding-right: 20px;">
-              ${processedImageUrl ? 
-                `<img src="${processedImageUrl}" alt="${truncatedName}" style="
+              ${
+                processedImageUrl
+                  ? `<img src="${processedImageUrl}" alt="${truncatedName}" style="
                   width: 90px; 
                   height: 90px; 
                   object-fit: cover; 
@@ -723,8 +816,8 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
                   border: 1px solid #E2E8F0;
                   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
                   display: block;
-                " />` : 
-                `<div style="
+                " class="item-image" />`
+                  : `<div style="
                   width: 90px; 
                   height: 90px; 
                   border-radius: 12px; 
@@ -736,20 +829,22 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
                   color: #64748B;
                   font-size: 12px;
                   font-weight: 500;
-                ">No Image</div>`
+                " class="item-image">No Image</div>`
               }
             </td>
             <td style="vertical-align: top;">
-              <h4 style="margin: 0 0 6px 0; font-weight: 600; font-size: 17px; color: #1E293B; line-height: 1.3;">${truncatedName}</h4>
+              <h4 style="margin: 0 0 6px 0; font-weight: 600; font-size: 17px; color: #1E293B; line-height: 1.3;" class="item-name">${truncatedName}</h4>
               <p style="margin: 0 0 4px 0; font-size: 14px; color: #64748B; font-weight: 500;">Qty: ${item.quantity}</p>
-              ${item.price ? `<p style="margin: 0; font-size: 13px; color: #94A3B8;">Price: ${formatCurrency(item.price)}</p>` : ''}
+              ${item.price ? `<p style="margin: 0; font-size: 13px; color: #94A3B8;">Price: ${formatCurrency(item.price)}</p>` : ""}
             </td>
           </tr>
         </table>
       </td>
     </tr>
-  `}).join('');
-  
+  `
+    })
+    .join("")
+
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -770,21 +865,27 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
       <!--[if mso]>
       <style type="text/css">
         body, table, td {font-family: Arial, Helvetica, sans-serif !important;}
+        .email-container { width: 600px !important; }
+        .content-area { padding: 40px !important; }
+        .header-title { font-size: 28px !important; }
+        .item-image { width: 90px !important; height: 90px !important; }
+        .item-name { font-size: 17px !important; }
+        .footer-text { font-size: 14px !important; }
       </style>
       <![endif]-->
     </head>
     <body style="margin: 0; padding: 0; background-color: #F5F7FA; font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1A202C; line-height: 1.5; width: 100%; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
       <!-- Wrapper -->
-      <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);">
+      <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);" class="email-container">
         <!-- Email Header -->
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
-            <td style="padding: 30px 30px; background-color: #38BDF8; text-align: center; border-radius: 8px 8px 0 0;">
+            <td style="padding: 30px 30px; background-color: #FF4136; text-align: center; border-radius: 8px 8px 0 0;"> <!-- Updated to red background -->
               <!-- Logo -->
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
                   <td align="center">
-                    <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">KamiKoto</h1>
+                    <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;" class="header-title">KamiKoto</h1>
                     <p style="margin: 8px 0 0; font-size: 16px; color: rgba(255, 255, 255, 0.9); font-weight: 500;">Perfect Online Stationery Store</p>
                   </td>
                 </tr>
@@ -796,14 +897,14 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
         <!-- Main Content -->
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
-            <td style="padding: 40px 30px;">
+            <td style="padding: 40px 30px;" class="content-area">
               <!-- Shipped Status Banner -->
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom: 30px;">
                 <tr>
-                  <td style="background-color: #EFF6FF; padding: 20px; border-radius: 8px; border-left: 4px solid #3B82F6;" class="animated">
-                    <h2 style="margin: 0; font-size: 22px; font-weight: 600; color: #2563EB;">Your order is on the way!</h2>
-                    <p style="margin: 10px 0 0; color: #1E40AF; font-size: 16px;">Hello ${user.displayName || user.email},</p>
-                    <p style="margin: 10px 0 0; color: #1E40AF; font-size: 16px;">Great news! Your order #${order.orderId} has been shipped and is on its way to you.</p>
+                  <td style="background-color: #FFF5F5; padding: 20px; border-radius: 8px; border-left: 4px solid #FF4136;" class="animated"> <!-- Updated to red border and background -->
+                    <h2 style="margin: 0; font-size: 22px; font-weight: 600; color: #E02B20;">Your order is on the way!</h2> <!-- Updated to red text -->
+                    <p style="margin: 10px 0 0; color: #E02B20; font-size: 16px;">Hello ${user.displayName || user.email},</p> <!-- Updated to red text -->
+                    <p style="margin: 10px 0 0; color: #E02B20; font-size: 16px;">Great news! Your order #${order.orderId} has been shipped and is on its way to you.</p> <!-- Updated to red text -->
                   </td>
                 </tr>
               </table>
@@ -840,15 +941,19 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
               </table>
 
               <!-- Tracking Button -->
-              ${shipmentInfo.trackingUrl ? `
+              ${
+                shipmentInfo.trackingUrl
+                  ? `
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom: 30px;">
                 <tr>
                   <td style="text-align: center; padding: 5px 0 25px;">
-                    <a href="${shipmentInfo.trackingUrl}" target="_blank" style="display: inline-block; background-color: #2563EB; color: white; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 30px; border-radius: 6px; transition: background-color 0.3s ease;">Track Your Package</a>
+                    <a href="${shipmentInfo.trackingUrl}" target="_blank" style="display: inline-block; background-color: #FF4136; color: white; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 30px; border-radius: 6px; transition: background-color 0.3s ease;">Track Your Package</a> <!-- Updated to red background -->
                   </td>
                 </tr>
               </table>
-              ` : ''}
+              `
+                  : ""
+              }
 
               <!-- Products Section -->
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom: 30px;">
@@ -871,10 +976,10 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
                 <tr>
                   <td style="padding-top: 15px;">
                     <p style="margin: 0; font-size: 16px; color: #1A202C; line-height: 1.6;">
-                      <span style="font-weight: 600;">${order.shippingAddress?.name || order.userName || 'Customer'}</span><br>
-                      ${order.shippingAddress?.street || ''}<br>
-                      ${order.shippingAddress?.city || ''}, ${order.shippingAddress?.state || ''} ${order.shippingAddress?.zip || ''}<br>
-                      ${order.shippingAddress?.country || ''}
+                      <span style="font-weight: 600;">${order.shippingAddress?.name || order.userName || "Customer"}</span><br>
+                      ${order.shippingAddress?.street || ""}<br>
+                      ${order.shippingAddress?.city || ""}, ${order.shippingAddress?.state || ""} ${order.shippingAddress?.zip || ""}<br>
+                      ${order.shippingAddress?.country || ""}
                     </p>
                   </td>
                 </tr>
@@ -920,7 +1025,9 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
                           </table>
                         </td>
                       </tr>
-                      ${order.importDuty > 0 ? `
+                      ${
+                        order.importDuty > 0
+                          ? `
                       <tr>
                         <td style="padding-bottom: 10px;">
                           <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
@@ -931,8 +1038,12 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
                           </table>
                         </td>
                       </tr>
-                      ` : ''}
-                      ${order.discount > 0 ? `
+                      `
+                          : ""
+                      }
+                      ${
+                        order.discount > 0
+                          ? `
                       <tr>
                         <td style="padding-bottom: 10px;">
                           <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
@@ -943,7 +1054,9 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
                           </table>
                         </td>
                       </tr>
-                      ` : ''}
+                      `
+                          : ""
+                      }
                       <tr>
                         <td style="padding-top: 10px; border-top: 1px solid #E2E8F0;">
                           <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
@@ -964,7 +1077,7 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
                 <tr>
                   <td style="padding: 30px; background-color: #F5F7FA; border-radius: 8px; text-align: center;" class="animated">
                     <p style="margin: 0 0 20px; font-size: 16px; color: #64748B;">Have questions about your shipment?</p>
-                    <a href="mailto:${featureConfig.email.supportEmail}" style="display: inline-block; background-color: #38BDF8; color: white; font-size: 16px; font-weight: 600; text-decoration: none; padding: 12px 30px; border-radius: 6px; transition: background-color 0.3s ease;">Contact Support</a>
+                    <a href="mailto:${featureConfig.email.supportEmail}" style="display: inline-block; background-color: #FF4136; color: white; font-size: 16px; font-weight: 600; text-decoration: none; padding: 12px 30px; border-radius: 6px; transition: background-color 0.3s ease;">Contact Support</a> <!-- Updated to red background -->
                   </td>
                 </tr>
               </table>
@@ -979,10 +1092,10 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
               <p style="margin: 0; font-size: 14px; color: #64748B; font-weight: 500;">
                 Thank you for shopping with KamiKoto
               </p>
-              <p style="margin: 10px 0 0; font-size: 14px; color: #94A3B8;">
+              <p style="margin: 10px 0 0; font-size: 14px; color: #94A3B8;" class="footer-text">
                 Perfect Online Stationery Store
               </p>
-              <p style="margin: 20px 0 0; font-size: 13px; color: #94A3B8;">
+              <p style="margin: 20px 0 0; font-size: 13px; color: #94A3B8;" class="footer-text">
                 © ${new Date().getFullYear()} KamiKoto. All rights reserved.
               </p>
             </td>
@@ -991,13 +1104,8 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
       </div>
     </body>
     </html>
-  `;
-};
+  `
+}
 
 // Export all the email service functions
-export {
-  sendOrderConfirmationEmail,
-  sendOrderShippedEmail,
-  isEmailEnabled,
-  sendEmail
-}; 
+export { sendOrderConfirmationEmail, sendOrderShippedEmail, isEmailEnabled, sendEmail }
