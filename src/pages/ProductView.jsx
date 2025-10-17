@@ -228,41 +228,77 @@ function ProductView() {
 
   return (
     <>
-      {/* SEO and Social Media Meta Tags */}
+      {/* SEO and Social Media Meta Tags - Optimized for WhatsApp, Discord, and all social platforms */}
       <Helmet>
         {/* Basic Meta Tags */}
-        <title>{product.name} | Online Stationery Shop</title>
+        <title>{product.name} | KamiKoto - Premium Stationery</title>
         <meta name="description" content={metaDescription} />
-        
-        {/* OpenGraph Tags for Facebook/Instagram */}
-        <meta property="og:title" content={product.name} />
+
+        {/* OpenGraph Tags for Facebook/Instagram/WhatsApp/Discord */}
+        <meta property="og:title" content={`${product.name} - ₹${formatPrice(product.price)}`} />
         <meta property="og:description" content={metaDescription} />
         <meta property="og:image" content={product.image} />
+        <meta property="og:image:secure_url" content={product.image} />
+        <meta property="og:image:type" content="image/jpeg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={product.name} />
         <meta property="og:url" content={window.location.href} />
         <meta property="og:type" content="product" />
-        <meta property="og:site_name" content="Stationery Shop" />
+        <meta property="og:site_name" content="KamiKoto - Premium Stationery" />
+        <meta property="og:locale" content="en_IN" />
         <meta property="og:price:amount" content={product.price} />
         <meta property="og:price:currency" content="INR" />
-        
-        {/* Twitter Card Tags */}
+        {product.stock > 0 && <meta property="product:availability" content="in stock" />}
+        {product.brand && <meta property="product:brand" content={product.brand} />}
+
+        {/* Twitter Card Tags - Enhanced */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={product.name} />
+        <meta name="twitter:site" content="@KamiKoto" />
+        <meta name="twitter:title" content={`${product.name} - ₹${formatPrice(product.price)}`} />
         <meta name="twitter:description" content={metaDescription} />
         <meta name="twitter:image" content={product.image} />
-        
-        {/* Product-specific Meta Tags */}
-        <meta name="product:brand" content={product.brand || ''} />
-        <meta name="product:price:amount" content={product.price} />
-        <meta name="product:price:currency" content="INR" />
-        <meta name="product:availability" content={product.stock > 0 ? "in stock" : "out of stock"} />
-        <meta name="product:condition" content="new" />
-        {product.mrp > product.price && (
-          <meta name="product:sale_price:amount" content={product.price} />
-        )}
-        
+        <meta name="twitter:image:alt" content={product.name} />
+        <meta name="twitter:label1" content="Price" />
+        <meta name="twitter:data1" content={`₹${formatPrice(product.price)}`} />
+        <meta name="twitter:label2" content="Availability" />
+        <meta name="twitter:data2" content={product.stock > 0 ? "In Stock" : "Out of Stock"} />
+
+        {/* WhatsApp Specific Meta Tags */}
+        <meta property="og:rich_attachment" content="true" />
+
+        {/* Discord Embed Enhancement */}
+        <meta name="theme-color" content="#3B82F6" />
+
+        {/* Product Schema.org Markup for Rich Snippets */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org/",
+            "@type": "Product",
+            "name": product.name,
+            "image": [product.image, product.image2, product.image3].filter(Boolean),
+            "description": product.description,
+            "sku": product.id,
+            "brand": {
+              "@type": "Brand",
+              "name": product.brand || "KamiKoto"
+            },
+            "offers": {
+              "@type": "Offer",
+              "url": window.location.href,
+              "priceCurrency": "INR",
+              "price": product.price,
+              "priceValidUntil": new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0],
+              "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+              "itemCondition": "https://schema.org/NewCondition"
+            }
+          })}
+        </script>
+
         {/* Additional Meta Tags */}
-        <meta name="keywords" content={`${product.name}, ${product.brand || ''}, ${product.type || ''}, ${product.tags?.join(', ') || ''}, stationery, online shopping`} />
+        <meta name="keywords" content={`${product.name}, ${product.brand || ''}, ${product.type || ''}, ${product.tags?.join(', ') || ''}, stationery, online shopping, buy stationery online`} />
         <link rel="canonical" href={window.location.href} />
+        <meta name="robots" content="index, follow, max-image-preview:large" />
       </Helmet>
 
       <div className="bg-gray-50 min-h-screen">
