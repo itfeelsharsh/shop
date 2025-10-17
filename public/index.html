@@ -28,38 +28,27 @@
     <!-- Bot Detection Script - Moved to external file -->
     <script src="%PUBLIC_URL%/js/bot-detection.js"></script>
     
-    <!-- Default Meta Tags (overridden by product-specific tags when available) -->
+    <!-- Default Meta Tags (will be replaced by dynamic tags for product pages) -->
     <meta
       name="description"
       content="your online stationery shop! We offer beautiful notebooks, pens and other writing items that will make your study and work more enjoyable."
     />
     <meta name="author" content="harshbanker.com" />
-    <meta
-      property="og:title" 
-      content="KamiKoto - Your Online Stationery Shop"
-      data-react-helmet="true"
-    />
-    <meta
-      property="og:description"
-      content="Visit KamiKoto for stationery items like notebooks, pens and other writing materials. Make your study and work more fun with our beautiful collection!"
-      data-react-helmet="true"
-    />
-    <meta property="og:image" content="%PUBLIC_URL%/html-banner.png" data-react-helmet="true" />
-    <meta property="og:url" content="https://kamikoto.pages.dev" data-react-helmet="true" />
-    <meta property="og:type" content="website" data-react-helmet="true" />
 
-    <meta name="twitter:card" content="summary_large_image" data-react-helmet="true" />
-    <meta
-      name="twitter:title"
-      content="KamiKoto - Your Friendly Stationery Shop" 
-      data-react-helmet="true"
-    />
-    <meta
-      name="twitter:description"
-      content="Find lovely notebooks, pens and writing items for your study and work needs!"
-      data-react-helmet="true"
-    />
-    <meta name="twitter:image" content="%PUBLIC_URL%/html-banner.png" data-react-helmet="true" />
+    <!-- OpenGraph Tags - Will be replaced by server-side rendering for bots -->
+    <meta property="og:title" content="KamiKoto - Your Online Stationery Shop" />
+    <meta property="og:description" content="Visit KamiKoto for stationery items like notebooks, pens and other writing materials. Make your study and work more fun with our beautiful collection!" />
+    <meta property="og:image" content="https://kamikoto.pages.dev/html-banner.png" />
+    <meta property="og:url" content="https://kamikoto.pages.dev" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="KamiKoto - Premium Stationery" />
+    <meta property="og:locale" content="en_IN" />
+
+    <!-- Twitter Card Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="KamiKoto - Your Friendly Stationery Shop" />
+    <meta name="twitter:description" content="Find lovely notebooks, pens and writing items for your study and work needs!" />
+    <meta name="twitter:image" content="https://kamikoto.pages.dev/html-banner.png" />
     
     <!-- PWA support -->
     <meta name="application-name" content="KamiKoto" />
