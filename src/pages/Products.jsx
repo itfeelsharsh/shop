@@ -283,7 +283,7 @@ function Products() {
   const handleLoadMore = useCallback((category) => {
     setVisibleCounts((prevCounts) => ({
       ...prevCounts,
-      [category]: (prevCounts[category] || 4) + 4, // Load 4 more items each time
+      [category]: (prevCounts[category] || 8) + 8, // Load 8 more items each time for minimalistic layout
     }));
   }, []);
 
@@ -313,40 +313,39 @@ function Products() {
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeInOut" }}
-      className="container mx-auto px-4 py-8 bg-gray-50"
+      className="container mx-auto px-2 py-4 bg-gray-50"
     >
-      {/* Page Title */}
-      <h1 className="text-4xl font-bold mb-8 text-gray-900 text-center">
-        Our Premium Collection
+      {/* Page Title - Minimalistic */}
+      <h1 className="text-2xl font-bold mb-4 text-gray-900">
+        Our Collection
       </h1>
 
-      {/* Search and Filter Section */}
-      <div className="mb-8 space-y-4">
-        {/* Search Bar with Filter Toggle */}
-        <div className="flex gap-4">
+      {/* Search and Filter Section - Compact */}
+      <div className="mb-4 space-y-2">
+        {/* Search Bar with Filter Toggle - Compact */}
+        <div className="flex gap-2">
           <div className="flex-grow relative">
             <input
               type="text"
               placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-4 pr-12 text-gray-900 border border-gray-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 pr-10 text-sm text-gray-900 border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <Search
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-              size={20}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={16}
             />
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm transition-colors ${
-              showFilters 
-                ? 'bg-blue-600 text-white hover:bg-blue-700' 
+            className={`flex items-center gap-1 px-3 py-2 rounded text-sm transition-colors ${
+              showFilters
+                ? 'bg-blue-600 text-white hover:bg-blue-700'
                 : 'bg-white border border-gray-300 hover:bg-gray-50'
             }`}
           >
-            <Filter size={20} />
-            <span>Filters</span>
+            <Filter size={16} />
             {/* Show active filters count */}
             {Object.values(filters).some(value => {
               if (typeof value === 'object') {
@@ -354,7 +353,7 @@ function Products() {
               }
               return value !== "" && value !== false && value.length > 0;
             }) && (
-              <span className="ml-1 bg-white text-blue-600 px-2 py-0.5 rounded-full text-sm">
+              <span className="bg-white text-blue-600 px-1.5 py-0.5 rounded-full text-xs">
                 {Object.values(filters).reduce((count, value) => {
                   if (typeof value === 'object') {
                     return count + Object.values(value).filter(v => v !== "" && v !== false).length;
@@ -582,10 +581,10 @@ function Products() {
         )}
       </div>
 
-      {/* Product Categories */}
+      {/* Product Categories - Minimalistic Layout */}
       {categorizedProducts.map(({ category, items }, index) => {
-        // Get visible items based on current count or default to 4
-        const visibleItems = items.slice(0, visibleCounts[category] || 4);
+        // Get visible items based on current count or default to 8 (increased for minimalistic layout)
+        const visibleItems = items.slice(0, visibleCounts[category] || 8);
 
         // Skip empty categories
         if (items.length === 0) return null;
@@ -593,25 +592,16 @@ function Products() {
         return (
           <div
             key={category}
-            className="mb-8 bg-white shadow-lg rounded-lg overflow-hidden transition-shadow duration-300 hover:shadow-2xl"
+            className="mb-4 bg-white shadow rounded-lg overflow-hidden"
           >
-            {/* Category Banner */}
-            <div className="relative h-50 overflow-hidden">
-              <img
-                src={`/banners/products/${(index % 3) + 1}.webp`}
-                alt={`${category} banner`}
-                className="w-full h-full object-cover transition-transform duration-300 transform hover:scale-105"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-50"></div>
-              <h2 className="absolute bottom-4 left-4 text-2xl font-bold text-white capitalize">
-                {category}
-              </h2>
+            {/* Category Header - Simplified */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-3 py-2">
+              <h2 className="text-lg font-semibold text-white">{category}</h2>
             </div>
 
-            {/* Products Grid */}
-            <div className="p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {/* Products Grid - More Products Per Row */}
+            <div className="p-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
                 {visibleItems.map((product) => (
                   <ProductCard
                     key={product.id}
@@ -620,21 +610,16 @@ function Products() {
                   />
                 ))}
               </div>
-              
-              {/* Show More button - only display when there are more than 4 items and not all items are shown */}
-              {items.length > 4 && !(visibleCounts[category] >= items.length) && (
-                <div className="flex justify-center mt-8">
-                  <m.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 flex items-center gap-2 font-medium shadow-md"
+
+              {/* Show More button - minimalistic */}
+              {items.length > 8 && !(visibleCounts[category] >= items.length) && (
+                <div className="flex justify-center mt-3">
+                  <button
+                    className="bg-blue-600 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-700 transition-colors"
                     onClick={() => handleLoadMore(category)}
                   >
-                    <span>Show More {category}</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </m.button>
+                    Show More
+                  </button>
                 </div>
               )}
             </div>

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import { ChevronLeft, ChevronRight } from 'react-feather';
 import { m, AnimatePresence } from 'framer-motion';
 import { useContentLoader } from '../hooks/useContentLoader';
 
@@ -31,48 +30,70 @@ const DynamicBanner = () => {
   // Get preloaded data from the content loader
   const { getCachedData, preloadedData } = useContentLoader();
 
-  // Fetch banners on component mount
+  // Fetch banners on component mount with efficient caching
   useEffect(() => {
     const initializeBanners = async () => {
       try {
-        // Try to get preloaded banners first
+        // Try sessionStorage cache first (5 minute TTL)
+        const cachedBannersStr = sessionStorage.getItem('banners_cache');
+        const cachedTime = sessionStorage.getItem('banners_fetch_time');
+        const cacheAge = Date.now() - (parseInt(cachedTime) || 0);
+        const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+        if (cachedBannersStr && cacheAge < CACHE_TTL) {
+          const cachedBanners = JSON.parse(cachedBannersStr);
+          console.log('✅ Using sessionStorage cached banners');
+          setBanners(cachedBanners);
+          setLoading(false);
+          await fetchSlideshowSettings();
+          return;
+        }
+
+        // Try to get preloaded banners
         const cachedBanners = getCachedData('banners');
-        
+
         if (cachedBanners && cachedBanners.length > 0) {
           console.log('✅ Using preloaded banner data');
           setBanners(cachedBanners);
+          // Cache to sessionStorage
+          sessionStorage.setItem('banners_cache', JSON.stringify(cachedBanners));
+          sessionStorage.setItem('banners_fetch_time', Date.now().toString());
           setLoading(false);
-          
+
           // Still fetch slideshow settings
           await fetchSlideshowSettings();
           return;
         }
-        
-        // Fallback: fetch fresh data if preloaded data is not available
+
+        // Fallback: fetch fresh data if cached data is not available
         console.log('🔄 Fetching fresh banner data...');
         setIsLoadingFresh(true);
-        
+
         // Get active banners from Firestore
         const bannersQuery = query(
           collection(db, 'banners'),
           where('active', '==', true)
         );
         const bannersSnapshot = await getDocs(bannersQuery);
-        
+
         const bannersData = bannersSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
-        
+
         // Sort banners by order property
         bannersData.sort((a, b) => (a.order || 0) - (b.order || 0));
         setBanners(bannersData);
-        
+
+        // Cache to sessionStorage
+        sessionStorage.setItem('banners_cache', JSON.stringify(bannersData));
+        sessionStorage.setItem('banners_fetch_time', Date.now().toString());
+
         // Get slideshow settings
         await fetchSlideshowSettings();
-        
-        console.log('✅ Fresh banner data loaded');
-        
+
+        console.log('✅ Fresh banner data loaded and cached');
+
       } catch (error) {
         console.error('❌ Error initializing banners:', error);
         // Set empty array to show default banner
@@ -82,7 +103,7 @@ const DynamicBanner = () => {
         setIsLoadingFresh(false);
       }
     };
-    
+
     initializeBanners();
   }, [getCachedData]);
 
@@ -128,27 +149,6 @@ const DynamicBanner = () => {
     }
   }, [banners, slideshowEnabled]);
 
-  /**
-   * Handle navigation to the previous banner
-   */
-  const goToPrevBanner = () => {
-    setTimeout(() => {
-      setCurrentBannerIndex((prevIndex) => 
-        prevIndex === 0 ? banners.length - 1 : prevIndex - 1
-      );
-    }, 300);
-  };
-
-  /**
-   * Handle navigation to the next banner
-   */
-  const goToNextBanner = () => {
-    setTimeout(() => {
-      setCurrentBannerIndex((prevIndex) => 
-        (prevIndex + 1) % banners.length
-      );
-    }, 300);
-  };
 
   // Enhanced loading state with better UX
   if (loading || isLoadingFresh) {
@@ -206,7 +206,7 @@ const DynamicBanner = () => {
 
   return (
     <div className="relative w-full mb-6 rounded-lg overflow-hidden shadow-lg">
-      {/* Banner Slideshow */}
+      {/* Banner Slideshow - Pure banner view without navigation controls */}
       <div className="relative">
         <AnimatePresence mode="wait">
           <m.img
@@ -224,55 +224,6 @@ const DynamicBanner = () => {
             }}
           />
         </AnimatePresence>
-        
-        {/* Navigation Controls (only if there are multiple banners) */}
-        {banners.length > 1 && (
-          <>
-            <m.button 
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={goToPrevBanner}
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
-              aria-label="Previous banner"
-            >
-              <ChevronLeft size={20} />
-            </m.button>
-            <m.button 
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={goToNextBanner}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
-              aria-label="Next banner"
-            >
-              <ChevronRight size={20} />
-            </m.button>
-            
-            {/* Enhanced Indicator Dots */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-              {banners.map((_, index) => (
-                <m.button
-                  key={index}
-                  whileHover={{ scale: 1.2 }}
-                  whileTap={{ scale: 0.8 }}
-                  onClick={() => setCurrentBannerIndex(index)}
-                  className={`w-3 h-3 rounded-full focus:outline-none transition-all duration-200 ${
-                    index === currentBannerIndex 
-                      ? 'bg-white shadow-lg' 
-                      : 'bg-white/50 hover:bg-white/70'
-                  }`}
-                  aria-label={`Go to banner ${index + 1}`}
-                />
-              ))}
-            </div>
-          </>
-        )}
-        
-        {/* Banner count indicator */}
-        {banners.length > 1 && (
-          <div className="absolute top-4 right-4 bg-black/30 text-white px-2 py-1 rounded-full text-xs font-medium">
-            {currentBannerIndex + 1} / {banners.length}
-          </div>
-        )}
       </div>
     </div>
   );

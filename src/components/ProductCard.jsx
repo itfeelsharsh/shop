@@ -190,82 +190,86 @@ const ProductCard = memo(function ProductCard({
   };
 
   /**
-   * Renders the product image and action buttons
-   * @returns {JSX.Element} Product image with overlay actions
+   * Renders the product image with badges and effects
+   * @returns {JSX.Element} Product image
    */
   const renderProductImage = () => {
     return (
-      <div className="relative overflow-hidden rounded-t-xl h-48 md:h-56 group">
+      <div className="relative overflow-hidden h-36 md:h-44 group/image">
         <img
           src={product?.image}
           alt={product?.name}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        
-        {/* Action buttons overlay */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-          <div className="flex space-x-2">
-            <button
-              onClick={handleViewDetails}
-              className="bg-white text-gray-800 p-2 rounded-full hover:bg-gray-100 transition-all transform -translate-y-2 group-hover:translate-y-0"
-            >
-              <Eye size={18} />
-            </button>
-            
-            <button
-              onClick={handleAddToCart}
-              className="bg-white text-gray-800 p-2 rounded-full hover:bg-gray-100 transition-all transform -translate-y-2 group-hover:translate-y-0"
-            >
-              <ShoppingCart size={18} />
-            </button>
-            
-            <WishlistButton product={product} size="sm" className="transform -translate-y-2 group-hover:translate-y-0" />
+
+        {/* Gradient overlay on hover */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+        {/* Top badges row */}
+        <div className="absolute top-2 left-2 right-2 flex justify-between items-start z-10">
+          <div className="flex flex-col gap-1">
+            {/* Discount badge */}
+            {product?.mrp && product.mrp > product.price && (
+              <m.div
+                initial={{ scale: 0, rotate: -10 }}
+                animate={{ scale: 1, rotate: 0 }}
+                className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg"
+              >
+                {calculateDiscount(product.mrp, product.price)}% OFF
+              </m.div>
+            )}
+
+            {/* New badge */}
+            {product?.isNew && (
+              <m.div
+                initial={{ scale: 0, rotate: 10 }}
+                animate={{ scale: 1, rotate: 0 }}
+                className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg"
+              >
+                NEW
+              </m.div>
+            )}
+          </div>
+
+          {/* Wishlist button */}
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <WishlistButton product={product} size="sm" />
           </div>
         </div>
-        
-        {/* Badges: New, Sale, Out of Stock */}
-        <div className="absolute top-2 left-2 flex flex-col space-y-1">
-          {product?.isNew && (
-            <span className="px-2 py-1 bg-green-500 text-white text-xs font-medium rounded">New</span>
-          )}
-          
-          {product?.originalPrice && product.originalPrice > product.price && (
-            <span className="px-2 py-1 bg-red-500 text-white text-xs font-medium rounded">
-              Sale
-            </span>
-          )}
-          
-          {!product?.stock && (
-            <span className="px-2 py-1 bg-gray-700 text-white text-xs font-medium rounded">
-              Out of Stock
-            </span>
-          )}
+
+        {/* Quick view button on hover */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/image:opacity-100 transition-opacity duration-200">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleViewDetails();
+            }}
+            className="bg-white/95 backdrop-blur-sm text-gray-800 px-3 py-1.5 rounded-full text-xs font-medium shadow-lg hover:bg-white transition-all transform hover:scale-105 flex items-center gap-1"
+          >
+            <Eye size={12} />
+            Quick View
+          </button>
         </div>
       </div>
     );
   };
 
-  // Place this where you want the rating to be displayed, typically after the product name
+  // Enhanced rating display
   const renderRatingStars = () => {
     return (
-      <div className="flex items-center mt-1 mb-2">
-        <div className="flex">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <Star 
-              key={star}
-              size={14}
-              className="mr-0.5"
-              fill={star <= Math.round(productRating.average) ? "#F59E0B" : "none"} 
-              stroke={star <= Math.round(productRating.average) ? "#F59E0B" : "#D1D5DB"}
-            />
-          ))}
-        </div>
+      <div className="flex items-center gap-1">
         {productRating.total > 0 ? (
-          <span className="ml-1 text-xs text-gray-600">
-            ({productRating.average.toFixed(1)}) {productRating.total} review{productRating.total !== 1 ? 's' : ''}
-          </span>
+          <>
+            <div className="flex items-center gap-0.5 bg-amber-50 px-1.5 py-0.5 rounded">
+              <Star size={10} fill="#F59E0B" stroke="#F59E0B" className="flex-shrink-0" />
+              <span className="text-[10px] font-semibold text-amber-700">
+                {productRating.average.toFixed(1)}
+              </span>
+            </div>
+            <span className="text-[9px] text-gray-500">({productRating.total})</span>
+          </>
         ) : (
-          <span className="ml-1 text-xs text-gray-500">No reviews yet</span>
+          <span className="text-[9px] text-gray-400 italic">No reviews</span>
         )}
       </div>
     );
@@ -279,138 +283,93 @@ const ProductCard = memo(function ProductCard({
         initial="hidden"
         animate={inView ? "visible" : "hidden"}
         whileHover="hover"
-        className="
-          relative
-          bg-white
-          rounded-2xl
-          overflow-hidden
-          transform
-          transition-all
-          duration-300
-          hover:shadow-2xl
-          group
-          border
-          border-gray-100
-          flex
-          flex-col
-          h-full
-          cursor-pointer
-        "
+        className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full cursor-pointer group border border-gray-100 relative"
         onClick={handleViewDetails}
       >
-        {/* Discount Badge */}
-        {product?.mrp && product.mrp > product.price && (
-          <div className="absolute top-3 left-3 z-10">
-            <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-sm">
-              {calculateDiscount(product.mrp, product.price)}% OFF
-            </div>
-          </div>
-        )}
-
-        {/* New Product Badge */}
-        {product?.isNew && (
-          <div className="absolute top-3 right-3 z-10">
-            <div className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-bold shadow-sm">
-              NEW
-            </div>
-          </div>
-        )}
-        
         {/* Product Image */}
         {renderProductImage()}
-        
+
         {/* Product Content */}
-        <div className="flex-grow p-4 flex flex-col">
-          {/* Product Brand */}
+        <div className="p-2.5 flex flex-col gap-1.5 flex-grow">
+          {/* Brand */}
           {product?.brand && (
-            <div className="mb-1">
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <div className="flex items-center gap-1">
+              <span className="text-[9px] font-medium text-gray-500 uppercase tracking-wide bg-gray-50 px-1.5 py-0.5 rounded">
                 {product.brand}
               </span>
+              {/* Stock indicator */}
+              {product?.stock && product.stock > 0 && (
+                <div className="flex items-center gap-0.5">
+                  <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-[8px] text-green-600 font-medium">In Stock</span>
+                </div>
+              )}
+              {(!product?.stock || product.stock <= 0) && (
+                <div className="flex items-center gap-0.5">
+                  <div className="w-1 h-1 rounded-full bg-red-500" />
+                  <span className="text-[8px] text-red-600 font-medium">Out</span>
+                </div>
+              )}
             </div>
           )}
-          
+
           {/* Product Name */}
-          <h3 className="text-lg font-semibold text-gray-800 mb-1 line-clamp-2">{product?.name}</h3>
-          
-          {/* Product Rating */}
+          <h3 className="text-xs font-semibold text-gray-900 line-clamp-2 leading-tight min-h-[2.5rem]">
+            {product?.name}
+          </h3>
+
+          {/* Rating */}
           {renderRatingStars()}
-          
-          {/* Product Description (truncated) */}
-          {product?.description && (
-            <p className="text-sm text-gray-600 mb-3 line-clamp-3 flex-grow">
-              {product.description}
-            </p>
-          )}
-          
-          {/* Price Information */}
-          <div className="flex items-baseline mb-3">
-            <span className="text-lg font-bold text-blue-600">
-              {formatPrice(product?.price)}
-            </span>
-            {product?.mrp && product.mrp > product.price && (
-              <span className="ml-2 text-sm text-gray-500 line-through">
-                {formatPrice(product.mrp)}
+
+          {/* Price section */}
+          <div className="flex flex-col gap-0.5 mt-auto">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-base font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                {formatPrice(product?.price)}
               </span>
-            )}
-          </div>
-          
-          {/* Stock Status */}
-          <div className="mb-3">
-            {product?.stock && product.stock > 0 ? (
-              <span className="inline-flex items-center text-xs font-medium text-green-600">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></span>
-                In Stock
-              </span>
-            ) : (
-              <span className="inline-flex items-center text-xs font-medium text-red-600">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5"></span>
-                Out of Stock
-              </span>
-            )}
-          </div>
-          
-          {/* Action Buttons */}
-          <div className="flex mt-auto space-x-2">
-            <button
-              onClick={handleViewDetails}
-              className="flex-1 bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors font-medium rounded-lg py-2 px-4 flex items-center justify-center"
-            >
-              <Eye size={16} className="mr-1.5" />
-              View
-            </button>
-            
-            <button
-              onClick={handleAddToCart}
-              disabled={isAddingToCart || !product?.stock || product.stock <= 0}
-              className={`flex-1 ${
-                isAddingToCart || !product?.stock || product.stock <= 0 
-                  ? 'bg-gray-300 cursor-not-allowed' 
-                  : 'bg-blue-600 hover:bg-blue-700'
-              } text-white transition-colors font-medium rounded-lg py-2 px-4 flex items-center justify-center`}
-            >
-              {isAddingToCart ? (
-                <span className="flex items-center">
-                  <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
-                  Adding...
+              {product?.mrp && product.mrp > product.price && (
+                <span className="text-[10px] text-gray-400 line-through">
+                  {formatPrice(product.mrp)}
                 </span>
-              ) : (
-                <>
-                  <ShoppingCart size={16} className="mr-1.5" />
-                  Add to Cart
-                </>
               )}
-            </button>
+            </div>
+
+            {/* Savings info */}
+            {product?.mrp && product.mrp > product.price && (
+              <span className="text-[9px] font-medium text-green-600">
+                Save {formatPrice(product.mrp - product.price)}
+              </span>
+            )}
           </div>
-          
-          {/* Wishlist Button */}
-          <div className="absolute top-3 right-3 z-20">
-            <WishlistButton 
-              product={product} 
-              size="sm"
-            />
-          </div>
+
+          {/* Add to Cart Button */}
+          <button
+            onClick={handleAddToCart}
+            disabled={isAddingToCart || !product?.stock || product.stock <= 0}
+            className={`w-full mt-1.5 text-[11px] font-semibold rounded-lg py-2 transition-all duration-200 flex items-center justify-center gap-1 shadow-sm ${
+              isAddingToCart || !product?.stock || product.stock <= 0
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg transform hover:-translate-y-0.5'
+            }`}
+          >
+            {isAddingToCart ? (
+              <>
+                <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Adding...
+              </>
+            ) : (!product?.stock || product.stock <= 0) ? (
+              'Out of Stock'
+            ) : (
+              <>
+                <ShoppingCart size={11} />
+                Add to Cart
+              </>
+            )}
+          </button>
         </div>
+
+        {/* Decorative corner gradient */}
+        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/5 to-purple-500/5 rounded-bl-full pointer-events-none" />
       </m.div>
     </>
   );
