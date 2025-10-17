@@ -267,112 +267,13 @@ const generateOrderConfirmationHTML = (order, user) => {
   };
   
   /**
-   * World-class CSS styling for email clients
-   * Optimized for premium appearance across all major email clients
-   * Features: Modern gradients, smooth animations, perfect typography, and mobile-responsive design
+   * Minimal CSS styling inspired by shadcn UI
+   * Clean, simple design with subtle borders and shadows
    */
-  const professionalCSS = `
-    /* Reset and base styles for better email client compatibility */
+  const minimalCSS = `
+    /* Reset and base styles */
     table, td, div, h1, h2, h3, p, a {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-    }
-
-    /* World-class animations for modern email clients */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes scaleIn {
-      from { transform: scale(0.95); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateX(-20px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-
-    @keyframes shimmer {
-      0% { background-position: -1000px 0; }
-      100% { background-position: 1000px 0; }
-    }
-
-    .animated {
-      animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    }
-
-    .animated-scale {
-      animation: scaleIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    }
-
-    .animated-slide {
-      animation: slideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    }
-
-    /* Premium button styling with hover effects */
-    .btn-primary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 32px rgba(102, 126, 234, 0.5);
-    }
-
-    /* Enhanced card styling with depth */
-    .card {
-      border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
-      background: #ffffff;
-      transition: all 0.3s ease;
-    }
-
-    .card:hover {
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.06);
-    }
-
-    /* Professional spacing utilities */
-    .spacer-sm { height: 16px; }
-    .spacer-md { height: 24px; }
-    .spacer-lg { height: 40px; }
-    .spacer-xl { height: 60px; }
-
-    /* Premium gradient backgrounds */
-    .gradient-primary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-
-    .gradient-success {
-      background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
-    }
-
-    .gradient-premium {
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    }
-
-    /* Glassmorphism effect for modern look */
-    .glass-effect {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
-
-    /* Subtle border glow effect */
-    .border-glow {
-      border: 1px solid rgba(102, 126, 234, 0.3);
-      box-shadow: 0 0 20px rgba(102, 126, 234, 0.1);
-    }
-
-    /* Enhanced typography */
-    .text-gradient {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
     }
 
     /* Mobile responsive helpers */
@@ -380,9 +281,6 @@ const generateOrderConfirmationHTML = (order, user) => {
       .mobile-stack {
         display: block !important;
         width: 100% !important;
-      }
-      .mobile-hide {
-        display: none !important;
       }
       .mobile-padding {
         padding: 16px !important;
@@ -410,66 +308,47 @@ const generateOrderConfirmationHTML = (order, user) => {
     return imageUrl;
   };
 
-  // Generate premium HTML for order items with world-class design
-  // Enhanced with modern aesthetics and better visual hierarchy
+  // Generate minimal HTML for order items
   const itemsHTML = order.items.map((item, index) => {
-    // Professional product name truncation for consistent layout
-    const truncatedName = item.name.length > 40 ? item.name.substring(0, 37) + '...' : item.name;
-
-    // Process image URL for email client compatibility
+    const truncatedName = item.name.length > 50 ? item.name.substring(0, 47) + '...' : item.name;
     const processedImageUrl = processImageForEmail(item.image);
 
     return `
-    <!-- Premium Product Item Row with Enhanced Design -->
-    <tr style="animation-delay: ${index * 0.1}s;" class="animated">
-      <td style="padding: 28px 24px; border-bottom: 2px solid #F1F5F9; background: ${index % 2 === 0 ? '#FFFFFF' : '#FAFBFC'}; transition: all 0.3s ease;">
+    <tr>
+      <td style="padding: 20px 24px; border-bottom: 1px solid #e5e7eb;">
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
-            <td width="100" style="vertical-align: top; padding-right: 24px;">
-              <div style="position: relative;">
-                ${processedImageUrl ?
-                  `<img src="${processedImageUrl}" alt="${truncatedName}" style="
-                    width: 100px;
-                    height: 100px;
-                    object-fit: cover;
-                    border-radius: 16px;
-                    background-color: #F8FAFC;
-                    border: 2px solid #E2E8F0;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-                    display: block;
-                  " />` :
-                  `<div style="
-                    width: 100px;
-                    height: 100px;
-                    border-radius: 16px;
-                    background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
-                    border: 2px solid #E2E8F0;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: #64748B;
-                    font-size: 12px;
-                    font-weight: 600;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-                  ">📦 No Image</div>`
-                }
-                <div style="position: absolute; top: -8px; right: -8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);">
-                  ${item.quantity}
-                </div>
-              </div>
+            <td width="80" style="vertical-align: top; padding-right: 16px;">
+              ${processedImageUrl ?
+                `<img src="${processedImageUrl}" alt="${truncatedName}" style="
+                  width: 80px;
+                  height: 80px;
+                  object-fit: cover;
+                  border-radius: 8px;
+                  border: 1px solid #e5e7eb;
+                  display: block;
+                " />` :
+                `<div style="
+                  width: 80px;
+                  height: 80px;
+                  border-radius: 8px;
+                  background: #f9fafb;
+                  border: 1px solid #e5e7eb;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  color: #9ca3af;
+                  font-size: 11px;
+                ">No Image</div>`
+              }
             </td>
             <td style="vertical-align: middle; padding-right: 16px;">
-              <h4 style="margin: 0 0 8px 0; font-weight: 700; font-size: 18px; color: #0f172a; line-height: 1.3; letter-spacing: -0.2px;">${truncatedName}</h4>
-              <div style="display: inline-block; padding: 4px 12px; background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-radius: 20px; margin-bottom: 8px;">
-                <p style="margin: 0; font-size: 13px; color: #1e40af; font-weight: 700;">Qty: ${item.quantity}</p>
-              </div>
-              <p style="margin: 0; font-size: 14px; color: #64748b; font-weight: 600;">💰 Unit Price: ${formatCurrency(item.price)}</p>
+              <p style="margin: 0 0 4px 0; font-weight: 600; font-size: 15px; color: #111827; line-height: 1.4;">${truncatedName}</p>
+              <p style="margin: 0; font-size: 14px; color: #6b7280;">Quantity: ${item.quantity}</p>
+              <p style="margin: 4px 0 0 0; font-size: 14px; color: #6b7280;">${formatCurrency(item.price)} each</p>
             </td>
-            <td width="140" style="vertical-align: middle; text-align: right;">
-              <div style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); padding: 12px 16px; border-radius: 12px; border: 2px solid #10b981;">
-                <p style="margin: 0; font-weight: 800; font-size: 20px; color: #065f46; letter-spacing: -0.3px;">${formatCurrency(item.price * item.quantity)}</p>
-                <p style="margin: 6px 0 0 0; font-size: 11px; color: #059669; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Subtotal</p>
-              </div>
+            <td width="100" style="vertical-align: middle; text-align: right;">
+              <p style="margin: 0; font-weight: 600; font-size: 15px; color: #111827;">${formatCurrency(item.price * item.quantity)}</p>
             </td>
           </tr>
         </table>
@@ -494,11 +373,10 @@ const generateOrderConfirmationHTML = (order, user) => {
   <style type="text/css">
     /* Base styles */
     body, table, td {
-      font-family: 'Nunito Sans', Arial, Helvetica, sans-serif !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
     }
-    
-            /* Professional styling and animation support */
-        ${professionalCSS}
+
+    ${minimalCSS}
   </style>
   <!--[if mso]>
   <style type="text/css">
@@ -506,70 +384,50 @@ const generateOrderConfirmationHTML = (order, user) => {
   </style>
   <![endif]-->
 </head>
-<body style="margin: 0; padding: 0; background-color: #ffefcf; font-family: 'Nunito Sans', Arial, Helvetica, sans-serif; color: #2D3A41; width: 100%; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+<body style="margin: 0; padding: 0; background-color: #f9fafb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; color: #111827; width: 100%; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
   <!-- Email Container -->
-  <table style="width: 100%; min-width: 600px; background-color: #ffefcf;" border="0" cellspacing="0" cellpadding="0" role="presentation">
+  <table style="width: 100%; min-width: 600px; background-color: #f9fafb;" border="0" cellspacing="0" cellpadding="0" role="presentation">
     <tbody>
       <tr>
-        <td align="center" valign="top">
+        <td align="center" valign="top" style="padding: 40px 0;">
           <!-- Main Email Container -->
-          <table style="width: 600px; max-width: 600px;" align="center" border="0" cellpadding="0" cellspacing="0" role="presentation">
+          <table style="width: 600px; max-width: 600px; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px;" align="center" border="0" cellpadding="0" cellspacing="0" role="presentation">
             <tbody>
-              <!-- Premium Email Header with Enhanced Design -->
+              <!-- Header -->
               <tr>
-                <td style="padding: 48px 40px 40px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); position: relative;" bgcolor="#667eea">
-                  <!-- Decorative gradient overlay for depth -->
+                <td style="padding: 32px 40px; border-bottom: 1px solid #e5e7eb;">
                   <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
                     <tr>
-                      <td align="left" style="vertical-align: middle;">
-                        <div class="animated-slide">
-                          <h1 style="margin: 0; font-size: 38px; font-weight: 800; color: #ffffff; letter-spacing: -1px; text-shadow: 0 4px 12px rgba(0,0,0,0.15);">KamiKoto</h1>
-                          <p style="margin: 10px 0 0; font-size: 17px; color: rgba(255, 255, 255, 0.95); font-weight: 600; letter-spacing: 0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">✨ Your Premium Stationery Destination</p>
-                        </div>
-                      </td>
-                      <td align="right" width="90" style="vertical-align: middle;">
-                        <div style="width: 70px; height: 70px; background: rgba(255, 255, 255, 0.2); border-radius: 16px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); box-shadow: 0 8px 20px rgba(0,0,0,0.15);">
-                          <img src="https://cdn.harshbanker.com/kamikoto-logo.png" alt="KamiKoto Logo" style="width: 50px; height: auto; border-radius: 10px;">
-                        </div>
+                      <td align="left">
+                        <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #111827; letter-spacing: -0.5px;">KamiKoto</h1>
+                        <p style="margin: 4px 0 0; font-size: 14px; color: #6b7280;">Your Premium Stationery Destination</p>
                       </td>
                     </tr>
                   </table>
-                  <!-- Bottom wave decoration -->
-                  <div style="position: absolute; bottom: -1px; left: 0; width: 100%; height: 20px; background: #ffffff; border-radius: 20px 20px 0 0;"></div>
                 </td>
               </tr>
               
-              <!-- Premium Order Confirmation Section with Enhanced Design -->
+              <!-- Order Confirmation Section -->
               <tr>
-                <td style="padding: 32px 40px 0px 40px; background-color: #FFFFFF;" bgcolor="#FFFFFF">
-                  <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" class="card border-glow">
+                <td style="padding: 40px 40px 32px 40px;">
+                  <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
                     <tr>
-                      <td style="padding: 48px 40px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #dbeafe 100%); border-radius: 20px; text-align: center; border: 2px solid #bfdbfe; position: relative; overflow: hidden;" class="animated-scale">
-                        <!-- Decorative elements -->
-                        <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%); border-radius: 50%;"></div>
-                        <div style="position: absolute; bottom: -50px; left: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(118, 75, 162, 0.1) 0%, transparent 70%); border-radius: 50%;"></div>
+                      <td style="text-align: center;">
+                        <h2 style="margin: 0 0 8px 0; font-size: 28px; font-weight: 600; color: #111827; letter-spacing: -0.5px;">Order Confirmed</h2>
+                        <p style="margin: 0 0 24px 0; color: #6b7280; font-size: 15px; line-height: 1.5;">Hello ${user.displayName || user.email?.split('@')[0] || 'Valued Customer'}, thank you for your order!</p>
 
-                        <!-- Success Icon -->
-                        <div style="margin-bottom: 24px;">
-                          <div style="display: inline-block; width: 80px; height: 80px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%; box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3); position: relative;">
-                            <span style="font-size: 48px; line-height: 80px; color: white;">✓</span>
-                          </div>
+                        <div style="display: inline-block; padding: 12px 24px; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; margin-bottom: 16px;">
+                          <p style="margin: 0; font-size: 14px; font-weight: 600; color: #111827;">Order #${order.orderId}</p>
                         </div>
 
-                        <h2 style="margin: 0 0 16px 0; font-size: 36px; font-weight: 800; color: #0f172a; line-height: 1.2; letter-spacing: -1px; position: relative; z-index: 1;">Order Confirmed! 🎉</h2>
-                        <p style="margin: 0 0 32px 0; color: #475569; font-size: 19px; line-height: 1.6; font-weight: 500; position: relative; z-index: 1;">Hello <span style="font-weight: 700; color: #1e293b;">${user.displayName || user.email?.split('@')[0] || 'Valued Customer'}</span>, thank you for choosing KamiKoto!</p>
+                        <p style="margin: 0 0 24px 0; font-size: 14px; color: #6b7280;">${new Date(order.orderDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
 
-                        <div style="margin-bottom: 28px; position: relative; z-index: 1;">
-                            <div style="display: inline-block; padding: 14px 28px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 60px; margin-bottom: 16px; box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);">
-                              <p style="margin: 0; font-size: 17px; font-weight: 700; color: #ffffff; letter-spacing: 0.5px;">Order #${order.orderId}</p>
-                            </div>
-                            <p style="margin: 0; font-size: 15px; color: #64748b; font-weight: 600;">📅 ${new Date(order.orderDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                        </div>
-
-                        <div style="background: rgba(255, 255, 255, 0.7); border-radius: 12px; padding: 20px; display: inline-block; backdrop-filter: blur(10px); position: relative; z-index: 1;">
-                          <p style="margin: 0; color: #1e293b; font-size: 16px; line-height: 1.7; font-weight: 500;">
-                            🚀 We're processing your order right now!<br/>
-                            <span style="color: #64748b; font-size: 15px;">You'll receive tracking information once it ships.</span>
+                        <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 16px; text-align: left;">
+                          <p style="margin: 0 0 4px 0; color: #111827; font-size: 14px; font-weight: 500;">
+                            We're processing your order right now.
+                          </p>
+                          <p style="margin: 0; color: #6b7280; font-size: 14px;">
+                            You'll receive tracking information once it ships.
                           </p>
                         </div>
                       </td>
@@ -578,67 +436,60 @@ const generateOrderConfirmationHTML = (order, user) => {
                 </td>
               </tr>
               
-              <!-- Premium Order Items Table with World-Class Design -->
+              <!-- Order Items Table -->
               <tr>
-                <td style="padding: 40px 40px 0px 40px; background-color: #ffffff;" bgcolor="#ffffff">
-                  <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="border: 2px solid #e2e8f0; border-radius: 20px; margin-bottom: 40px; overflow: hidden; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);" class="card border-glow">
-                    <!-- Premium Table Header -->
+                <td style="padding: 0 40px 32px 40px;">
+                  <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+                    <!-- Table Header -->
                     <tr>
-                      <td style="padding: 28px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-bottom: 3px solid #5a67d8;">
-                        <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
-                          <tr>
-                            <td>
-                              <h3 style="margin: 0; font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.3px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">🛍️ Your Order Items</h3>
-                              <p style="margin: 6px 0 0; font-size: 14px; color: rgba(255, 255, 255, 0.9); font-weight: 500;">Everything you ordered at a glance</p>
-                            </td>
-                          </tr>
-                        </table>
+                      <td style="padding: 16px 24px; background-color: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+                        <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #111827;">Order Items</h3>
                       </td>
                     </tr>
-                    <!-- Premium Order Items -->
+                    <!-- Order Items -->
                     ${itemsHTML}
                     
-                    <!-- Order Summary - Matching new summary design -->
+                    <!-- Order Summary -->
                     <tr>
-                      <td colspan="2" style="padding: 20px; border-bottom: 1px solid #d1dfe3;">
+                      <td style="padding: 20px 24px; background-color: #f9fafb; border-top: 1px solid #e5e7eb;">
                         <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
                           <tr>
-                            <td style="padding-bottom: 10px;">
+                            <td style="padding-bottom: 8px;">
                               <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
                                 <tr>
-                                  <td style="font-size: 15px; color: #64748B;">Subtotal</td>
-                                  <td style="font-size: 15px; color: #1A202C; text-align: right;">${formatCurrency(subtotal)}</td>
+                                  <td style="font-size: 14px; color: #6b7280;">Subtotal</td>
+                                  <td style="font-size: 14px; color: #111827; text-align: right;">${formatCurrency(subtotal)}</td>
                                 </tr>
                               </table>
                             </td>
                           </tr>
                           <tr>
-                            <td style="padding-bottom: 10px;">
+                            <td style="padding-bottom: 8px;">
                               <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
                                 <tr>
-                                  <td style="font-size: 15px; color: #64748B;">Tax (18% GST)</td>
-                                  <td style="font-size: 15px; color: #1A202C; text-align: right;">${formatCurrency(tax)}</td>
+                                  <td style="font-size: 14px; color: #6b7280;">Tax (18% GST)</td>
+                                  <td style="font-size: 14px; color: #111827; text-align: right;">${formatCurrency(tax)}</td>
                                 </tr>
                               </table>
                             </td>
                           </tr>
                           <tr>
-                            <td style="padding-bottom: ${importDuty > 0 || discount > 0 ? '10px' : '0'};">
+                            <td style="padding-bottom: ${importDuty > 0 || discount > 0 ? '8px' : '0'};">
                               <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
                                 <tr>
-                                  <td style="font-size: 15px; color: #64748B;">Shipping</td>
-                                  <td style="font-size: 15px; color: #1A202C; text-align: right;">${shipping === 0 ? 'Free' : formatCurrency(shipping)}</td>
+                                  <td style="font-size: 14px; color: #6b7280;">Shipping</td>
+                                  <td style="font-size: 14px; color: #111827; text-align: right;">${shipping === 0 ? 'Free' : formatCurrency(shipping)}</td>
                                 </tr>
                               </table>
                             </td>
                           </tr>
                           ${importDuty > 0 ? `
                           <tr>
-                            <td style="padding-bottom: ${discount > 0 ? '10px' : '0'};">
+                            <td style="padding-bottom: ${discount > 0 ? '8px' : '0'};">
                               <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
                                 <tr>
-                                  <td style="font-size: 15px; color: #EA580C;">Import Duty (69%)</td>
-                                  <td style="font-size: 15px; color: #EA580C; text-align: right;">${formatCurrency(importDuty)}</td>
+                                  <td style="font-size: 14px; color: #ea580c;">Import Duty (69%)</td>
+                                  <td style="font-size: 14px; color: #ea580c; text-align: right;">${formatCurrency(importDuty)}</td>
                                 </tr>
                               </table>
                             </td>
@@ -649,28 +500,34 @@ const generateOrderConfirmationHTML = (order, user) => {
                             <td style="padding-bottom: 0;">
                               <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
                                 <tr>
-                                  <td style="font-size: 15px; color: #16A34A;">Discount</td>
-                                  <td style="font-size: 15px; color: #16A34A; text-align: right;">-${formatCurrency(discount)}</td>
+                                  <td style="font-size: 14px; color: #16a34a;">Discount</td>
+                                  <td style="font-size: 14px; color: #16a34a; text-align: right;">-${formatCurrency(discount)}</td>
                                 </tr>
                               </table>
                             </td>
                           </tr>
                           ` : ''}
+                          <tr>
+                            <td style="padding-top: 12px; border-top: 1px solid #e5e7eb;">
+                              <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
+                                <tr>
+                                  <td style="font-size: 15px; font-weight: 600; color: #111827;">Total (${order.items.length} ${order.items.length === 1 ? 'item' : 'items'})</td>
+                                  <td style="font-size: 15px; font-weight: 600; color: #111827; text-align: right;">${formatCurrency(total)}</td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
                         </table>
                       </td>
                     </tr>
-                    <tr>
-                      <td style="padding: 20px; font-size: 16px; font-weight: bold; color: #121212;">Total (${order.items.length} ${order.items.length === 1 ? 'item' : 'items'})</td>
-                      <td style="padding: 20px; font-size: 20px; font-weight: 800; color: #121212; text-align: right;">${formatCurrency(total)}</td>
-                    </tr>
                   </table>
                   
-                  <!-- Shipping and Payment Info - Matching new summary design -->
-                  <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom: 30px;">
+                  <!-- Shipping and Payment Info -->
+                  <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="margin-top: 32px;">
                     <tr>
-                      <td width="50%" valign="top" style="padding-right: 15px;">
-                        <h3 style="margin: 0 0 8px; font-size: 16px; font-weight: bold; color: #121212;">Shipping address</h3>
-                        <p style="margin: 0 0 2px; font-size: 14px; font-weight: 600; color: rgba(18, 18, 18, 0.8);">
+                      <td width="50%" valign="top" style="padding-right: 20px;">
+                        <h3 style="margin: 0 0 8px; font-size: 14px; font-weight: 600; color: #111827;">Shipping Address</h3>
+                        <p style="margin: 0; font-size: 14px; color: #6b7280; line-height: 1.6;">
                           ${order.shippingAddress?.name || order.userName || 'Customer'}<br>
                           ${order.shippingAddress?.street || ''}<br>
                           ${order.shippingAddress?.city || ''}, ${order.shippingAddress?.state || ''} ${order.shippingAddress?.zip || ''}<br>
@@ -678,112 +535,44 @@ const generateOrderConfirmationHTML = (order, user) => {
                         </p>
                       </td>
                       <td width="50%" valign="top">
-                        <h3 style="margin: 0 0 8px; font-size: 16px; font-weight: bold; color: #121212;">Paid with ${order.payment?.method || 'Credit card'}</h3>
-                        <p style="margin: 0 0 2px; font-size: 14px; font-weight: 600; color: rgba(18, 18, 18, 0.8);">Subtotal: ${formatCurrency(subtotal)}</p>
-                        <p style="margin: 0 0 2px; font-size: 14px; font-weight: 600; color: rgba(18, 18, 18, 0.8);">Tax (18% GST): ${formatCurrency(tax)}</p>
-                        <p style="margin: 0 0 2px; font-size: 14px; font-weight: 600; color: rgba(18, 18, 18, 0.8);">Shipping: ${shipping === 0 ? 'Free' : formatCurrency(shipping)}</p>
-                        ${importDuty > 0 ? `
-                        <p style="margin: 0 0 2px; font-size: 14px; font-weight: 600; color: #EA580C;">Import Duty (69%): ${formatCurrency(importDuty)}</p>
-                        ` : ''}
-                        ${discount > 0 ? `
-                        <p style="margin: 0 0 2px; font-size: 14px; font-weight: 600; color: #16A34A;">Discount: -${formatCurrency(discount)}</p>
-                        ` : ''}
-                        <p style="margin: 8px 0 2px; font-size: 16px; font-weight: 700; color: #121212;">Total: ${formatCurrency(total)}</p>
-                        <p style="margin: 8px 0 2px; font-size: 14px; font-weight: 600; color: #10B981;">Payment Status: Completed</p>
+                        <h3 style="margin: 0 0 8px; font-size: 14px; font-weight: 600; color: #111827;">Payment Method</h3>
+                        <p style="margin: 0 0 12px 0; font-size: 14px; color: #6b7280;">${order.payment?.method || 'Credit card'}</p>
+                        <p style="margin: 0; font-size: 14px; color: #16a34a; font-weight: 500;">Payment Status: Completed</p>
                       </td>
                     </tr>
                   </table>
                 </td>
               </tr>
               
-              <!-- Premium Help Section with Enhanced Design -->
+              <!-- Help Section -->
               <tr>
-                <td style="padding: 48px 40px 56px 40px; background-color: #ffffff;" bgcolor="#ffffff">
+                <td style="padding: 32px 40px;">
                   <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
                     <tr>
-                      <td style="padding: 32px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fcd34d 100%); border-radius: 16px; border: 2px solid #fbbf24; box-shadow: 0 4px 20px rgba(251, 191, 36, 0.2);" class="animated">
-                        <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
-                          <tr>
-                            <td width="80" valign="top" style="text-align: center;">
-                              <div style="display: inline-block; width: 72px; height: 72px; background: linear-gradient(135deg, #fb923c 0%, #f97316 100%); border-radius: 50%; box-shadow: 0 6px 16px rgba(249, 115, 22, 0.3); line-height: 72px;">
-                                <span style="font-size: 36px;">💬</span>
-                              </div>
-                            </td>
-                            <td style="padding-left: 20px; vertical-align: middle;">
-                              <h3 style="margin: 0 0 8px; font-size: 22px; font-weight: 800; color: #78350f; letter-spacing: -0.3px;">Need Help? We're Here!</h3>
-                              <p style="margin: 0; font-size: 16px; color: #92400e; line-height: 1.6; font-weight: 500;">
-                                Have questions or need assistance? Our friendly team is ready to help!<br/>
-                                <span style="font-size: 15px;">✉️ Email us at </span><a href="mailto:${featureConfig.email.supportEmail}" style="color: #c2410c; font-weight: 700; text-decoration: none; border-bottom: 2px solid #c2410c;">${featureConfig.email.supportEmail}</a>
-                              </p>
-                            </td>
-                          </tr>
-                        </table>
+                      <td style="padding: 20px; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px;">
+                        <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #111827;">Need Help?</p>
+                        <p style="margin: 0; font-size: 14px; color: #6b7280; line-height: 1.6;">
+                          Have questions about your order? Contact us at <a href="mailto:${featureConfig.email.supportEmail}" style="color: #111827; font-weight: 500; text-decoration: underline;">${featureConfig.email.supportEmail}</a>
+                        </p>
                       </td>
                     </tr>
                   </table>
                 </td>
               </tr>
               
-              <!-- World-Class Premium Footer -->
+              <!-- Footer -->
               <tr>
-                <td style="padding: 56px 40px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%); text-align: center; position: relative; overflow: hidden;">
-                  <!-- Decorative background elements -->
-                  <div style="position: absolute; top: -100px; left: -100px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(102, 126, 234, 0.15) 0%, transparent 70%); border-radius: 50%;"></div>
-                  <div style="position: absolute; bottom: -100px; right: -100px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(118, 75, 162, 0.15) 0%, transparent 70%); border-radius: 50%;"></div>
-
-                  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="position: relative; z-index: 1;">
-                    <!-- Logo and Brand -->
+                <td style="padding: 32px 40px; background-color: #f9fafb; border-top: 1px solid #e5e7eb; text-align: center;">
+                  <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                     <tr>
-                      <td style="text-align: center; padding-bottom: 28px;">
-                        <div style="display: inline-block; padding: 16px 32px; background: rgba(255, 255, 255, 0.1); border-radius: 16px; backdrop-filter: blur(10px); margin-bottom: 12px;">
-                          <h3 style="margin: 0; font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.7px; text-shadow: 0 2px 8px rgba(0,0,0,0.3);">✨ KamiKoto</h3>
-                        </div>
-                        <p style="margin: 8px 0 0; font-size: 15px; color: rgba(255, 255, 255, 0.85); font-weight: 600; letter-spacing: 0.5px;">Your Premium Stationery Destination</p>
-                      </td>
-                    </tr>
-
-                    <!-- Divider with gradient -->
-                    <tr>
-                      <td style="padding: 24px 0;">
-                        <div style="height: 2px; background: linear-gradient(90deg, transparent 0%, rgba(102, 126, 234, 0.5) 50%, transparent 100%);"></div>
-                      </td>
-                    </tr>
-
-                    <!-- Contact Info -->
-                    <tr>
-                      <td style="text-align: center; padding: 24px 0;">
-                        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                          <tr>
-                            <td style="text-align: center;">
-                              <p style="margin: 0 0 12px 0; font-size: 16px; color: rgba(255, 255, 255, 0.95); line-height: 1.7; font-weight: 500;">
-                                📧 Questions? We'd love to hear from you!<br/>
-                                <a href="mailto:${featureConfig.email.supportEmail}" style="color: #93c5fd; text-decoration: none; font-weight: 700; border-bottom: 2px solid rgba(147, 197, 253, 0.5); padding-bottom: 2px;">${featureConfig.email.supportEmail}</a>
-                              </p>
-                              <p style="margin: 8px 0 0; font-size: 14px; color: rgba(255, 255, 255, 0.7); font-weight: 500;">
-                                💬 Our team typically responds within 24 hours
-                              </p>
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-
-                    <!-- Divider with gradient -->
-                    <tr>
-                      <td style="padding: 24px 0;">
-                        <div style="height: 2px; background: linear-gradient(90deg, transparent 0%, rgba(102, 126, 234, 0.5) 50%, transparent 100%);"></div>
-                      </td>
-                    </tr>
-
-                    <!-- Copyright and Legal -->
-                    <tr>
-                      <td style="text-align: center; padding-top: 20px;">
-                        <p style="margin: 0 0 8px 0; font-size: 14px; color: rgba(255, 255, 255, 0.65); line-height: 1.6; font-weight: 500;">
-                          © ${new Date().getFullYear()} KamiKoto. All Rights Reserved.
+                      <td style="text-align: center;">
+                        <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #111827;">KamiKoto</p>
+                        <p style="margin: 0 0 16px 0; font-size: 13px; color: #6b7280;">Your Premium Stationery Destination</p>
+                        <p style="margin: 0 0 8px 0; font-size: 13px; color: #6b7280;">
+                          Questions? <a href="mailto:${featureConfig.email.supportEmail}" style="color: #111827; text-decoration: underline;">${featureConfig.email.supportEmail}</a>
                         </p>
-                        <p style="margin: 8px 0 0; font-size: 13px; color: rgba(255, 255, 255, 0.5); line-height: 1.5;">
-                          📦 This email was sent because you placed an order with us.<br/>
-                          <span style="font-size: 12px;">Crafted with ❤️ for stationery lovers everywhere.</span>
+                        <p style="margin: 0; font-size: 12px; color: #9ca3af;">
+                          © ${new Date().getFullYear()} KamiKoto. All Rights Reserved.
                         </p>
                       </td>
                     </tr>
@@ -819,17 +608,12 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
   };
   
   /**
-   * Animation CSS for supported email clients
-   * Provides subtle animations for modern email clients
+   * Minimal CSS styling inspired by shadcn UI
    */
-  const animationCSS = `
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .animated {
-      animation: fadeIn 0.5s ease-out forwards;
+  const minimalShippedCSS = `
+    /* Reset and base styles */
+    table, td, div, h1, h2, h3, p, a {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     }
   `;
   
@@ -852,51 +636,43 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
     return imageUrl;
   };
 
-  // Generate professional HTML for order items in shipping notification
+  // Generate minimal HTML for order items in shipping notification
   const itemsHTML = order.items.map((item, index) => {
-    // Professional product name truncation for consistent layout
-    const truncatedName = item.name.length > 40 ? item.name.substring(0, 37) + '...' : item.name;
-    
-    // Process image URL for email client compatibility
+    const truncatedName = item.name.length > 50 ? item.name.substring(0, 47) + '...' : item.name;
     const processedImageUrl = processImageForEmailShipped(item.image);
-    
+
     return `
-    <!-- Professional Product Item Row - Optimized for shipping emails -->
-    <tr style="animation-delay: ${index * 0.1}s;" class="animated">
-      <td style="padding: 24px 0; border-bottom: 1px solid #E2E8F0;">
+    <tr>
+      <td style="padding: 16px 20px; border-bottom: 1px solid #e5e7eb;">
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
-            <td width="90" style="vertical-align: top; padding-right: 20px;">
-              ${processedImageUrl ? 
+            <td width="70" style="vertical-align: top; padding-right: 16px;">
+              ${processedImageUrl ?
                 `<img src="${processedImageUrl}" alt="${truncatedName}" style="
-                  width: 90px; 
-                  height: 90px; 
-                  object-fit: cover; 
-                  border-radius: 12px; 
-                  background-color: #F8FAFC;
-                  border: 1px solid #E2E8F0;
-                  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                  width: 70px;
+                  height: 70px;
+                  object-fit: cover;
+                  border-radius: 6px;
+                  border: 1px solid #e5e7eb;
                   display: block;
-                " />` : 
+                " />` :
                 `<div style="
-                  width: 90px; 
-                  height: 90px; 
-                  border-radius: 12px; 
-                  background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
-                  border: 1px solid #E2E8F0;
+                  width: 70px;
+                  height: 70px;
+                  border-radius: 6px;
+                  background: #f9fafb;
+                  border: 1px solid #e5e7eb;
                   display: flex;
                   align-items: center;
                   justify-content: center;
-                  color: #64748B;
-                  font-size: 12px;
-                  font-weight: 500;
+                  color: #9ca3af;
+                  font-size: 11px;
                 ">No Image</div>`
               }
             </td>
             <td style="vertical-align: top;">
-              <h4 style="margin: 0 0 6px 0; font-weight: 600; font-size: 17px; color: #1E293B; line-height: 1.3;">${truncatedName}</h4>
-              <p style="margin: 0 0 4px 0; font-size: 14px; color: #64748B; font-weight: 500;">Qty: ${item.quantity}</p>
-              ${item.price ? `<p style="margin: 0; font-size: 13px; color: #94A3B8;">Price: ${formatCurrency(item.price)}</p>` : ''}
+              <p style="margin: 0 0 4px 0; font-weight: 500; font-size: 14px; color: #111827; line-height: 1.4;">${truncatedName}</p>
+              <p style="margin: 0; font-size: 13px; color: #6b7280;">Quantity: ${item.quantity}</p>
             </td>
           </tr>
         </table>
@@ -915,11 +691,10 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
       <style type="text/css">
         /* Base styles */
         body, table, td {
-          font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
         }
-        
-        /* Animation support for modern clients */
-        ${animationCSS}
+
+        ${minimalShippedCSS}
       </style>
       <!--[if mso]>
       <style type="text/css">
@@ -927,222 +702,178 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
       </style>
       <![endif]-->
     </head>
-    <body style="margin: 0; padding: 0; background-color: #F5F7FA; font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1A202C; line-height: 1.5; width: 100%; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
-      <!-- Wrapper -->
-      <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);">
-        <!-- Email Header -->
-        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-          <tr>
-            <td style="padding: 30px 30px; background-color: #38BDF8; text-align: center; border-radius: 8px 8px 0 0;">
-              <!-- Logo -->
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                <tr>
-                  <td align="center">
-                    <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">KamiKoto</h1>
-                    <p style="margin: 8px 0 0; font-size: 16px; color: rgba(255, 255, 255, 0.9); font-weight: 500;">Perfect Online Stationery Store</p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
+    <body style="margin: 0; padding: 0; background-color: #f9fafb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; color: #111827; width: 100%; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+      <table style="width: 100%; background-color: #f9fafb;" border="0" cellspacing="0" cellpadding="0" role="presentation">
+        <tr>
+          <td align="center" valign="top" style="padding: 40px 0;">
+            <table style="width: 600px; max-width: 600px; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px;" align="center" border="0" cellpadding="0" cellspacing="0" role="presentation">
+              <tr>
+                <td style="padding: 32px 40px; border-bottom: 1px solid #e5e7eb;">
+                  <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #111827; letter-spacing: -0.5px;">KamiKoto</h1>
+                  <p style="margin: 4px 0 0; font-size: 14px; color: #6b7280;">Your Premium Stationery Destination</p>
+                </td>
+              </tr>
 
-        <!-- Main Content -->
-        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-          <tr>
-            <td style="padding: 40px 30px;">
-              <!-- Shipped Status Banner -->
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom: 30px;">
-                <tr>
-                  <td style="background-color: #EFF6FF; padding: 20px; border-radius: 8px; border-left: 4px solid #3B82F6;" class="animated">
-                    <h2 style="margin: 0; font-size: 22px; font-weight: 600; color: #2563EB;">Your order is on the way!</h2>
-                    <p style="margin: 10px 0 0; color: #1E40AF; font-size: 16px;">Hello ${user.displayName || user.email},</p>
-                    <p style="margin: 10px 0 0; color: #1E40AF; font-size: 16px;">Great news! Your order #${order.orderId} has been shipped and is on its way to you.</p>
-                  </td>
-                </tr>
-              </table>
+              <tr>
+                <td style="padding: 40px 40px 32px 40px;">
+                  <!-- Shipped Status Banner -->
+                  <div style="background-color: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-radius: 6px; margin-bottom: 32px;">
+                    <h2 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 600; color: #111827;">Your order is on the way</h2>
+                    <p style="margin: 0 0 4px 0; font-size: 14px; color: #6b7280;">Hello ${user.displayName || user.email},</p>
+                    <p style="margin: 0; font-size: 14px; color: #6b7280;">Your order #${order.orderId} has been shipped and is on its way to you.</p>
+                  </div>
 
-              <!-- Tracking Information -->
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom: 30px;" class="animated">
-                <tr>
-                  <td style="padding-bottom: 15px; border-bottom: 1px solid #E8ECF0;">
-                    <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #1A202C;">Shipment Details</h3>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding-top: 15px;">
+                  <!-- Tracking Information -->
+                  <div style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 20px; margin-bottom: 32px;">
+                    <h3 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #111827;">Shipment Details</h3>
                     <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                       <tr>
-                        <td width="50%" style="vertical-align: top; padding-right: 15px;">
-                          <p style="margin: 0 0 10px; font-size: 15px; color: #64748B;">Carrier</p>
-                          <p style="margin: 0; font-size: 16px; font-weight: 600; color: #1A202C;">${shipmentInfo.carrier}</p>
+                        <td width="50%" style="vertical-align: top; padding-right: 15px; padding-bottom: 16px;">
+                          <p style="margin: 0 0 4px; font-size: 13px; color: #6b7280;">Carrier</p>
+                          <p style="margin: 0; font-size: 14px; font-weight: 500; color: #111827;">${shipmentInfo.carrier}</p>
                         </td>
-                        <td width="50%" style="vertical-align: top;">
-                          <p style="margin: 0 0 10px; font-size: 15px; color: #64748B;">Tracking Number</p>
-                          <p style="margin: 0; font-size: 16px; font-weight: 600; color: #1A202C; word-break: break-all;">${shipmentInfo.trackingNumber}</p>
+                        <td width="50%" style="vertical-align: top; padding-bottom: 16px;">
+                          <p style="margin: 0 0 4px; font-size: 13px; color: #6b7280;">Tracking Number</p>
+                          <p style="margin: 0; font-size: 14px; font-weight: 500; color: #111827; word-break: break-all;">${shipmentInfo.trackingNumber}</p>
                         </td>
                       </tr>
                       <tr>
-                        <td colspan="2" style="vertical-align: top; padding-top: 20px;">
-                          <p style="margin: 0 0 10px; font-size: 15px; color: #64748B;">Estimated Delivery</p>
-                          <p style="margin: 0; font-size: 16px; font-weight: 600; color: #1A202C;">${shipmentInfo.estimatedDeliveryDate}</p>
+                        <td colspan="2" style="vertical-align: top;">
+                          <p style="margin: 0 0 4px; font-size: 13px; color: #6b7280;">Estimated Delivery</p>
+                          <p style="margin: 0; font-size: 14px; font-weight: 500; color: #111827;">${shipmentInfo.estimatedDeliveryDate}</p>
                         </td>
                       </tr>
                     </table>
-                  </td>
-                </tr>
-              </table>
+                  </div>
 
-              <!-- Tracking Button -->
-              ${shipmentInfo.trackingUrl ? `
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom: 30px;">
-                <tr>
-                  <td style="text-align: center; padding: 5px 0 25px;">
-                    <a href="${shipmentInfo.trackingUrl}" target="_blank" style="display: inline-block; background-color: #2563EB; color: white; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 30px; border-radius: 6px; transition: background-color 0.3s ease;">Track Your Package</a>
-                  </td>
-                </tr>
-              </table>
-              ` : ''}
+                  <!-- Tracking Button -->
+                  ${shipmentInfo.trackingUrl ? `
+                  <div style="text-align: center; margin-bottom: 32px;">
+                    <a href="${shipmentInfo.trackingUrl}" target="_blank" style="display: inline-block; background-color: #111827; color: #ffffff; font-size: 14px; font-weight: 500; text-decoration: none; padding: 12px 24px; border-radius: 6px;">Track Your Package</a>
+                  </div>
+                  ` : ''}
 
-              <!-- Products Section -->
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom: 30px;">
-                <tr>
-                  <td style="padding-bottom: 15px; border-bottom: 1px solid #E8ECF0;">
-                    <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #1A202C;">Items Shipped</h3>
-                  </td>
-                </tr>
-                <!-- Product Items - Optimized layout for up to 5 products -->
-                ${itemsHTML}
-              </table>
+                  <!-- Products Section -->
+                  <div style="border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden; margin-bottom: 32px;">
+                    <div style="padding: 16px 20px; background-color: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+                      <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #111827;">Items Shipped</h3>
+                    </div>
+                    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                      ${itemsHTML}
+                    </table>
+                  </div>
 
-              <!-- Shipping Info -->
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom: 30px;" class="animated">
-                <tr>
-                  <td style="padding-bottom: 15px; border-bottom: 1px solid #E8ECF0;">
-                    <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #1A202C;">Shipping Address</h3>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding-top: 15px;">
-                    <p style="margin: 0; font-size: 16px; color: #1A202C; line-height: 1.6;">
-                      <span style="font-weight: 600;">${order.shippingAddress?.name || order.userName || 'Customer'}</span><br>
+                  <!-- Shipping Info -->
+                  <div style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 20px; margin-bottom: 32px;">
+                    <h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: #111827;">Shipping Address</h3>
+                    <p style="margin: 0; font-size: 14px; color: #6b7280; line-height: 1.6;">
+                      <span style="font-weight: 500; color: #111827;">${order.shippingAddress?.name || order.userName || 'Customer'}</span><br>
                       ${order.shippingAddress?.street || ''}<br>
                       ${order.shippingAddress?.city || ''}, ${order.shippingAddress?.state || ''} ${order.shippingAddress?.zip || ''}<br>
                       ${order.shippingAddress?.country || ''}
                     </p>
-                  </td>
-                </tr>
-              </table>
+                  </div>
 
-              <!-- Order Summary Section -->
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom: 30px; border: 1px solid #E2E8F0; border-radius: 8px;" class="animated">
-                <tr>
-                  <td style="background-color: #F8FAFC; padding: 15px; border-bottom: 1px solid #E2E8F0; border-radius: 8px 8px 0 0;">
-                    <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #1A202C;">Order Summary</h3>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 15px;">
-                    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                      <tr>
-                        <td style="padding-bottom: 10px;">
-                          <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                            <tr>
-                              <td style="font-size: 14px; color: #64748B;">Subtotal</td>
-                              <td style="font-size: 14px; color: #1A202C; text-align: right;">${formatCurrency(order.subtotal || 0)}</td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding-bottom: 10px;">
-                          <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                            <tr>
-                              <td style="font-size: 14px; color: #64748B;">Shipping</td>
-                              <td style="font-size: 14px; color: #1A202C; text-align: right;">${formatCurrency(order.shipping?.cost || 0)}</td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding-bottom: 10px;">
-                          <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                            <tr>
-                              <td style="font-size: 14px; color: #64748B;">Tax</td>
-                              <td style="font-size: 14px; color: #1A202C; text-align: right;">${formatCurrency(order.tax || 0)}</td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                      ${order.importDuty > 0 ? `
-                      <tr>
-                        <td style="padding-bottom: 10px;">
-                          <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                            <tr>
-                              <td style="font-size: 14px; color: #EA580C;">Import Duty</td>
-                              <td style="font-size: 14px; color: #EA580C; text-align: right;">${formatCurrency(order.importDuty)}</td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                      ` : ''}
-                      ${order.discount > 0 ? `
-                      <tr>
-                        <td style="padding-bottom: 10px;">
-                          <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                            <tr>
-                              <td style="font-size: 14px; color: #16A34A;">Discount</td>
-                              <td style="font-size: 14px; color: #16A34A; text-align: right;">-${formatCurrency(order.discount)}</td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                      ` : ''}
-                      <tr>
-                        <td style="padding-top: 10px; border-top: 1px solid #E2E8F0;">
-                          <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                            <tr>
-                              <td style="font-size: 16px; font-weight: bold; color: #1A202C;">Total</td>
-                              <td style="font-size: 16px; font-weight: bold; color: #1A202C; text-align: right;">${formatCurrency(order.totalAmount || order.total || 0)}</td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
+                  <!-- Order Summary Section -->
+                  <div style="border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden; margin-bottom: 32px;">
+                    <div style="padding: 16px 20px; background-color: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+                      <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #111827;">Order Summary</h3>
+                    </div>
+                    <div style="padding: 20px;">
+                      <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                        <tr>
+                          <td style="padding-bottom: 8px;">
+                            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                              <tr>
+                                <td style="font-size: 14px; color: #6b7280;">Subtotal</td>
+                                <td style="font-size: 14px; color: #111827; text-align: right;">${formatCurrency(order.subtotal || 0)}</td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding-bottom: 8px;">
+                            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                              <tr>
+                                <td style="font-size: 14px; color: #6b7280;">Shipping</td>
+                                <td style="font-size: 14px; color: #111827; text-align: right;">${formatCurrency(order.shipping?.cost || 0)}</td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding-bottom: ${order.importDuty > 0 || order.discount > 0 ? '8px' : '0'};">
+                            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                              <tr>
+                                <td style="font-size: 14px; color: #6b7280;">Tax</td>
+                                <td style="font-size: 14px; color: #111827; text-align: right;">${formatCurrency(order.tax || 0)}</td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        ${order.importDuty > 0 ? `
+                        <tr>
+                          <td style="padding-bottom: ${order.discount > 0 ? '8px' : '0'};">
+                            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                              <tr>
+                                <td style="font-size: 14px; color: #ea580c;">Import Duty</td>
+                                <td style="font-size: 14px; color: #ea580c; text-align: right;">${formatCurrency(order.importDuty)}</td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        ` : ''}
+                        ${order.discount > 0 ? `
+                        <tr>
+                          <td style="padding-bottom: 0;">
+                            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                              <tr>
+                                <td style="font-size: 14px; color: #16a34a;">Discount</td>
+                                <td style="font-size: 14px; color: #16a34a; text-align: right;">-${formatCurrency(order.discount)}</td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        ` : ''}
+                        <tr>
+                          <td style="padding-top: 12px; border-top: 1px solid #e5e7eb;">
+                            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                              <tr>
+                                <td style="font-size: 15px; font-weight: 600; color: #111827;">Total</td>
+                                <td style="font-size: 15px; font-weight: 600; color: #111827; text-align: right;">${formatCurrency(order.totalAmount || order.total || 0)}</td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+                  </div>
 
-              <!-- CTA Button -->
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                <tr>
-                  <td style="padding: 30px; background-color: #F5F7FA; border-radius: 8px; text-align: center;" class="animated">
-                    <p style="margin: 0 0 20px; font-size: 16px; color: #64748B;">Have questions about your shipment?</p>
-                    <a href="mailto:${featureConfig.email.supportEmail}" style="display: inline-block; background-color: #38BDF8; color: white; font-size: 16px; font-weight: 600; text-decoration: none; padding: 12px 30px; border-radius: 6px; transition: background-color 0.3s ease;">Contact Support</a>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
+                  <!-- Help Section -->
+                  <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 20px; text-align: center;">
+                    <p style="margin: 0 0 12px; font-size: 14px; color: #6b7280;">Have questions about your shipment?</p>
+                    <a href="mailto:${featureConfig.email.supportEmail}" style="display: inline-block; background-color: #111827; color: #ffffff; font-size: 14px; font-weight: 500; text-decoration: none; padding: 10px 20px; border-radius: 6px;">Contact Support</a>
+                  </div>
+                </td>
+              </tr>
 
-        <!-- Footer -->
-        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-          <tr>
-            <td style="padding: 30px; background-color: #F1F5F9; text-align: center; border-radius: 0 0 8px 8px;">
-              <p style="margin: 0; font-size: 14px; color: #64748B; font-weight: 500;">
-                Thank you for shopping with KamiKoto
-              </p>
-              <p style="margin: 10px 0 0; font-size: 14px; color: #94A3B8;">
-                Perfect Online Stationery Store
-              </p>
-              <p style="margin: 20px 0 0; font-size: 13px; color: #94A3B8;">
-                © ${new Date().getFullYear()} KamiKoto. All rights reserved.
-              </p>
-            </td>
-          </tr>
-        </table>
-      </div>
+              <!-- Footer -->
+              <tr>
+                <td style="padding: 32px 40px; background-color: #f9fafb; border-top: 1px solid #e5e7eb; text-align: center;">
+                  <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #111827;">KamiKoto</p>
+                  <p style="margin: 0 0 16px 0; font-size: 13px; color: #6b7280;">Your Premium Stationery Destination</p>
+                  <p style="margin: 0 0 8px 0; font-size: 13px; color: #6b7280;">
+                    Questions? <a href="mailto:${featureConfig.email.supportEmail}" style="color: #111827; text-decoration: underline;">${featureConfig.email.supportEmail}</a>
+                  </p>
+                  <p style="margin: 0; font-size: 12px; color: #9ca3af;">
+                    © ${new Date().getFullYear()} KamiKoto. All Rights Reserved.
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
     </body>
     </html>
   `;
