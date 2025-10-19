@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { db } from '../firebase/config';
 import { collection, getDocs } from 'firebase/firestore';
-import { removeFromCart, updateQuantity } from '../redux/cartSlice';
+import { removeFromCart, updateQuantity, addToCart } from '../redux/cartSlice';
 import { Link } from 'react-router-dom';
 import { m } from 'framer-motion';
 import { ShoppingBag, Trash2, Plus, Minus, ArrowRight, Loader2, Package } from 'lucide-react';
