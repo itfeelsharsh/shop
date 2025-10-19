@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { auth, db } from '../firebase/config';
-import { doc, getDoc, updateDoc, collection, getDocs, query, orderBy, 
+import { doc, getDoc, updateDoc, collection, getDocs, query, orderBy,
 // eslint-disable-next-line no-unused-vars
-limit, where, 
+limit, where,
 // eslint-disable-next-line no-unused-vars
 deleteDoc } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -10,14 +10,14 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import countriesStatesData from '../../src/countriesStates.json';
 import { m } from "framer-motion";
-import { 
-  User, 
-  MapPin, 
-  Heart, 
-  Truck, 
-  ShoppingBag, 
-  Camera, 
-  AlertCircle, 
+import {
+  User,
+  MapPin,
+  Heart,
+  Truck,
+  ShoppingBag,
+  Camera,
+  AlertCircle,
   CreditCard,
   Trash2,
   Package,
@@ -27,7 +27,7 @@ import {
   Star
 } from 'lucide-react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
-import { useDispatch, 
+import { useDispatch,
 // eslint-disable-next-line no-unused-vars
 useSelector } from 'react-redux';
 // eslint-disable-next-line no-unused-vars
@@ -36,6 +36,7 @@ import logger from '../utils/logger';
 import useWishlist from '../utils/useWishlist';
 import { downloadOrderReceipt } from '../utils/pdfUtils';
 import UserReviews from '../components/UserReviews';
+import defaultPfp from '../assets/defaultpfp.png';
 
 /**
  * Order status constants with associated colors for UI display
@@ -610,8 +611,8 @@ function MyAccount() {
                 {/* Profile content */}
                 <div className="flex flex-col md:flex-row md:items-center gap-6">
                   <div className="relative">
-                    <img 
-                      src={profile.profilePic || 'https://via.placeholder.com/150?text=Profile'} 
+                    <img
+                      src={profile.profilePic || defaultPfp}
                       alt="Profile"
                       className="w-24 h-24 rounded-full object-cover border shadow-md"
                     />
@@ -619,7 +620,7 @@ function MyAccount() {
                       <Camera size={16} className="text-gray-500" />
                     </div>
                   </div>
-                  
+
                   <div className="flex-grow">
                     <h2 className="text-2xl font-semibold text-gray-800">{profile.name || 'Welcome'}</h2>
                     <p className="text-gray-600">{profile.email}</p>

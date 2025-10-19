@@ -2,55 +2,45 @@ import React, { useEffect, useState, useCallback } from "react";
 import { db } from "../firebase/config";
 import { collection, getDocs } from "firebase/firestore";
 import ProductCard from "../components/ProductCard";
-import { Link } from "react-router-dom"; 
-import { m } from "framer-motion"; 
+import { Link } from "react-router-dom";
+import { m } from "framer-motion";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
 import DynamicBanner from "../components/DynamicBanner";
 import { useContentLoader } from "../hooks/useContentLoader";
+import { ArrowRight, Package, TrendingUp, Star, ShoppingBag } from "lucide-react";
 
 /**
- * Home Page Component
- * 
- * The main landing page for the shop featuring:
- * - Dynamic banner system with slideshow capabilities (preloaded for optimal performance)
- * - Featured products section (preloaded to ensure instant display)
- * - Call to action for product exploration
- * - Enhanced loading states and error handling
- * 
- * Uses preloaded data from the content loader hook for instant rendering
- * Falls back to fresh data fetching if preloaded data is unavailable
- * 
- * @returns {JSX.Element} The Home page component
+ * Modern Home Page Component
+ *
+ * Features:
+ * - Hero section with dynamic banner
+ * - Featured products showcase
+ * - Category highlights
+ * - Modern, minimalistic design
+ * - Smooth animations and transitions
  */
 function Home() {
   const [products, setProducts] = useState([]);
   const [isLoadingFresh, setIsLoadingFresh] = useState(false);
   const dispatch = useDispatch();
-  
-  // Get preloaded data from the content loader
+
   const { getCachedData, preloadedData } = useContentLoader();
 
   useEffect(() => {
-    /**
-     * Fetches products marked to be shown on the home page
-     * First tries to use preloaded data, then falls back to fresh fetch if needed
-     */
     const initializeProducts = async () => {
       try {
-        // Try to get preloaded products first
         const cachedProducts = getCachedData('products');
-        
+
         if (cachedProducts && cachedProducts.length > 0) {
           console.log('✅ Using preloaded products data');
           setProducts(cachedProducts);
           return;
         }
-        
-        // Fallback: fetch fresh data if preloaded data is not available
+
         console.log('🔄 Fetching fresh products data...');
         setIsLoadingFresh(true);
-        
+
         const productsCol = collection(db, "products");
         const productSnapshot = await getDocs(productsCol);
         const productList = productSnapshot.docs.map((doc) => {
@@ -58,11 +48,8 @@ function Home() {
           return {
             id: doc.id,
             ...data,
-            // Ensure stock is a number, defaulting to 0 if undefined or not a number
             stock: data.stock !== undefined ? parseInt(data.stock, 10) : 0,
-            // Ensure price is a number, defaulting to 0 if undefined or not a number
             price: data.price !== undefined ? parseFloat(data.price) : 0,
-            // Also ensure mrp is a number if it exists
             mrp: data.mrp !== undefined ? parseFloat(data.mrp) : null
           };
         });
@@ -70,20 +57,18 @@ function Home() {
         const filteredProducts = productList.filter(product => product.showOnHome);
         setProducts(filteredProducts);
         console.log('✅ Fresh products data loaded');
-        
+
       } catch (error) {
         console.error("❌ Error initializing products:", error);
-        // Set empty array to prevent loading state from hanging
         setProducts([]);
       } finally {
         setIsLoadingFresh(false);
       }
     };
-    
+
     initializeProducts();
   }, [getCachedData]);
 
-  // Monitor preloaded data changes and update products when available
   useEffect(() => {
     const preloadedProducts = preloadedData?.products;
     if (preloadedProducts && preloadedProducts.length > 0 && products.length === 0) {
@@ -92,10 +77,6 @@ function Home() {
     }
   }, [preloadedData, products.length]);
 
-  /**
-   * Handles adding a product to the cart with enhanced error handling
-   * @param {Object} product - The product to add to cart
-   */
   const handleAddToCart = useCallback((product) => {
     try {
       dispatch(addToCart({
@@ -108,95 +89,183 @@ function Home() {
   }, [dispatch]);
 
   return (
-    <m.div
-      initial={{ opacity: 0, y: 50 }} 
-      animate={{ opacity: 1, y: 0 }} 
-      transition={{ duration: 0.6, ease: "easeInOut" }} 
-      className="container mx-auto px-4 py-8 bg-gray-50 min-h-screen"
-    >
-      {/* Dynamic Banner Component - now uses preloaded data */}
-      <DynamicBanner />
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      {/* Hero Section with Banner */}
+      <m.section
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="relative"
+      >
+        <DynamicBanner />
+      </m.section>
+
+      {/* Features Section */}
+      <m.section
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.6 }}
+        className="container mx-auto px-4 py-12"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-blue-50 rounded-lg">
+                <Package className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Premium Quality</h3>
+                <p className="text-sm text-gray-600">Curated stationery collection</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-green-50 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-green-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Best Prices</h3>
+                <p className="text-sm text-gray-600">Competitive pricing guaranteed</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-purple-50 rounded-lg">
+                <Star className="w-6 h-6 text-purple-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Top Rated</h3>
+                <p className="text-sm text-gray-600">Trusted by thousands</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </m.section>
 
       {/* Featured Products Section */}
-      <div className="mb-8">
-        <m.h2
+      <section className="container mx-auto px-4 py-12">
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-3xl font-bold text-gray-800 mb-6 text-center"
+          transition={{ delay: 0.3, duration: 0.6 }}
+          className="mb-8"
         >
-          Featured Products
-        </m.h2>
-        
-        {/* Loading state for fresh data fetch */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Featured Products</h2>
+              <p className="text-gray-600">Handpicked items just for you</p>
+            </div>
+            <Link
+              to="/products"
+              className="hidden md:flex items-center gap-2 text-gray-900 hover:text-gray-700 font-medium transition-colors group"
+            >
+              View All
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+        </m.div>
+
+        {/* Loading State */}
         {isLoadingFresh && products.length === 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-md p-4 animate-pulse">
-                <div className="w-full h-48 bg-gray-200 rounded-lg mb-4"></div>
-                <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-2/3 mb-2"></div>
-                <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, index) => (
+              <div key={index} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-pulse">
+                <div className="w-full h-64 bg-gray-200"></div>
+                <div className="p-4 space-y-3">
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-6 bg-gray-200 rounded w-2/3"></div>
+                </div>
               </div>
             ))}
           </div>
         )}
-        
-        {/* Products grid with enhanced animations */}
+
+        {/* Products Grid */}
         {products.length > 0 && (
-          <m.div 
-            className="grid grid-cols-1 md:grid-cols-3 gap-6"
+          <m.div
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, staggerChildren: 0.1 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
           >
             {products.map((product, index) => (
               <m.div
                 key={product.id}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: index * 0.05, duration: 0.4 }}
               >
-                <ProductCard 
-                  product={product} 
+                <ProductCard
+                  product={product}
                   onAddToCart={handleAddToCart}
                 />
               </m.div>
             ))}
           </m.div>
         )}
-        
-        {/* No products fallback */}
+
+        {/* No Products State */}
         {!isLoadingFresh && products.length === 0 && (
           <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center py-12"
+            className="text-center py-20"
           >
-            <div className="text-gray-500 text-lg mb-4">
-              🛍️ No featured products available at the moment
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+              <ShoppingBag className="w-8 h-8 text-gray-400" />
             </div>
-            <Link to="/products" className="text-blue-600 hover:text-blue-800 font-medium">
-              Browse all products →
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No featured products yet</h3>
+            <p className="text-gray-600 mb-6">Check out our full collection</p>
+            <Link
+              to="/products"
+              className="inline-flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+            >
+              Browse Products
+              <ArrowRight className="w-5 h-5" />
             </Link>
           </m.div>
         )}
-      </div>
-      
-      {/* Call to Action for Mobile with enhanced styling */}
-      <m.div
+      </section>
+
+      {/* Call to Action Section */}
+      <m.section
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="block md:hidden mt-12 mb-6 text-center"
+        transition={{ delay: 0.5, duration: 0.6 }}
+        className="container mx-auto px-4 py-16"
       >
-        <Link to="/products">
-          <button className="animate-pulse bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-8 rounded-full shadow-lg transform transition duration-500 hover:scale-105 hover:shadow-xl font-semibold">
-            ✨ Explore Our Complete Collection ✨
-          </button>
-        </Link>
-      </m.div>
-    </m.div>
+        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl p-12 text-center relative overflow-hidden">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC40Ij48cGF0aCBkPSJNMzYgMzRjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6bTAgMTBjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6TTQ2IDM0YzAtMi4yMSAxLjc5LTQgNC00czQgMS43OSA0IDQtMS43OSA0LTQgNC00LTEuNzktNC00em0wIDEwYzAtMi4yMSAxLjc5LTQgNC00czQgMS43OSA0IDQtMS43OSA0LTQgNC00LTEuNzktNC00eiIvPjwvZz48L2c+PC9zdmc+')] bg-repeat"></div>
+          </div>
+
+          <div className="relative z-10">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Discover Our Complete Collection
+            </h2>
+            <p className="text-gray-300 text-lg mb-8 max-w-2xl mx-auto">
+              Explore hundreds of premium stationery items carefully curated for professionals, students, and creatives.
+            </p>
+            <Link
+              to="/products"
+              className="inline-flex items-center gap-2 bg-white text-gray-900 px-8 py-4 rounded-lg hover:bg-gray-100 transition-colors font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-transform"
+            >
+              Shop Now
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          </div>
+        </div>
+      </m.section>
+
+      {/* Bottom Spacing */}
+      <div className="h-12"></div>
+    </div>
   );
 }
 

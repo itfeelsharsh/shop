@@ -5,28 +5,17 @@ import { collection, getDocs } from 'firebase/firestore';
 import { removeFromCart, updateQuantity } from '../redux/cartSlice';
 import { Link } from 'react-router-dom';
 import { m } from 'framer-motion';
-import { ShoppingBag, Trash2, Plus, Minus, ChevronRight } from 'lucide-react';
+import { ShoppingBag, Trash2, Plus, Minus, ArrowRight, Loader2, Package } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
-// Auth imports commented out as they're not currently used
-// import { useAuthState } from 'react-firebase-hooks/auth';
-// import { auth } from '../firebase/config';
 
-/**
- * Cart component that displays cart items and popular products recommendation
- */
 function Cart() {
   const cartItems = useSelector(state => state.cart.items);
   const dispatch = useDispatch();
   const [products, setProducts] = useState([]);
   const [popularProducts, setPopularProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  // const [user] = useAuthState(auth); // Commented out since it's not being used
 
   useEffect(() => {
-    /**
-     * Fetches all products from Firestore to match with cart items
-     * and also gets products that should be shown on home page (popular products)
-     */
     const fetchProducts = async () => {
       try {
         const productsCol = collection(db, "products");
@@ -36,214 +25,278 @@ function Cart() {
           return {
             id: doc.id,
             ...data,
-            // Ensure price is a number
             price: data.price !== undefined ? parseFloat(data.price) : 0,
-            // Ensure mrp is a number if it exists
             mrp: data.mrp !== undefined ? parseFloat(data.mrp) : null,
-            // Ensure stock is a number
             stock: data.stock !== undefined ? parseInt(data.stock, 10) : 0
           };
         });
-        
-        // Set all products for cart items
+
         setProducts(productList);
-        
-        // Filter popular products (those shown on home page)
-        const homeProducts = productList.filter(product => product.showOnHome);
-        setPopularProducts(homeProducts);
-        
+        setPopularProducts(productList.filter(product => product.showOnHome));
         setLoading(false);
       } catch (error) {
         console.error("Error fetching products:", error);
         setLoading(false);
       }
     };
-    
+
     fetchProducts();
   }, []);
 
-  /**
-   * Removes an item from the cart
-   * @param {string} productId - The ID of the product to remove
-   */
   const handleRemove = (productId) => {
     dispatch(removeFromCart(productId));
   };
 
-  /**
-   * Updates the quantity of an item in the cart
-   * @param {string} productId - The ID of the product to update
-   * @param {number} quantity - The new quantity
-   */
   const handleQuantityChange = (productId, quantity) => {
     if (quantity < 1) return;
     dispatch(updateQuantity({ productId, quantity }));
   };
 
-  // Match cart items with product details
   const cartDetails = cartItems.map(item => {
     const product = products.find(p => p.id === item.productId);
     return product ? { ...item, product } : null;
-  }).filter(Boolean); // Remove null items
+  }).filter(Boolean);
 
-  // Calculate total cost of items in cart
-  // const subtotal = cartDetails.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+  const subtotal = cartDetails.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+  const tax = subtotal * 0.18; // 18% GST
+  const shipping = subtotal > 500 ? 0 : 50;
+  const total = subtotal + tax + shipping;
 
-  /**
-   * Format price with Indian currency format
-   * @param {number} price - The price to format
-   * @returns {string} Formatted price string
-   */
   const formatPrice = (price) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
-      minimumFractionDigits: 2,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(price);
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-50">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
+      <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+        <Loader2 className="w-12 h-12 text-gray-900 animate-spin mb-4" />
+        <p className="text-gray-600">Loading cart...</p>
       </div>
     );
   }
 
   return (
-    <m.div
-      initial={{ opacity: 0, y: 20 }} 
-      animate={{ opacity: 1, y: 0 }} 
-      transition={{ duration: 0.6, ease: "easeInOut" }} 
-      className="bg-gray-50 min-h-screen"
-    >
-      <div className="container mx-auto px-4 py-12">
-        {/* Cart Header */}
-        <div className="text-center mb-10">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Your Shopping Cart</h1>
-          <p className="text-gray-600 max-w-xl mx-auto">
-            Review and manage the items in your cart before proceeding to checkout
-          </p>
-        </div>
-        
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <m.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Shopping Cart</h1>
+          <p className="text-gray-600">{cartItems.length} {cartItems.length === 1 ? 'item' : 'items'} in your cart</p>
+        </m.div>
+
         {cartItems.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-lg mx-auto">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-6">
-              <ShoppingBag className="text-gray-500" size={28} />
+          <m.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center max-w-2xl mx-auto"
+          >
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6">
+              <ShoppingBag className="w-10 h-10 text-gray-400" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Your cart is empty</h2>
-            <p className="text-gray-600 mb-8">
-              Looks like you haven't added any items to your cart yet.
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">Your cart is empty</h2>
+            <p className="text-gray-600 mb-8 max-w-md mx-auto">
+              Looks like you haven't added any items to your cart yet. Start shopping to fill it up!
             </p>
-            <Link 
+            <Link
               to="/products"
-              className="inline-flex items-center justify-center bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition duration-200"
+              className="inline-flex items-center gap-2 bg-gray-900 text-white px-8 py-4 rounded-xl font-semibold hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl"
             >
-              Continue Shopping
+              Start Shopping
+              <ArrowRight className="w-5 h-5" />
             </Link>
-          </div>
+          </m.div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Cart Items - Left Column */}
-            <div className="lg:col-span-3">
-              <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
-                <div className="p-6 border-b border-gray-100">
-                  <h2 className="text-xl font-semibold text-gray-800">Cart Items ({cartDetails.length})</h2>
-                </div>
-                
-                <div className="divide-y divide-gray-100">
-                  {cartDetails.map(item => (
-                    <div key={item.productId} className="p-6 flex flex-col md:flex-row items-center">
-                      {/* Product Image */}
-                      <div className="w-24 h-24 flex-shrink-0 bg-gray-50 rounded-lg overflow-hidden border border-gray-200">
-                        <img 
-                          src={item.product.image} 
-                          alt={item.product.name} 
-                          className="w-full h-full object-contain"
-                        />
-                      </div>
-                      
-                      {/* Product Info */}
-                      <div className="md:ml-6 flex-grow mt-4 md:mt-0 text-center md:text-left">
-                        <h3 className="text-lg font-medium text-gray-900">{item.product.name}</h3>
-                        <p className="text-sm text-gray-500 mt-1">{item.product.type}</p>
-                        <p className="text-blue-600 font-semibold mt-2">{formatPrice(item.product.price)}</p>
-                      </div>
-                      
-                      {/* Quantity Controls */}
-                      <div className="flex items-center mt-4 md:mt-0">
-                        <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
-                          <button 
-                            onClick={() => handleQuantityChange(item.productId, Math.max(1, item.quantity - 1))}
-                            className="p-2 bg-gray-50 hover:bg-gray-100 transition-colors"
-                            aria-label="Decrease quantity"
-                          >
-                            <Minus size={16} />
-                          </button>
-                          <input 
-                            type="number" 
-                            value={item.quantity}
-                            onChange={(e) => handleQuantityChange(item.productId, parseInt(e.target.value) || 1)}
-                            className="w-12 p-1 text-center border-x border-gray-300 focus:outline-none"
-                            min="1"
-                          />
-                          <button 
-                            onClick={() => handleQuantityChange(item.productId, item.quantity + 1)}
-                            className="p-2 bg-gray-50 hover:bg-gray-100 transition-colors"
-                            aria-label="Increase quantity"
-                          >
-                            <Plus size={16} />
-                          </button>
+            {/* Cart Items */}
+            <div className="lg:col-span-2 space-y-4">
+              {cartDetails.map((item, index) => (
+                <m.div
+                  key={item.productId}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex flex-col sm:flex-row gap-6">
+                    {/* Product Image */}
+                    <div className="w-full sm:w-32 h-32 flex-shrink-0">
+                      <img
+                        src={item.product.image}
+                        alt={item.product.name}
+                        className="w-full h-full object-cover rounded-xl"
+                      />
+                    </div>
+
+                    {/* Product Info */}
+                    <div className="flex-grow">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                            {item.product.name}
+                          </h3>
+                          {item.product.brand && (
+                            <p className="text-sm text-gray-500">{item.product.brand}</p>
+                          )}
                         </div>
-                        
-                        {/* Remove Button */}
-                        <button 
-                          onClick={() => handleRemove(item.productId)} 
-                          className="ml-4 p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+                        <button
+                          onClick={() => handleRemove(item.productId)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           aria-label="Remove item"
                         >
-                          <Trash2 size={18} />
+                          <Trash2 className="w-5 h-5" />
                         </button>
                       </div>
+
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        {/* Price */}
+                        <div className="text-lg font-bold text-gray-900">
+                          {formatPrice(item.product.price)}
+                        </div>
+
+                        {/* Quantity Controls */}
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm text-gray-600 font-medium">Quantity:</span>
+                          <div className="flex items-center border-2 border-gray-200 rounded-lg overflow-hidden">
+                            <button
+                              onClick={() => handleQuantityChange(item.productId, item.quantity - 1)}
+                              disabled={item.quantity <= 1}
+                              className="p-2 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </button>
+                            <span className="px-4 py-2 min-w-[3rem] text-center font-semibold border-x-2 border-gray-200">
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() => handleQuantityChange(item.productId, item.quantity + 1)}
+                              disabled={item.quantity >= item.product.stock}
+                              className="p-2 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Subtotal */}
+                        <div className="text-right">
+                          <div className="text-sm text-gray-500 mb-1">Subtotal</div>
+                          <div className="text-xl font-bold text-gray-900">
+                            {formatPrice(item.product.price * item.quantity)}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
-                <Link 
-                  to="/checkout" 
-                  className="bg-blue-600 text-white text-center py-3 px-6 rounded-lg shadow hover:bg-blue-700 transition duration-200 font-medium"
-                >
-                  <div className="flex items-center justify-center">
-                    <span>Checkout</span>
-                    <ChevronRight size={18} className="ml-2" />
                   </div>
+                </m.div>
+              ))}
+            </div>
+
+            {/* Order Summary */}
+            <div className="lg:col-span-1">
+              <m.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-4"
+              >
+                <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
+
+                <div className="space-y-4 mb-6">
+                  <div className="flex justify-between text-gray-600">
+                    <span>Subtotal</span>
+                    <span className="font-semibold">{formatPrice(subtotal)}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-600">
+                    <span>Tax (GST 18%)</span>
+                    <span className="font-semibold">{formatPrice(tax)}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-600">
+                    <span>Shipping</span>
+                    <span className="font-semibold">
+                      {shipping === 0 ? (
+                        <span className="text-green-600">FREE</span>
+                      ) : (
+                        formatPrice(shipping)
+                      )}
+                    </span>
+                  </div>
+                  {shipping > 0 && (
+                    <div className="text-sm text-gray-500 bg-blue-50 p-3 rounded-lg">
+                      Add {formatPrice(500 - subtotal)} more for free shipping!
+                    </div>
+                  )}
+                  <div className="border-t border-gray-200 pt-4">
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-lg font-semibold text-gray-900">Total</span>
+                      <span className="text-2xl font-bold text-gray-900">{formatPrice(total)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <Link
+                  to="/checkout"
+                  className="w-full bg-gray-900 text-white py-4 px-6 rounded-xl font-bold hover:bg-gray-800 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl mb-3"
+                >
+                  Proceed to Checkout
+                  <ArrowRight className="w-5 h-5" />
                 </Link>
-                
-                <Link 
-                  to="/products" 
-                  className="border border-gray-300 bg-white text-gray-700 text-center py-3 px-6 rounded-lg hover:bg-gray-50 transition duration-200"
+
+                <Link
+                  to="/products"
+                  className="w-full border-2 border-gray-200 text-gray-700 py-3 px-6 rounded-xl font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center"
                 >
                   Continue Shopping
                 </Link>
-              </div>
+
+                {/* Features */}
+                <div className="mt-6 pt-6 border-t border-gray-200 space-y-3">
+                  <div className="flex items-center gap-3 text-sm text-gray-600">
+                    <Package className="w-5 h-5 text-green-600" />
+                    <span>Free returns within 30 days</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-gray-600">
+                    <ShoppingBag className="w-5 h-5 text-blue-600" />
+                    <span>Secure checkout guaranteed</span>
+                  </div>
+                </div>
+              </m.div>
             </div>
           </div>
         )}
-        
-        {/* Popular Products Recommendation */}
-        <div className="mt-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">You might also like</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {popularProducts.slice(0, 4).map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
+
+        {/* Recommended Products */}
+        {popularProducts.length > 0 && (
+          <m.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mt-16"
+          >
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">You Might Also Like</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {popularProducts.slice(0, 4).map(product => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onAddToCart={(product) => {
+                    dispatch(addToCart({ productId: product.id, quantity: 1 }));
+                  }}
+                />
+              ))}
+            </div>
+          </m.div>
+        )}
       </div>
-    </m.div>
+    </div>
   );
 }
 

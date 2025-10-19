@@ -879,10 +879,223 @@ const generateOrderShippedHTML = (order, user, shipmentInfo) => {
   `;
 };
 
+/**
+ * Sends a magic link authentication email to the user
+ * @param {string} email - User's email address
+ * @param {string} magicLink - The magic link URL for authentication
+ * @returns {Promise<Object>} - Result of the email sending operation
+ */
+const sendMagicLinkEmail = async (email, magicLink) => {
+  console.log('sendMagicLinkEmail called with email:', email);
+
+  if (!email) {
+    console.error('Cannot send magic link: Missing user email');
+    return { success: false, error: 'Missing user email' };
+  }
+
+  if (!magicLink) {
+    console.error('Cannot send magic link: Missing magic link URL');
+    return { success: false, error: 'Missing magic link URL' };
+  }
+
+  if (!isEmailEnabled()) {
+    console.log('Email functionality is disabled, skipping magic link email');
+    return { success: false, error: 'Email functionality is disabled' };
+  }
+
+  try {
+    console.log('Generating magic link email HTML template');
+    const emailBody = generateMagicLinkHTML(email, magicLink);
+    console.log('Email template generated, length:', emailBody.length);
+
+    const emailData = {
+      to: email,
+      subject: 'Sign in to KamiKoto - Your Magic Link',
+      body: emailBody,
+    };
+
+    console.log('Calling sendEmail function with magic link data');
+    return await sendEmail(emailData);
+  } catch (error) {
+    console.error('Error in sendMagicLinkEmail function:', error);
+    return { success: false, error: error.message || 'Failed to send magic link email' };
+  }
+};
+
+/**
+ * Generates HTML content for magic link authentication emails
+ * @param {string} email - User's email address
+ * @param {string} magicLink - The magic link URL for authentication
+ * @returns {string} - HTML content for the email
+ */
+const generateMagicLinkHTML = (email, magicLink) => {
+  const minimalCSS = `
+    table, td, div, h1, h2, h3, p, a {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    @media only screen and (max-width: 600px) {
+      .mobile-stack {
+        display: block !important;
+        width: 100% !important;
+      }
+      .mobile-padding {
+        padding: 16px !important;
+      }
+    }
+  `;
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>Sign in to KamiKoto</title>
+  <style type="text/css">
+    body, table, td {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !important;
+    }
+    ${minimalCSS}
+  </style>
+  <!--[if mso]>
+  <style type="text/css">
+    body, table, td {font-family: Arial, Helvetica, sans-serif !important;}
+  </style>
+  <![endif]-->
+</head>
+<body style="margin: 0; padding: 0; background-color: #f9fafb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; color: #111827; width: 100%; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+  <table style="width: 100%; min-width: 600px; background-color: #f9fafb;" border="0" cellspacing="0" cellpadding="0" role="presentation">
+    <tbody>
+      <tr>
+        <td align="center" valign="top" style="padding: 40px 0;">
+          <table style="width: 600px; max-width: 600px; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px;" align="center" border="0" cellpadding="0" cellspacing="0" role="presentation">
+            <tbody>
+              <!-- Header -->
+              <tr>
+                <td style="padding: 32px 40px; border-bottom: 1px solid #e5e7eb;">
+                  <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
+                    <tr>
+                      <td align="left">
+                        <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #111827; letter-spacing: -0.5px;">KamiKoto</h1>
+                        <p style="margin: 4px 0 0; font-size: 14px; color: #6b7280;">Your Premium Stationery Destination</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- Sign In Section -->
+              <tr>
+                <td style="padding: 40px 40px 32px 40px;">
+                  <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
+                    <tr>
+                      <td style="text-align: center;">
+                        <h2 style="margin: 0 0 8px 0; font-size: 28px; font-weight: 600; color: #111827; letter-spacing: -0.5px;">Sign In to Your Account</h2>
+                        <p style="margin: 0 0 24px 0; color: #6b7280; font-size: 15px; line-height: 1.5;">Click the button below to securely sign in to your KamiKoto account.</p>
+
+                        <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 16px; text-align: left; margin-bottom: 24px;">
+                          <p style="margin: 0 0 4px 0; color: #111827; font-size: 14px; font-weight: 500;">
+                            Sign-in requested for:
+                          </p>
+                          <p style="margin: 0; color: #6b7280; font-size: 14px;">
+                            ${email}
+                          </p>
+                        </div>
+
+                        <!-- Magic Link Button -->
+                        <div style="text-align: center; margin-bottom: 24px;">
+                          <a href="${magicLink}" target="_blank" style="display: inline-block; background-color: #111827; color: #ffffff; font-size: 16px; font-weight: 500; text-decoration: none; padding: 14px 32px; border-radius: 6px; margin: 0 auto;">Sign In to KamiKoto</a>
+                        </div>
+
+                        <div style="background-color: #fef3c7; border: 1px solid #fde68a; border-radius: 6px; padding: 16px; text-align: left;">
+                          <p style="margin: 0 0 4px 0; color: #92400e; font-size: 14px; font-weight: 500;">
+                            Security Notice
+                          </p>
+                          <p style="margin: 0; color: #92400e; font-size: 13px; line-height: 1.5;">
+                            This link will expire in 60 minutes. If you didn't request this sign-in, please ignore this email.
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- Alternative Link Section -->
+              <tr>
+                <td style="padding: 0 40px 32px 40px;">
+                  <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+                    <tr>
+                      <td style="padding: 16px 24px; background-color: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+                        <h3 style="margin: 0; font-size: 14px; font-weight: 600; color: #111827;">Having trouble with the button?</h3>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 20px 24px;">
+                        <p style="margin: 0 0 8px 0; font-size: 14px; color: #6b7280;">Copy and paste this link into your browser:</p>
+                        <p style="margin: 0; font-size: 13px; color: #111827; word-break: break-all; font-family: 'Courier New', Courier, monospace; background-color: #f9fafb; padding: 12px; border-radius: 4px; border: 1px solid #e5e7eb;">${magicLink}</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- Help Section -->
+              <tr>
+                <td style="padding: 0 40px 32px 40px;">
+                  <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
+                    <tr>
+                      <td style="padding: 20px; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px;">
+                        <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #111827;">Need Help?</p>
+                        <p style="margin: 0; font-size: 14px; color: #6b7280; line-height: 1.6;">
+                          If you're having trouble signing in, contact us at <a href="mailto:${featureConfig.email.supportEmail}" style="color: #111827; font-weight: 500; text-decoration: underline;">${featureConfig.email.supportEmail}</a>
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td style="padding: 32px 40px; background-color: #f9fafb; border-top: 1px solid #e5e7eb; text-align: center;">
+                  <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                    <tr>
+                      <td style="text-align: center;">
+                        <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #111827;">KamiKoto</p>
+                        <p style="margin: 0 0 16px 0; font-size: 13px; color: #6b7280;">Your Premium Stationery Destination</p>
+                        <p style="margin: 0 0 8px 0; font-size: 13px; color: #6b7280;">
+                          Questions? <a href="mailto:${featureConfig.email.supportEmail}" style="color: #111827; text-decoration: underline;">${featureConfig.email.supportEmail}</a>
+                        </p>
+                        <p style="margin: 0; font-size: 12px; color: #9ca3af;">
+                          © ${new Date().getFullYear()} KamiKoto. All Rights Reserved.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>
+  `;
+};
+
 // Export all the email service functions
 export {
   sendOrderConfirmationEmail,
   sendOrderShippedEmail,
+  sendMagicLinkEmail,
   isEmailEnabled,
   sendEmail
 }; 

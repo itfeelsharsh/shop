@@ -2,32 +2,30 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { db } from "../firebase/config";
 import { collection, getDocs } from "firebase/firestore";
 import ProductCard from "../components/ProductCard";
-import { Search, Filter, X } from "lucide-react";
-import { m } from "framer-motion";
+import { Search, Filter, X, SlidersHorizontal, Loader2 } from "lucide-react";
+import { m, AnimatePresence } from "framer-motion";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase/config";
 
 /**
- * Products component displays a complete product catalog with category sections
+ * Modern Products Page
+ *
  * Features:
- * - Fetches products from Firestore database
- * - Organizes products by categories
- * - Provides advanced search and filtering functionality
- * - Implements "load more" pagination per category
- * - Uses animations for enhanced user experience
- * - Includes performance optimizations for authenticated users
+ * - Advanced search and filtering
+ * - Organized by categories
+ * - Modern, minimalistic design
+ * - Smooth animations
+ * - Responsive grid layout
  */
 function Products() {
-  // State management
-  const [products, setProducts] = useState([]); // All products from database
-  const [loading, setLoading] = useState(true); // Loading state for initial data fetch
-  const [visibleCounts, setVisibleCounts] = useState({}); // Track number of visible products per category
-  const [searchTerm, setSearchTerm] = useState(""); // User search input
-  const [showFilters, setShowFilters] = useState(false); // Control filter panel visibility
-  
-  // Filter states
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [visibleCounts, setVisibleCounts] = useState({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+
   const [filters, setFilters] = useState({
     priceRange: { min: "", max: "" },
     brands: [],
@@ -38,98 +36,75 @@ function Products() {
     guarantee: false,
     inStock: false
   });
-  
-  const [availableBrands, setAvailableBrands] = useState([]); // Available brands from products
-  const [availableTypes, setAvailableTypes] = useState([]); // Available product types from products
-  
-  const dispatch = useDispatch(); // Redux dispatch for cart actions
-  const [user] = useAuthState(auth); // Get authenticated user
 
-  /**
-   * Fetch all products from Firestore on component mount
-   * Uses caching to minimize database reads and improve performance
-   */
+  const [availableBrands, setAvailableBrands] = useState([]);
+  const [availableTypes, setAvailableTypes] = useState([]);
+
+  const dispatch = useDispatch();
+  const [user] = useAuthState(auth);
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // Check for cached product data
         const cachedProducts = sessionStorage.getItem('products_cache');
         const lastFetchTime = sessionStorage.getItem('products_fetch_time');
         const now = Date.now();
-        
-        // Clear cache if user authentication state changes
-        // This ensures we're not using potentially stale data
+
         const authStateKey = user ? `auth_${user.uid}` : 'no_auth';
         const lastAuthState = sessionStorage.getItem('last_auth_state');
-        
-        // Determine if we need to bypass cache due to auth state change
         const authStateChanged = lastAuthState !== authStateKey;
-        
-        // Update the authentication state tracker
+
         sessionStorage.setItem('last_auth_state', authStateKey);
-        
-        // Use cache if available, less than 5 minutes old, and auth state hasn't changed
-        if (cachedProducts && lastFetchTime && 
-            (now - parseInt(lastFetchTime)) < 5 * 60 * 1000 && 
+
+        if (cachedProducts && lastFetchTime &&
+            (now - parseInt(lastFetchTime)) < 5 * 60 * 1000 &&
             !authStateChanged) {
           setProducts(JSON.parse(cachedProducts));
           setLoading(false);
           return;
         }
-        
-        // Fetch from database if cache is missing, outdated, or auth state changed
+
         console.log("Fetching fresh products data...", { authStateKey, isAuthenticated: !!user });
         const querySnapshot = await getDocs(collection(db, "products"));
-        
-        // Check if querySnapshot exists and has docs
+
         if (querySnapshot && querySnapshot.docs) {
           const productsArray = querySnapshot.docs.map((doc) => ({
             id: doc.id,
             ...doc.data(),
           }));
-          
-          // Update state and cache the results
+
           setProducts(productsArray);
           sessionStorage.setItem('products_cache', JSON.stringify(productsArray));
           sessionStorage.setItem('products_fetch_time', now.toString());
           console.log(`Successfully fetched ${productsArray.length} products`);
         } else {
-          // Handle case where querySnapshot is invalid
           console.error("Query snapshot is invalid", querySnapshot);
           throw new Error("Failed to get valid product data");
         }
-        
+
       } catch (error) {
         console.error("Error fetching products:", error);
-        
-        // Fallback to cached data if available when fetch fails
+
         const cachedProducts = sessionStorage.getItem('products_cache');
         if (cachedProducts) {
           console.log("Using cached products as fallback after fetch error");
           setProducts(JSON.parse(cachedProducts));
         } else {
-          // If no cache available, set empty array to avoid infinite loading
           console.log("No cache available for fallback, showing empty products list");
           setProducts([]);
         }
       } finally {
-        // Always set loading to false, regardless of success/failure
         setLoading(false);
       }
     };
-    
-    fetchProducts();
-    
-    // Cleanup function to avoid memory leaks
-    return () => {
-      // Any cleanup code if needed
-    };
-  }, [user]); // Add user dependency to re-fetch when auth state changes
 
-  /**
-   * Extract unique brands and types from products
-   * Updates availableBrands and availableTypes state
-   */
+    fetchProducts();
+
+    return () => {
+      // Cleanup if needed
+    };
+  }, [user]);
+
   useEffect(() => {
     if (products.length > 0) {
       const brands = [...new Set(products.map(p => p.brand).filter(Boolean))];
@@ -139,11 +114,6 @@ function Products() {
     }
   }, [products]);
 
-  /**
-   * Handle filter changes
-   * @param {string} filterType - Type of filter being changed
-   * @param {any} value - New value for the filter
-   */
   const handleFilterChange = (filterType, value) => {
     setFilters(prev => ({
       ...prev,
@@ -151,9 +121,6 @@ function Products() {
     }));
   };
 
-  /**
-   * Reset all filters to their default state
-   */
   const resetFilters = () => {
     setFilters({
       priceRange: { min: "", max: "" },
@@ -167,11 +134,6 @@ function Products() {
     });
   };
 
-  /**
-   * Predefined category order for consistent display
-   * Categories are displayed in this exact order regardless of data order
-   * Memoized to prevent recreation on every render
-   */
   const categoriesOrder = useMemo(() => [
     "Notebooks and Journals",
     "Pens and Pencils",
@@ -185,19 +147,12 @@ function Products() {
     "Gift Wrap and Packaging",
   ], []);
 
-  /**
-   * Generate categorized products for display
-   * Applies search filter and all other filters if they exist
-   * Ensures price values are properly converted to numbers
-   * Memoized to prevent recalculation on every render
-   */
   const categorizedProducts = useMemo(() => {
-    // Process product data to ensure consistent data types
     const processedProducts = products.map(product => ({
       ...product,
       price: typeof product.price === 'string' ? parseFloat(product.price) : product.price,
-      originalPrice: product.originalPrice ? 
-        (typeof product.originalPrice === 'string' ? parseFloat(product.originalPrice) : product.originalPrice) 
+      originalPrice: product.originalPrice ?
+        (typeof product.originalPrice === 'string' ? parseFloat(product.originalPrice) : product.originalPrice)
         : null,
       stock: typeof product.stock === 'string' ? parseInt(product.stock, 10) : product.stock,
     }));
@@ -205,49 +160,30 @@ function Products() {
     return categoriesOrder.map((category) => ({
       category,
       items: processedProducts.filter((product) => {
-        // Ensure product belongs to the current category
-        if (product.type !== category) {
-          return false;
-        }
+        if (product.type !== category) return false;
 
-        // Apply price range filter
         if (filters.priceRange.min && product.price < parseFloat(filters.priceRange.min)) return false;
         if (filters.priceRange.max && product.price > parseFloat(filters.priceRange.max)) return false;
 
-        // Apply brand filter
         if (filters.brands.length > 0 && !filters.brands.includes(product.brand)) return false;
-
-        // Apply type filter
         if (filters.types.length > 0 && !filters.types.includes(product.type)) return false;
 
-        // Apply origin filter
         if (filters.origin && product.origin !== filters.origin) return false;
 
-        // Apply import status filter
         if (filters.importStatus) {
           const isImported = product.importDetails?.isImported;
           if (filters.importStatus === 'imported' && !isImported) return false;
           if (filters.importStatus === 'local' && isImported) return false;
         }
 
-        // Apply warranty filter
         if (filters.warranty && !product.warranty?.available) return false;
-
-        // Apply guarantee filter
         if (filters.guarantee && !product.guarantee?.available) return false;
-
-        // Apply stock filter
         if (filters.inStock && product.stock <= 0) return false;
 
-        // If searchTerm is empty, include the product
-        if (searchTerm === "") {
-          return true;
-        }
+        if (searchTerm === "") return true;
 
-        // Prepare searchTerm for case-insensitive comparison
         const term = searchTerm.toLowerCase();
 
-        // Check various product fields for a match
         if (product.name?.toLowerCase().includes(term)) return true;
         if (product.description?.toLowerCase().includes(term)) return true;
         if (product.brand?.toLowerCase().includes(term)) return true;
@@ -270,28 +206,19 @@ function Products() {
           if (product.importDetails.country?.toLowerCase().includes(term)) return true;
           if (product.importDetails.deliveryNote?.toLowerCase().includes(term)) return true;
         }
-        
+
         return false;
       }),
     }));
   }, [products, searchTerm, categoriesOrder, filters]);
 
-  /**
-   * Handles loading more products for a specific category
-   * @param {string} category - The category to load more products for
-   */
   const handleLoadMore = useCallback((category) => {
     setVisibleCounts((prevCounts) => ({
       ...prevCounts,
-      [category]: (prevCounts[category] || 8) + 8, // Load 8 more items each time for minimalistic layout
+      [category]: (prevCounts[category] || 12) + 12,
     }));
   }, []);
 
-  /**
-   * Handles adding a product to the cart
-   * Dispatches Redux action with product ID and quantity
-   * @param {Object} product - The product to add to cart
-   */
   const handleAddToCart = useCallback((product) => {
     dispatch(addToCart({
       productId: product.id,
@@ -299,341 +226,358 @@ function Products() {
     }));
   }, [dispatch]);
 
-  // Show loading spinner while fetching products
+  const activeFiltersCount = useMemo(() => {
+    return Object.values(filters).reduce((count, value) => {
+      if (typeof value === 'object') {
+        return count + Object.values(value).filter(v => v !== "" && v !== false).length;
+      }
+      return count + (value !== "" && value !== false && value.length > 0 ? 1 : 0);
+    }, 0);
+  }, [filters]);
+
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-50">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
+      <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+        <Loader2 className="w-12 h-12 text-gray-900 animate-spin mb-4" />
+        <p className="text-gray-600">Loading products...</p>
       </div>
     );
   }
 
   return (
-    <m.div
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: "easeInOut" }}
-      className="container mx-auto px-2 py-4 bg-gray-50"
-    >
-      {/* Page Title - Minimalistic */}
-      <h1 className="text-2xl font-bold mb-4 text-gray-900">
-        Our Collection
-      </h1>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <m.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-8"
+        >
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Our Collection</h1>
+          <p className="text-gray-600">Explore our premium stationery products</p>
+        </m.div>
 
-      {/* Search and Filter Section - Compact */}
-      <div className="mb-4 space-y-2">
-        {/* Search Bar with Filter Toggle - Compact */}
-        <div className="flex gap-2">
-          <div className="flex-grow relative">
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-2 pr-10 text-sm text-gray-900 border border-gray-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <Search
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-              size={16}
-            />
-          </div>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-1 px-3 py-2 rounded text-sm transition-colors ${
-              showFilters
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                : 'bg-white border border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            <Filter size={16} />
-            {/* Show active filters count */}
-            {Object.values(filters).some(value => {
-              if (typeof value === 'object') {
-                return Object.values(value).some(v => v !== "" && v !== false);
-              }
-              return value !== "" && value !== false && value.length > 0;
-            }) && (
-              <span className="bg-white text-blue-600 px-1.5 py-0.5 rounded-full text-xs">
-                {Object.values(filters).reduce((count, value) => {
-                  if (typeof value === 'object') {
-                    return count + Object.values(value).filter(v => v !== "" && v !== false).length;
-                  }
-                  return count + (value !== "" && value !== false && value.length > 0 ? 1 : 0);
-                }, 0)}
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* Active Filters Display */}
-        {Object.entries(filters).some(([key, value]) => {
-          if (typeof value === 'object') {
-            return Object.values(value).some(v => v !== "" && v !== false);
-          }
-          return value !== "" && value !== false && value.length > 0;
-        }) && (
-          <div className="flex flex-wrap gap-2 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
-            {Object.entries(filters).map(([key, value]) => {
-              if (key === 'priceRange' && (value.min || value.max)) {
-                return (
-                  <div key={key} className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
-                    <span>Price: {value.min ? `₹${value.min}` : 'Min'} - {value.max ? `₹${value.max}` : 'Max'}</span>
-                    <button
-                      onClick={() => handleFilterChange('priceRange', { min: "", max: "" })}
-                      className="text-blue-700 hover:text-blue-900"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                );
-              }
-              if (Array.isArray(value) && value.length > 0) {
-                return value.map(item => (
-                  <div key={`${key}-${item}`} className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
-                    <span>{key === 'brands' ? 'Brand' : 'Type'}: {item}</span>
-                    <button
-                      onClick={() => handleFilterChange(key, value.filter(v => v !== item))}
-                      className="text-blue-700 hover:text-blue-900"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ));
-              }
-              if (typeof value === 'string' && value) {
-                return (
-                  <div key={key} className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
-                    <span>{key === 'origin' ? 'Origin' : 'Import'}: {value}</span>
-                    <button
-                      onClick={() => handleFilterChange(key, "")}
-                      className="text-blue-700 hover:text-blue-900"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                );
-              }
-              if (typeof value === 'boolean' && value) {
-                return (
-                  <div key={key} className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
-                    <span>{key === 'warranty' ? 'With Warranty' : key === 'guarantee' ? 'With Guarantee' : 'In Stock'}</span>
-                    <button
-                      onClick={() => handleFilterChange(key, false)}
-                      className="text-blue-700 hover:text-blue-900"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                );
-              }
-              return null;
-            })}
-            <button
-              onClick={resetFilters}
-              className="text-sm text-blue-600 hover:text-blue-800 underline"
-            >
-              Clear All
-            </button>
-          </div>
-        )}
-
-        {/* Filter Panel */}
-        {showFilters && (
-          <m.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-white p-6 rounded-lg shadow-lg border border-gray-200"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Price Range */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Price Range</label>
-                <div className="flex gap-2">
-                  <div className="flex-grow">
-                    <input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.priceRange.min}
-                      onChange={(e) => handleFilterChange('priceRange', { ...filters.priceRange, min: e.target.value })}
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  <div className="flex-grow">
-                    <input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.priceRange.max}
-                      onChange={(e) => handleFilterChange('priceRange', { ...filters.priceRange, max: e.target.value })}
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Brands */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Brands</label>
-                <div className="max-h-40 overflow-y-auto space-y-2">
-                  {availableBrands.map(brand => (
-                    <label key={brand} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
-                      <input
-                        type="checkbox"
-                        checked={filters.brands.includes(brand)}
-                        onChange={(e) => {
-                          const newBrands = e.target.checked
-                            ? [...filters.brands, brand]
-                            : filters.brands.filter(b => b !== brand);
-                          handleFilterChange('brands', newBrands);
-                        }}
-                        className="rounded text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">{brand}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Product Types */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Product Types</label>
-                <div className="max-h-40 overflow-y-auto space-y-2">
-                  {availableTypes.map(type => (
-                    <label key={type} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
-                      <input
-                        type="checkbox"
-                        checked={filters.types.includes(type)}
-                        onChange={(e) => {
-                          const newTypes = e.target.checked
-                            ? [...filters.types, type]
-                            : filters.types.filter(t => t !== type);
-                          handleFilterChange('types', newTypes);
-                        }}
-                        className="rounded text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">{type}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Origin */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Origin</label>
+        {/* Search and Filter Bar */}
+        <m.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.5 }}
+          className="mb-8"
+        >
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* Search */}
+              <div className="flex-grow relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
-                  placeholder="Country of origin"
-                  value={filters.origin}
-                  onChange={(e) => handleFilterChange('origin', e.target.value)}
-                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 text-gray-900 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
                 />
               </div>
 
-              {/* Import Status */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Import Status</label>
-                <select
-                  value={filters.importStatus}
-                  onChange={(e) => handleFilterChange('importStatus', e.target.value)}
-                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">All Products</option>
-                  <option value="imported">Imported Products</option>
-                  <option value="local">Local Products</option>
-                </select>
-              </div>
-
-              {/* Additional Filters */}
-              <div className="bg-gray-50 p-4 rounded-lg space-y-4">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Additional Filters</h3>
-                <label className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
-                  <input
-                    type="checkbox"
-                    checked={filters.warranty}
-                    onChange={(e) => handleFilterChange('warranty', e.target.checked)}
-                    className="rounded text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700">With Warranty</span>
-                </label>
-
-                <label className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
-                  <input
-                    type="checkbox"
-                    checked={filters.guarantee}
-                    onChange={(e) => handleFilterChange('guarantee', e.target.checked)}
-                    className="rounded text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700">With Guarantee</span>
-                </label>
-
-                <label className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
-                  <input
-                    type="checkbox"
-                    checked={filters.inStock}
-                    onChange={(e) => handleFilterChange('inStock', e.target.checked)}
-                    className="rounded text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700">In Stock Only</span>
-                </label>
-              </div>
+              {/* Filter Button */}
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
+                  showFilters
+                    ? 'bg-gray-900 text-white shadow-lg'
+                    : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                }`}
+              >
+                <SlidersHorizontal className="w-5 h-5" />
+                <span className="hidden sm:inline">Filters</span>
+                {activeFiltersCount > 0 && (
+                  <span className="bg-white text-gray-900 px-2 py-0.5 rounded-full text-xs font-semibold">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </button>
             </div>
-          </m.div>
+
+            {/* Active Filters Display */}
+            {activeFiltersCount > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(filters).map(([key, value]) => {
+                    if (key === 'priceRange' && (value.min || value.max)) {
+                      return (
+                        <div key={key} className="flex items-center gap-2 bg-gray-100 text-gray-900 px-3 py-1.5 rounded-lg text-sm">
+                          <span>Price: {value.min ? `₹${value.min}` : 'Min'} - {value.max ? `₹${value.max}` : 'Max'}</span>
+                          <button
+                            onClick={() => handleFilterChange('priceRange', { min: "", max: "" })}
+                            className="text-gray-700 hover:text-gray-900"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      );
+                    }
+                    if (Array.isArray(value) && value.length > 0) {
+                      return value.map(item => (
+                        <div key={`${key}-${item}`} className="flex items-center gap-2 bg-gray-100 text-gray-900 px-3 py-1.5 rounded-lg text-sm">
+                          <span>{key === 'brands' ? 'Brand' : 'Type'}: {item}</span>
+                          <button
+                            onClick={() => handleFilterChange(key, value.filter(v => v !== item))}
+                            className="text-gray-700 hover:text-gray-900"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ));
+                    }
+                    if (typeof value === 'string' && value) {
+                      return (
+                        <div key={key} className="flex items-center gap-2 bg-gray-100 text-gray-900 px-3 py-1.5 rounded-lg text-sm">
+                          <span>{key === 'origin' ? 'Origin' : 'Import'}: {value}</span>
+                          <button
+                            onClick={() => handleFilterChange(key, "")}
+                            className="text-gray-700 hover:text-gray-900"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      );
+                    }
+                    if (typeof value === 'boolean' && value) {
+                      return (
+                        <div key={key} className="flex items-center gap-2 bg-gray-100 text-gray-900 px-3 py-1.5 rounded-lg text-sm">
+                          <span>{key === 'warranty' ? 'With Warranty' : key === 'guarantee' ? 'With Guarantee' : 'In Stock'}</span>
+                          <button
+                            onClick={() => handleFilterChange(key, false)}
+                            className="text-gray-700 hover:text-gray-900"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })}
+                  <button
+                    onClick={resetFilters}
+                    className="text-sm text-gray-600 hover:text-gray-900 underline font-medium"
+                  >
+                    Clear All
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Filter Panel */}
+          <AnimatePresence>
+            {showFilters && (
+              <m.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="mt-4 bg-white rounded-xl shadow-sm border border-gray-100 p-6 overflow-hidden"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {/* Price Range */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-3">Price Range</label>
+                    <div className="flex gap-3">
+                      <input
+                        type="number"
+                        placeholder="Min"
+                        value={filters.priceRange.min}
+                        onChange={(e) => handleFilterChange('priceRange', { ...filters.priceRange, min: e.target.value })}
+                        className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Max"
+                        value={filters.priceRange.max}
+                        onChange={(e) => handleFilterChange('priceRange', { ...filters.priceRange, max: e.target.value })}
+                        className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Brands */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-3">Brands</label>
+                    <div className="max-h-40 overflow-y-auto space-y-2 pr-2">
+                      {availableBrands.map(brand => (
+                        <label key={brand} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={filters.brands.includes(brand)}
+                            onChange={(e) => {
+                              const newBrands = e.target.checked
+                                ? [...filters.brands, brand]
+                                : filters.brands.filter(b => b !== brand);
+                              handleFilterChange('brands', newBrands);
+                            }}
+                            className="rounded text-gray-900 focus:ring-gray-900"
+                          />
+                          <span className="text-sm text-gray-700">{brand}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Product Types */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-3">Product Types</label>
+                    <div className="max-h-40 overflow-y-auto space-y-2 pr-2">
+                      {availableTypes.map(type => (
+                        <label key={type} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={filters.types.includes(type)}
+                            onChange={(e) => {
+                              const newTypes = e.target.checked
+                                ? [...filters.types, type]
+                                : filters.types.filter(t => t !== type);
+                              handleFilterChange('types', newTypes);
+                            }}
+                            className="rounded text-gray-900 focus:ring-gray-900"
+                          />
+                          <span className="text-sm text-gray-700">{type}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Origin */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-3">Origin</label>
+                    <input
+                      type="text"
+                      placeholder="Country of origin"
+                      value={filters.origin}
+                      onChange={(e) => handleFilterChange('origin', e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    />
+                  </div>
+
+                  {/* Import Status */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-3">Import Status</label>
+                    <select
+                      value={filters.importStatus}
+                      onChange={(e) => handleFilterChange('importStatus', e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    >
+                      <option value="">All Products</option>
+                      <option value="imported">Imported Products</option>
+                      <option value="local">Local Products</option>
+                    </select>
+                  </div>
+
+                  {/* Additional Filters */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-3">Additional Filters</label>
+                    <div className="space-y-2">
+                      <label className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={filters.warranty}
+                          onChange={(e) => handleFilterChange('warranty', e.target.checked)}
+                          className="rounded text-gray-900 focus:ring-gray-900"
+                        />
+                        <span className="text-sm text-gray-700">With Warranty</span>
+                      </label>
+
+                      <label className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={filters.guarantee}
+                          onChange={(e) => handleFilterChange('guarantee', e.target.checked)}
+                          className="rounded text-gray-900 focus:ring-gray-900"
+                        />
+                        <span className="text-sm text-gray-700">With Guarantee</span>
+                      </label>
+
+                      <label className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={filters.inStock}
+                          onChange={(e) => handleFilterChange('inStock', e.target.checked)}
+                          className="rounded text-gray-900 focus:ring-gray-900"
+                        />
+                        <span className="text-sm text-gray-700">In Stock Only</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </m.div>
+            )}
+          </AnimatePresence>
+        </m.div>
+
+        {/* Product Categories */}
+        <div className="space-y-8">
+          {categorizedProducts.map(({ category, items }, index) => {
+            const visibleItems = items.slice(0, visibleCounts[category] || 12);
+
+            if (items.length === 0) return null;
+
+            return (
+              <m.div
+                key={category}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05, duration: 0.5 }}
+                className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+              >
+                {/* Category Header */}
+                <div className="bg-gradient-to-r from-gray-900 to-gray-800 px-6 py-4">
+                  <h2 className="text-xl font-semibold text-white">{category}</h2>
+                  <p className="text-gray-300 text-sm mt-1">{items.length} items</p>
+                </div>
+
+                {/* Products Grid */}
+                <div className="p-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                    {visibleItems.map((product) => (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        onAddToCart={handleAddToCart}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Load More Button */}
+                  {items.length > 12 && !(visibleCounts[category] >= items.length) && (
+                    <div className="flex justify-center mt-6">
+                      <button
+                        onClick={() => handleLoadMore(category)}
+                        className="px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
+                      >
+                        Load More
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </m.div>
+            );
+          })}
+        </div>
+
+        {/* No Results */}
+        {products.length === 0 && (
+          <div className="text-center py-20">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+              <Search className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
+            <p className="text-gray-600">Try adjusting your search or filters</p>
+          </div>
         )}
       </div>
 
-      {/* Product Categories - Minimalistic Layout */}
-      {categorizedProducts.map(({ category, items }, index) => {
-        // Get visible items based on current count or default to 8 (increased for minimalistic layout)
-        const visibleItems = items.slice(0, visibleCounts[category] || 8);
-
-        // Skip empty categories
-        if (items.length === 0) return null;
-
-        return (
-          <div
-            key={category}
-            className="mb-4 bg-white shadow rounded-lg overflow-hidden"
-          >
-            {/* Category Header - Simplified */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-3 py-2">
-              <h2 className="text-lg font-semibold text-white">{category}</h2>
-            </div>
-
-            {/* Products Grid - More Products Per Row */}
-            <div className="p-3">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-                {visibleItems.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onAddToCart={handleAddToCart}
-                  />
-                ))}
-              </div>
-
-              {/* Show More button - minimalistic */}
-              {items.length > 8 && !(visibleCounts[category] >= items.length) && (
-                <div className="flex justify-center mt-3">
-                  <button
-                    className="bg-blue-600 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-700 transition-colors"
-                    onClick={() => handleLoadMore(category)}
-                  >
-                    Show More
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      })}
-
-      {/* No Results Message */}
-      {products.length === 0 && (
-        <div className="text-center text-gray-600 mt-8">
-          <p className="text-xl">No products found matching your search.</p>
-        </div>
-      )}
-    </m.div>
+      {/* Bottom Spacing */}
+      <div className="h-12"></div>
+    </div>
   );
 }
 

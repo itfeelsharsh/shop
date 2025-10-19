@@ -15,6 +15,7 @@ import { toast } from 'react-toastify';
 import { getDoc, doc } from 'firebase/firestore';
 import { useSelector } from 'react-redux';
 import logger from '../utils/logger';
+import defaultPfp from '../assets/defaultpfp.png';
 
 /**
  * Utility function to combine CSS classes conditionally
@@ -70,7 +71,7 @@ export default function Navbar() {
     if (cachedProfile) {
       try {
         const profileData = JSON.parse(cachedProfile);
-        setProfilePic(profileData.profilePic || 'https://via.placeholder.com/40');
+        setProfilePic(profileData.profilePic || defaultPfp);
         setUserName(profileData.name || 'User');
         return;
       } catch (error) {
@@ -86,17 +87,17 @@ export default function Navbar() {
         const userData = userDoc.data();
         // Cache the profile data
         sessionStorage.setItem(`profile_${user.uid}`, JSON.stringify({
-          profilePic: userData.profilePic || 'https://via.placeholder.com/40',
+          profilePic: userData.profilePic || defaultPfp,
           name: userData.name || 'User'
         }));
-        
-        setProfilePic(userData.profilePic || 'https://via.placeholder.com/40');
+
+        setProfilePic(userData.profilePic || defaultPfp);
         setUserName(userData.name || 'User');
       }
     } catch (error) {
       logger.error("Failed to fetch profile data", error, "Navbar");
       // Use default values on error
-      setProfilePic('https://via.placeholder.com/40');
+      setProfilePic(defaultPfp);
       setUserName('User');
     } finally {
       setProfileLoading(false);
