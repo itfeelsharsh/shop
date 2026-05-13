@@ -40,25 +40,23 @@ export async function onRequestPost(context) {
 async function updateOrderStatusInFirestore(env, orderId, status, paymentId) {
   try {
     const projectId = env.FIREBASE_PROJECT_ID || env.REACT_APP_FIREBASE_PROJECT_ID;
+    const apiKey = env.FIREBASE_API_KEY || env.REACT_APP_FIREBASE_API_KEY;
     
-    // In a production CF Worker, we either use Firebase REST API with a service account token
-    // or a specialized backend endpoint. 
-    // Here we're using the REST API to update the global order document.
-    // Note: this requires appropriate Firestore security rules or an authenticated token.
+    if (!projectId || !apiKey) {
+      console.error('[Stripe Webhook] Missing Firebase configuration (Project ID or API Key)');
+      return false;
+    }
+
+    // Firestore REST API URL for patching the document
+    // We update the 'status' and the transactionId in 'payment.transactionId'
+    const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/orders/${orderId}?updateMask.fieldPaths=status&updateMask.fieldPaths=payment.transactionId&key=${apiKey}`;
     
-    // As a placeholder for full Firebase Admin integration:
-    console.log(`[Stripe Webhook] Would update order ${orderId} to ${status}`);
+    console.log(`[Stripe Webhook] Updating order ${orderId} to status: ${status}`);
     
-    // If the database has a specific endpoint or open rules for webhooks, 
-    // it would look like this:
-    /*
-    const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/orders/${orderId}?updateMask.fieldPaths=status&updateMask.fieldPaths=payment.transactionId`;
-    
-    const response = await fetch(`${firestoreUrl}`, {
+    const response = await fetch(firestoreUrl, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        // 'Authorization': `Bearer ${adminToken}` // Required unless rules allow
       },
       body: JSON.stringify({
         fields: {
@@ -73,8 +71,14 @@ async function updateOrderStatusInFirestore(env, orderId, status, paymentId) {
         }
       })
     });
-    */
     
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[Stripe Webhook] Firestore API error: ${response.status}`, errorText);
+      return false;
+    }
+    
+    console.log(`[Stripe Webhook] ✅ Order ${orderId} successfully updated to ${status}`);
     return true;
   } catch (error) {
     console.error('[Stripe Webhook] Error updating Firestore:', error);

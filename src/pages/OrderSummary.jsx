@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { auth, db } from '../firebase/config';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { sendOrderConfirmationEmail } from '../utils/emailService';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useDispatch } from 'react-redux';
 import { clearCart } from '../redux/cartSlice';
@@ -213,6 +214,37 @@ function OrderSummary() {
     
     fetchOrderDetails();
   }, [orderId, user]); // Dependencies: re-run if orderId or user changes
+
+  // Send confirmation email once order is confirmed and status is Paid
+  useEffect(() => {
+    const triggerEmail = async () => {
+      if (order && order.status === 'Paid' && !order.emailSent) {
+        console.log('📧 OrderSummary: Order is Paid, triggering confirmation email...');
+        try {
+          const userForEmail = {
+            email: order.userEmail,
+            displayName: order.userName || order.userEmail?.split('@')[0] || 'Valued Customer'
+          };
+          
+          const result = await sendOrderConfirmationEmail(order, userForEmail);
+          
+          if (result.success) {
+            console.log('✅ OrderSummary: Email sent successfully');
+            // Update Firestore so we don't send it again
+            const orderRef = doc(db, "orders", order.id);
+            await updateDoc(orderRef, { emailSent: true });
+            
+            // Also update local state to reflect change
+            setOrder(prev => ({ ...prev, emailSent: true }));
+          }
+        } catch (emailError) {
+          console.error('❌ OrderSummary: Failed to send confirmation email:', emailError);
+        }
+      }
+    };
+
+    triggerEmail();
+  }, [order]);
   
   // Format price with Indian currency format
   const formatPrice = (price) => {
@@ -405,7 +437,7 @@ function OrderSummary() {
         />
       )}
     
-      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6">
+      <div className="min-h-screen bg-gray-50 py-12 px-2 sm:px-6">
         <div className="max-w-4xl mx-auto">
           {/* Back button */}
           <Button

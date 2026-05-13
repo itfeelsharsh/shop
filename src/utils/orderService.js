@@ -83,7 +83,7 @@ export const SHIPPING_CARRIERS = {
  * @param {Object} userData - User information for email and record keeping
  * @returns {Promise<Object>} - Order creation result with status and metadata
  */
-const processNewOrder = async (orderData, userData) => {
+const processNewOrder = async (orderData, userData, options = {}) => {
   console.log('🚀 orderService: Processing new order for user:', userData?.email);
   
   // Debug: Log user authentication state
@@ -242,7 +242,7 @@ const processNewOrder = async (orderData, userData) => {
     // Handle email notification dispatch
     let emailResult = { success: false, error: 'Email not attempted' };
     
-    if (featureConfig.email.enabled) {
+    if (featureConfig.email.enabled && !options.skipEmail) {
       console.log('📧 orderService: Email service enabled, dispatching order confirmation');
       
       try {

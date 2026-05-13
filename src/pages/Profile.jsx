@@ -519,7 +519,7 @@ function MyAccount() {
 
   return (
     <div className="bg-gray-50 min-h-screen py-12">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-2 sm:px-4">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">My Account</h1>
           <p className="text-gray-600 mb-8">Manage your profile, orders, and more</p>

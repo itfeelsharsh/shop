@@ -515,7 +515,7 @@ function UnifiedCheckout() {
         displayName: customerName || user.displayName || user.email
       };
 
-      const orderResult = await processNewOrder(orderData, userData);
+      const orderResult = await processNewOrder(orderData, userData, { skipEmail: true });
 
       if (!orderResult.success) {
         const errorMessage = orderResult.error || orderResult.technicalError || 'Failed to process order';
@@ -710,7 +710,7 @@ function UnifiedCheckout() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 py-12">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-2 sm:px-4">
         {/* Checkout Steps */}
         <m.div
           initial={{ opacity: 0, y: -20 }}
@@ -1112,9 +1112,7 @@ function UnifiedCheckout() {
                           <div className="bg-blue-500 text-white rounded-full p-1 mt-0.5">
                             <CheckCircle size={14} />
                           </div>
-                          <p className="text-sm text-blue-800">
-                            Payment is processed in <strong>INR</strong>. Your order is already reserved and will be confirmed immediately after successful payment.
-                          </p>
+                   
                         </div>
                       </div>
                     )}

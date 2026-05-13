@@ -92,7 +92,7 @@ function Cart() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-2 sm:px-4 py-8">
         {/* Header */}
         <m.div
           initial={{ opacity: 0, y: -20 }}
