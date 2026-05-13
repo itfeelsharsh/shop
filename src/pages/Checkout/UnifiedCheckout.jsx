@@ -13,6 +13,7 @@ import OrderConfirmation from '../../components/OrderConfirmation';
 import CouponService from '../../utils/couponService';
 import { processNewOrder } from '../../utils/orderService';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import Button from '../../components/Button';
 
 // Import card logos
 import VisaLogo from '../../assets/visa.png';
@@ -78,7 +79,7 @@ function UnifiedCheckout() {
   const [upi, setUpi] = useState('');
   const [processingPayment, setProcessingPayment] = useState(false);
   const [orderComplete] = useState(false);
-  const [savePaymentInfo, setSavePaymentInfo] = useState(true);
+  const [savePaymentInfo] = useState(true);
   const [completedOrder] = useState(null);
 
   // Coupon validation
@@ -232,22 +233,8 @@ function UnifiedCheckout() {
     }).format(price);
   };
 
-  const formatCardNumber = (value) => value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
+  // Card number formatting is no longer needed for Stripe Checkout redirect
 
-  const detectCardType = (number) => {
-    const cleanNumber = number.replace(/\s+/g, '');
-    if (/^4/.test(cleanNumber)) return 'Visa';
-    if (/^5[1-5]/.test(cleanNumber)) return 'MasterCard';
-    if (/^6/.test(cleanNumber)) return 'RuPay';
-    if (/^3[47]/.test(cleanNumber)) return 'AMEX';
-    return 'RuPay';
-  };
-
-  const handleCardNumberChange = (e) => {
-    const formattedValue = formatCardNumber(e.target.value);
-    const cardType = detectCardType(formattedValue);
-    setCard({ ...card, number: formattedValue, type: cardType });
-  };
 
   const saveShippingAddress = async () => {
     if (!user) return false;
@@ -312,9 +299,49 @@ function UnifiedCheckout() {
     return true;
   };
 
-  const processPayment = async () => {
-    console.log('Processing payment with method:', paymentMethod);
-    return { success: true, error: null };
+  const processPayment = async (orderId, cartDetails, emailSent) => {
+    try {
+      console.log('Creating Stripe Checkout session for order:', orderId);
+      const origin = window.location.origin;
+      
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          items: cartDetails.map(item => ({
+            name: item.product.name,
+            price: item.product.price,
+            quantity: item.quantity,
+            image: item.product.image
+          })),
+          shippingCost,
+          tax,
+          orderId,
+          userId: user.uid,
+          customer_email: user.email,
+          success_url: `${origin}/summary?orderId=${orderId}&clearCart=true&emailSent=${emailSent}`,
+          cancel_url: `${origin}/cart`
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create checkout session');
+      }
+
+      // Redirect to Stripe Checkout
+      window.location.href = data.url;
+      
+      // We return success: false to prevent the immediate redirection to summary in processOrder
+      // because we are navigating away to Stripe.
+      return { success: false, redirecting: true };
+    } catch (error) {
+      console.error('Stripe error:', error);
+      return { success: false, error: error.message };
+    }
   };
 
   const processOrder = async () => {
@@ -410,12 +437,6 @@ function UnifiedCheckout() {
         throw new Error(message);
       }
 
-      const paymentResult = await processPayment();
-
-      if (!paymentResult.success) {
-        throw new Error(paymentResult.error || "Payment failed");
-      }
-
       await saveShippingAddress();
 
       const orderData = {
@@ -439,12 +460,10 @@ function UnifiedCheckout() {
           estimatedDelivery: shippingMethod === 'express' ? "2 days" : "7 days"
         },
         payment: {
-          method: paymentMethod,
-          details: paymentMethod === 'Card' ? {
-            cardType: card.type,
-            lastFour: card.number.slice(-4),
-          } : {
-            upiId: upi.split('@')[0] + '@xxxx'
+          method: 'Stripe',
+          status: 'Pending',
+          details: {
+            selectedMethod: paymentMethod
           }
         },
         subtotal,
@@ -503,6 +522,19 @@ function UnifiedCheckout() {
         throw new Error(errorMessage);
       }
 
+      // Process payment with Stripe using the generated orderId
+      const paymentResult = await processPayment(orderResult.orderId, updatedCartDetails, orderResult.emailSent || false);
+      
+      if (paymentResult.redirecting) {
+        // Will be redirected to Stripe
+        return;
+      }
+
+      if (!paymentResult.success) {
+        throw new Error(paymentResult.error || "Payment failed");
+      }
+
+      // Fallback if Stripe is bypassed (should not happen usually)
       if (orderResult.emailSent) {
         toast.success('Order confirmed! Check your email for confirmation.');
       } else {
@@ -516,7 +548,7 @@ function UnifiedCheckout() {
       }, 1500);
     } catch (error) {
       console.error("Error processing order:", error);
-      toast.error("There was an error processing your order");
+      toast.error(error.message || "There was an error processing your order");
       setProcessingPayment(false);
     }
   };
@@ -567,18 +599,7 @@ function UnifiedCheckout() {
     }
 
     if (currentStep === 3) {
-      if (paymentMethod === 'Card') {
-        if (!card.number || !card.cvv || !card.expiry) {
-          toast.error("Please fill all card details");
-          return;
-        }
-      } else if (paymentMethod === 'UPI') {
-        if (!upi) {
-          toast.error("Please enter a valid UPI ID");
-          return;
-        }
-      }
-
+      // No manual validation needed for Stripe Checkout redirect
       processOrder();
     }
   };
@@ -587,20 +608,7 @@ function UnifiedCheckout() {
     setCurrentStep(currentStep > 1 ? currentStep - 1 : 1);
   };
 
-  const getCardLogo = () => {
-    switch (card.type) {
-      case 'Visa':
-        return <img src={VisaLogo} alt="Visa" className="w-16" />;
-      case 'MasterCard':
-        return <img src={MasterCardLogo} alt="MasterCard" className="w-16" />;
-      case 'RuPay':
-        return <img src={RuPayLogo} alt="RuPay" className="w-16" />;
-      case 'AMEX':
-        return <img src={AMEXLogo} alt="AMEX" className="w-16" />;
-      default:
-        return null;
-    }
-  };
+
 
   const handleApplyCoupon = async (e) => {
     e.preventDefault();
@@ -1053,7 +1061,7 @@ function UnifiedCheckout() {
                     transition={{ duration: 0.3 }}
                     className="space-y-6"
                   >
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Payment Information</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Finalize Payment</h2>
 
                     {orderComplete ? (
                       <div className="text-center py-12">
@@ -1064,120 +1072,52 @@ function UnifiedCheckout() {
                         <p className="text-gray-600">Your order has been successfully processed.</p>
                       </div>
                     ) : (
-                      <div className="space-y-4">
-                        <div className="flex items-center space-x-4 mb-4">
-                          <button
-                            type="button"
-                            onClick={() => setPaymentMethod('Card')}
-                            className={`flex-1 py-3 px-4 border rounded-lg text-center transition-all font-medium ${
-                              paymentMethod === 'Card'
-                                ? 'border-gray-900 bg-gray-900 text-white'
-                                : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                            }`}
-                          >
-                            <div className="flex justify-center items-center">
-                              <CreditCard className="mr-2" size={18} />
-                              <span>Card</span>
+                      <div className="space-y-6">
+                        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8 text-center">
+                          <div className="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+                            <CreditCard size={32} className="text-gray-900" />
+                          </div>
+                          <h3 className="text-xl font-bold text-gray-900 mb-2">Secure Stripe Checkout</h3>
+                          <p className="text-gray-600 max-w-sm mx-auto mb-6">
+                            You will be redirected to Stripe's secure payment gateway to complete your purchase.
+                          </p>
+
+                          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-left max-w-sm mx-auto">
+                            <div className="flex items-start gap-3">
+                              <div className="text-amber-600 mt-0.5">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                                </svg>
+                              </div>
+                              <div className="space-y-2">
+                                <p className="text-xs font-bold text-amber-900 uppercase tracking-wider">RBI Regulation Note</p>
+                                <p className="text-xs text-amber-800 leading-relaxed">
+                                  Due to current RBI guidelines for international transactions in India, please use the following test card on the next page:
+                                </p>
+                                <div className="bg-white/50 p-2 rounded border border-amber-200">
+                                  <code className="text-sm font-bold text-gray-900">4000 0035 6000 0123</code>
+                                  <p className="text-[10px] text-amber-700 mt-1">Use any future expiry (MM/YY) and any 3-digit CVV.</p>
+                                </div>
+                              </div>
                             </div>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setPaymentMethod('UPI')}
-                            className={`flex-1 py-3 px-4 border rounded-lg text-center transition-all font-medium ${
-                              paymentMethod === 'UPI'
-                                ? 'border-gray-900 bg-gray-900 text-white'
-                                : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                            }`}
-                          >
-                            <div className="flex justify-center items-center">
-                              <svg className="mr-2" width="18" height="18" viewBox="0 0 24 24" fill="none">
-                                <path d="M12 4V7M12 7V20M12 7L19 4V17M12 7L5 4V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                              </svg>
-                              <span>UPI</span>
-                            </div>
-                          </button>
+                          </div>
+                          
+                          <div className="mt-8 flex justify-center gap-4 opacity-50 grayscale">
+                            <img src={VisaLogo} alt="Visa" className="h-6" />
+                            <img src={MasterCardLogo} alt="MasterCard" className="h-6" />
+                            <img src={RuPayLogo} alt="RuPay" className="h-6" />
+                            <img src={AMEXLogo} alt="AMEX" className="h-6" />
+                          </div>
                         </div>
 
-                        {paymentMethod === 'Card' ? (
-                          <div className="space-y-4">
-                            <div className="flex justify-center mb-4">
-                              {getCardLogo()}
-                            </div>
-
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">Card Number*</label>
-                              <input
-                                type="text"
-                                value={card.number}
-                                onChange={handleCardNumberChange}
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                                placeholder="1234 5678 9012 3456"
-                                maxLength="19"
-                              />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Expiry (MM/YY)*</label>
-                                <input
-                                  type="text"
-                                  value={card.expiry}
-                                  onChange={(e) => setCard({ ...card, expiry: e.target.value })}
-                                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                                  placeholder="MM/YY"
-                                  maxLength="5"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">CVV*</label>
-                                <input
-                                  type="text"
-                                  value={card.cvv}
-                                  onChange={(e) => setCard({ ...card, cvv: e.target.value })}
-                                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                                  placeholder="123"
-                                  maxLength="4"
-                                />
-                              </div>
-                            </div>
-
-                            <div>
-                              <label className="flex items-center">
-                                <input
-                                  type="checkbox"
-                                  checked={savePaymentInfo}
-                                  onChange={() => setSavePaymentInfo(!savePaymentInfo)}
-                                  className="h-4 w-4 text-gray-900 focus:ring-gray-900 border-gray-300 rounded"
-                                />
-                                <span className="ml-2 text-sm text-gray-600">Save card for future purchases</span>
-                              </label>
-                            </div>
+                        <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl flex items-start gap-3">
+                          <div className="bg-blue-500 text-white rounded-full p-1 mt-0.5">
+                            <CheckCircle size={14} />
                           </div>
-                        ) : (
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">UPI ID*</label>
-                            <input
-                              type="text"
-                              value={upi}
-                              onChange={(e) => setUpi(e.target.value)}
-                              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                              placeholder="example@upi"
-                            />
-                            <p className="mt-2 text-sm text-gray-500">Enter your UPI ID (e.g., username@bank)</p>
-
-                            <div className="mt-4">
-                              <label className="flex items-center">
-                                <input
-                                  type="checkbox"
-                                  checked={savePaymentInfo}
-                                  onChange={() => setSavePaymentInfo(!savePaymentInfo)}
-                                  className="h-4 w-4 text-gray-900 focus:ring-gray-900 border-gray-300 rounded"
-                                />
-                                <span className="ml-2 text-sm text-gray-600">Save UPI ID for future purchases</span>
-                              </label>
-                            </div>
-                          </div>
-                        )}
+                          <p className="text-sm text-blue-800">
+                            Payment is processed in <strong>INR</strong>. Your order is already reserved and will be confirmed immediately after successful payment.
+                          </p>
+                        </div>
                       </div>
                     )}
                   </m.div>
@@ -1211,19 +1151,14 @@ function UnifiedCheckout() {
                             className="w-full border border-gray-300 rounded-l-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 uppercase"
                             style={{ textTransform: 'uppercase' }}
                           />
-                          <button
+                          <Button
                             type="submit"
-                            disabled={validatingCoupon}
-                            className={`px-5 rounded-r-lg text-white font-semibold text-sm transition-colors ${
-                              validatingCoupon ? 'bg-gray-400' : 'bg-gray-900 hover:bg-gray-800'
-                            }`}
+                            isLoading={validatingCoupon}
+                            loadingText=""
+                            className="!rounded-l-none"
                           >
-                            {validatingCoupon ? (
-                              <div className="h-5 w-5 border-t-2 border-b-2 border-white rounded-full animate-spin"></div>
-                            ) : (
-                              "Apply"
-                            )}
-                          </button>
+                            Apply
+                          </Button>
                         </div>
                         {couponError && (
                           <m.p
@@ -1248,12 +1183,13 @@ function UnifiedCheckout() {
                             }
                           </p>
                         </div>
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="small"
                           onClick={handleRemoveCoupon}
-                          className="text-gray-500 hover:text-red-500 p-1"
-                        >
-                          <X size={16} />
-                        </button>
+                          className="!p-1 text-gray-400 hover:text-red-500"
+                          icon={<X size={16} />}
+                        />
                       </div>
                     </div>
                   )}
@@ -1295,41 +1231,31 @@ function UnifiedCheckout() {
                   </div>
                 </div>
 
-                {/* Navigation Buttons */}
                 <div className="space-y-3">
-                  {currentStep > 1 && (
-                    <button
-                      onClick={prevStep}
-                      className="w-full flex items-center justify-center px-4 py-3 border-2 border-gray-300 rounded-xl text-gray-700 bg-white hover:bg-gray-50 transition-colors font-medium"
-                    >
-                      <ChevronLeft size={18} className="mr-1" />
-                      Back
-                    </button>
-                  )}
-
-                  <button
+                  <Button
+                    variant="primary"
+                    size="large"
+                    fullWidth
                     onClick={nextStep}
-                    disabled={(currentStep === 2 && !areAllRequiredFieldsFilled()) || processingPayment || cartDetails.length === 0}
-                    className={`w-full flex items-center justify-center px-4 py-4 rounded-xl text-white transition-all font-bold shadow-lg hover:shadow-xl ${
-                      (currentStep === 2 && !areAllRequiredFieldsFilled()) || processingPayment || cartDetails.length === 0
-                        ? 'bg-gray-400 cursor-not-allowed'
-                        : 'bg-gray-900 hover:bg-gray-800'
-                    }`}
+                    isLoading={processingPayment}
+                    loadingText="Processing..."
+                    disabled={(currentStep === 2 && !areAllRequiredFieldsFilled()) || cartDetails.length === 0}
+                    icon={currentStep === 3 ? null : <ChevronRight size={18} />}
                   >
-                    {processingPayment ? (
-                      <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
-                        Processing...
-                      </>
-                    ) : currentStep === 3 ? (
-                      <>Place Order</>
-                    ) : (
-                      <>
-                        Continue
-                        <ChevronRight size={18} className="ml-1" />
-                      </>
-                    )}
-                  </button>
+                    {currentStep === 3 ? "Place Order" : "Continue"}
+                  </Button>
+
+                  {currentStep > 1 && (
+                    <Button
+                      variant="secondary"
+                      size="medium"
+                      fullWidth
+                      onClick={prevStep}
+                      icon={<ChevronLeft size={18} />}
+                    >
+                      Back
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

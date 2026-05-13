@@ -24,16 +24,16 @@ const Input = ({
     default: { 
       y: 0, 
       scale: 1, 
-      color: '#6B7280'
+      color: '#9CA3AF' // gray-400
     },
     focused: { 
-      y: -24, 
-      scale: 0.85, 
-      color: '#2563EB',
+      y: -28, 
+      scale: 0.8, 
+      color: '#111827', // gray-900
       transition: {
         type: "spring",
-        stiffness: 300,
-        damping: 25
+        stiffness: 400,
+        damping: 30
       }
     }
   };
@@ -85,27 +85,29 @@ const Input = ({
   const getInputStyles = () => {
     let baseStyles = `
       w-full
-      px-4
-      py-2
-      rounded-lg
-      border-2
+      px-5
+      py-3
+      rounded-xl
+      border
       outline-none
       transition-all
-      duration-200
-      bg-white
-      ${disabled ? 'bg-gray-50 cursor-not-allowed' : ''}
+      duration-300
+      bg-gray-50/50
+      backdrop-blur-sm
+      placeholder:text-transparent
+      ${disabled ? 'bg-gray-100 cursor-not-allowed opacity-60' : 'hover:bg-white focus:bg-white'}
     `;
 
     if (error) {
-      return `${baseStyles} border-red-500 focus:border-red-600 text-red-600`;
+      return `${baseStyles} border-red-300 focus:border-red-500 text-red-900 ring-4 ring-red-50`;
     }
     if (success) {
-      return `${baseStyles} border-green-500 focus:border-green-600 text-green-600`;
+      return `${baseStyles} border-emerald-300 focus:border-emerald-500 text-emerald-900 ring-4 ring-emerald-50`;
     }
     if (isFocused) {
-      return `${baseStyles} border-blue-500 focus:border-blue-600`;
+      return `${baseStyles} border-gray-900 ring-4 ring-gray-100 text-gray-900`;
     }
-    return `${baseStyles} border-gray-300 focus:border-blue-500`;
+    return `${baseStyles} border-gray-200 text-gray-900 hover:border-gray-300`;
   };
 
   return (
@@ -113,8 +115,8 @@ const Input = ({
       variants={containerVariants}
       initial="default"
       animate={isHovered ? "hover" : "default"}
-      className="relative mb-6"
-      onMouseEnter={() => setIsHovered(true)}
+      className={`relative mb-8 ${className}`}
+      onMouseEnter={() => !disabled && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Label */}
@@ -122,7 +124,7 @@ const Input = ({
         variants={labelVariants}
         initial="default"
         animate={isFocused || value ? "focused" : "default"}
-        className="absolute left-4 cursor-text"
+        className="absolute left-5 top-3.5 cursor-text text-sm font-medium pointer-events-none select-none z-10"
       >
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
@@ -131,7 +133,7 @@ const Input = ({
       {/* Input container */}
       <div className="relative">
         {Icon && (
-          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+          <div className={`absolute left-4 top-1/2 transform -translate-y-1/2 transition-colors duration-300 ${isFocused ? 'text-gray-900' : 'text-gray-400'}`}>
             <Icon className="w-5 h-5" />
           </div>
         )}
@@ -142,13 +144,12 @@ const Input = ({
           onChange={onChange}
           disabled={disabled}
           required={required}
-          placeholder={placeholder}
+          placeholder={placeholder || label}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           className={`
             ${getInputStyles()}
-            ${Icon ? 'pl-10' : ''}
-            ${className}
+            ${Icon ? 'pl-12' : ''}
           `}
           {...props}
         />

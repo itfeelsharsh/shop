@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { auth, db } from '../firebase/config';
 import { doc, getDoc } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { useDispatch } from 'react-redux';
+import { clearCart } from '../redux/cartSlice';
 import { 
   CheckCircle, 
   Package, 
@@ -19,6 +21,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Confetti from 'react-confetti';
 import useWindowSize from '../hooks/useWindowSize';
 import { downloadOrderReceipt } from '../utils/pdfUtils';
+import Button from '../components/Button';
 
 /**
  * Order Summary Page Component
@@ -45,6 +48,17 @@ function OrderSummary() {
   const orderId = params.get('orderId');
   const paymentId = params.get('paymentId');
   const emailSent = params.get('emailSent') === 'true';
+  const shouldClearCart = params.get('clearCart') === 'true';
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (shouldClearCart) {
+      dispatch(clearCart());
+      // Optionally remove clearCart from URL using history replace
+      const newUrl = window.location.pathname + window.location.search.replace('&clearCart=true', '').replace('clearCart=true&', '');
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [shouldClearCart, dispatch]);
   
   // Fetch order details using the orderId
   useEffect(() => {
@@ -285,8 +299,9 @@ function OrderSummary() {
   // Show loading spinner
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-50">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
+      <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900 mb-4"></div>
+        <p className="text-gray-600">Loading order details...</p>
       </div>
     );
   }
@@ -393,13 +408,15 @@ function OrderSummary() {
       <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
           {/* Back button */}
-          <button 
+          <Button
+            variant="ghost"
+            size="small"
             onClick={() => navigate('/')}
-            className="flex items-center text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+            icon={<ArrowLeft className="w-4 h-4" />}
+            className="mb-6"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Shopping
-          </button>
+          </Button>
           
           {/* Data Quality Warning - Show if order has missing critical information */}
           {order && (!order.items || order.items.length === 0 || !order.totalAmount) && (
@@ -421,12 +438,13 @@ function OrderSummary() {
                     </p>
                   </div>
                   <div className="mt-4">
-                    <button 
+                    <Button
+                      variant="secondary"
+                      size="small"
                       onClick={() => navigate('/contact')}
-                      className="text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded hover:bg-yellow-200 transition-colors"
                     >
                       Contact Support
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -435,18 +453,23 @@ function OrderSummary() {
           
           {/* Order Success Banner */}
           <motion.div 
-            className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-t-2xl p-8 shadow-lg"
+            className="bg-gray-900 text-white rounded-t-2xl p-10 shadow-2xl relative overflow-hidden"
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="flex items-center justify-center space-x-4">
-              <div className="bg-white rounded-full p-3">
-                <CheckCircle className="w-10 h-10 text-green-500" />
+            {/* Background Pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC40Ij48cGF0aCBkPSJNMzYgMzRjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6bTAgMTBjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6TTQ2IDM0YzAtMi4yMSAxLjc5LTQgNC00czQgMS43OSA0IDQtMS43OSA0LTQgNC00LTEuNzktNC00em0wIDEwYzAtMi4yMSAxLjc5LTQgNC00czQgMS43OSA0IDQtMS43OSA0LTQgNC00LTEuNzktNC00eiIvPjwvZz48L2c+PC9zdmc+')] bg-repeat"></div>
+            </div>
+
+            <div className="relative z-10 flex flex-col md:flex-row items-center text-center md:text-left gap-6">
+              <div className="bg-white/10 backdrop-blur-md rounded-full p-4 border border-white/20">
+                <CheckCircle className="w-12 h-12 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold">Order Confirmed!</h1>
-                <p className="text-green-100">Your order has been successfully placed and is being processed.</p>
+                <h1 className="text-4xl font-bold mb-2 tracking-tight">Order Confirmed!</h1>
+                <p className="text-gray-300 text-lg">Your items are being prepared for shipment.</p>
               </div>
             </div>
           </motion.div>
@@ -467,15 +490,17 @@ function OrderSummary() {
                   <h2 className="text-2xl font-bold text-gray-800">Order #{order?.id?.slice(-6)}</h2>
                   <p className="text-gray-600">Placed on {formatDate(order?.orderDate)}</p>
                 </div>
-                <div className="flex space-x-4 mt-4 md:mt-0">
-                  <button 
+                <div className="flex flex-wrap gap-4 mt-4 md:mt-0">
+                  <Button
+                    variant="secondary"
+                    size="small"
                     onClick={handleDownloadInvoice}
-                    disabled={downloadingInvoice}
-                    className="flex items-center text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors disabled:bg-blue-400"
+                    isLoading={downloadingInvoice}
+                    loadingText="Downloading..."
+                    icon={<Download className="w-4 h-4" />}
                   >
-                    <Download className="w-4 h-4 mr-1" />
-                    {downloadingInvoice ? 'Downloading...' : 'Download Invoice'}
-                  </button>
+                    Download Invoice
+                  </Button>
                 </div>
               </motion.div>
               
@@ -677,17 +702,18 @@ function OrderSummary() {
                   }
                 </p>
                 <motion.div 
-                  className="mt-6"
+                  className="mt-10"
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 1, duration: 0.5 }}
                 >
-                  <button 
+                  <Button
+                    variant="primary"
+                    size="large"
                     onClick={() => navigate('/')}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
                   >
                     Continue Shopping
-                  </button>
+                  </Button>
                 </motion.div>
               </motion.div>
             </motion.div>

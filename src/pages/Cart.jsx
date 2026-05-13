@@ -3,14 +3,24 @@ import { useSelector, useDispatch } from 'react-redux';
 import { db } from '../firebase/config';
 import { collection, getDocs } from 'firebase/firestore';
 import { removeFromCart, updateQuantity, addToCart } from '../redux/cartSlice';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { 
+  ShoppingBag, 
+  ArrowRight, 
+  Trash2, 
+  Minus, 
+  Plus, 
+  Package,
+  Loader2
+} from 'lucide-react';
 import { m } from 'framer-motion';
-import { ShoppingBag, Trash2, Plus, Minus, ArrowRight, Loader2, Package } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
+import Button from '../components/Button';
 
 function Cart() {
   const cartItems = useSelector(state => state.cart.items);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [popularProducts, setPopularProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -106,13 +116,15 @@ function Cart() {
             <p className="text-gray-600 mb-8 max-w-md mx-auto">
               Looks like you haven't added any items to your cart yet. Start shopping to fill it up!
             </p>
-            <Link
-              to="/products"
-              className="inline-flex items-center gap-2 bg-gray-900 text-white px-8 py-4 rounded-xl font-semibold hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl"
+            <Button
+              variant="primary"
+              size="large"
+              onClick={() => navigate('/products')}
+              icon={<ArrowRight className="w-5 h-5" />}
+              className="mt-4"
             >
               Start Shopping
-              <ArrowRight className="w-5 h-5" />
-            </Link>
+            </Button>
           </m.div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -147,13 +159,13 @@ function Cart() {
                             <p className="text-sm text-gray-500">{item.product.brand}</p>
                           )}
                         </div>
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="small"
                           onClick={() => handleRemove(item.productId)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          aria-label="Remove item"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
+                          className="!p-2 text-red-500 hover:text-red-700 hover:bg-red-50"
+                          icon={<Trash2 className="w-5 h-5" />}
+                        />
                       </div>
 
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -166,23 +178,25 @@ function Cart() {
                         <div className="flex items-center gap-3">
                           <span className="text-sm text-gray-600 font-medium">Quantity:</span>
                           <div className="flex items-center border-2 border-gray-200 rounded-lg overflow-hidden">
-                            <button
+                            <Button
+                              variant="secondary"
+                              size="small"
                               onClick={() => handleQuantityChange(item.productId, item.quantity - 1)}
                               disabled={item.quantity <= 1}
-                              className="p-2 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              <Minus className="w-4 h-4" />
-                            </button>
-                            <span className="px-4 py-2 min-w-[3rem] text-center font-semibold border-x-2 border-gray-200">
+                              className="!p-2 !rounded-none border-none shadow-none"
+                              icon={<Minus className="w-4 h-4" />}
+                            />
+                            <span className="px-5 py-2 min-w-[3.5rem] text-center font-bold text-gray-900 border-x border-gray-100">
                               {item.quantity}
                             </span>
-                            <button
+                            <Button
+                              variant="secondary"
+                              size="small"
                               onClick={() => handleQuantityChange(item.productId, item.quantity + 1)}
                               disabled={item.quantity >= item.product.stock}
-                              className="p-2 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              <Plus className="w-4 h-4" />
-                            </button>
+                              className="!p-2 !rounded-none border-none shadow-none"
+                              icon={<Plus className="w-4 h-4" />}
+                            />
                           </div>
                         </div>
 
@@ -242,20 +256,25 @@ function Cart() {
                   </div>
                 </div>
 
-                <Link
-                  to="/checkout"
-                  className="w-full bg-gray-900 text-white py-4 px-6 rounded-xl font-bold hover:bg-gray-800 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl mb-3"
+                <Button
+                  variant="primary"
+                  size="large"
+                  fullWidth
+                  onClick={() => navigate('/checkout')}
+                  icon={<ArrowRight className="w-5 h-5" />}
+                  className="mb-3"
                 >
                   Proceed to Checkout
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
+                </Button>
 
-                <Link
-                  to="/products"
-                  className="w-full border-2 border-gray-200 text-gray-700 py-3 px-6 rounded-xl font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center"
+                <Button
+                  variant="secondary"
+                  size="medium"
+                  fullWidth
+                  onClick={() => navigate('/products')}
                 >
                   Continue Shopping
-                </Link>
+                </Button>
 
                 {/* Features */}
                 <div className="mt-6 pt-6 border-t border-gray-200 space-y-3">

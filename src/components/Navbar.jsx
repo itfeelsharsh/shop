@@ -1,5 +1,5 @@
 import React, { Fragment, useState, useEffect, useCallback, useMemo } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, Transition } from '@headlessui/react';
 import {
   HomeIcon,
@@ -16,6 +16,7 @@ import { getDoc, doc } from 'firebase/firestore';
 import { useSelector } from 'react-redux';
 import logger from '../utils/logger';
 import defaultPfp from '../assets/defaultpfp.png';
+import Button from './Button';
 
 /**
  * Utility function to combine CSS classes conditionally
@@ -32,6 +33,7 @@ export default function Navbar() {
   const [userName, setUserName] = useState('User');
   const [profileLoading, setProfileLoading] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   
   // Get cart items from Redux store
@@ -180,19 +182,14 @@ export default function Navbar() {
                   <Link
                     to={item.href}
                     className={classNames(
-                      location.pathname === item.href // Using exact match for home if needed elsewhere
-                        ? 'text-blue-600'
-                        : 'text-gray-700 hover:text-blue-600',
-                      'flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200'
+                      location.pathname === item.href
+                        ? 'text-gray-900 bg-gray-50'
+                        : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50',
+                      'flex items-center px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300'
                     )}
                   >
-                    <item.icon className="h-5 w-5 mr-1.5" />
+                    <item.icon className={`h-5 w-5 mr-2 transition-transform duration-300 ${location.pathname === item.href ? 'scale-110' : ''}`} />
                     {item.name}
-                    {location.pathname === item.href && (
-                      <div
-                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"
-                      />
-                    )}
                   </Link>
                 </div>
               ))}
@@ -202,11 +199,11 @@ export default function Navbar() {
               <div className="relative">
                 <Link
                   to="/cart"
-                  className="text-gray-700 hover:text-blue-600 transition-colors"
+                  className="text-gray-600 hover:text-gray-900 transition-all duration-300 relative p-2 rounded-xl hover:bg-gray-50"
                 >
                   <ShoppingBagIcon className="h-6 w-6" />
                   {cartItemCount > 0 && (
-                    <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                    <div className="absolute -top-1 -right-1 bg-gray-900 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-white shadow-sm">
                       {cartItemCount}
                     </div>
                   )}
@@ -288,23 +285,20 @@ export default function Navbar() {
                   </Menu>
                 </div>
               ) : (
-                <div className="flex items-center space-x-4">
-                  <div>
-                    <Link
-                      to="/signin"
-                      className="text-gray-700 hover:text-blue-600 px-4 py-2 text-sm font-medium rounded-lg transition-colors"
-                    >
-                      Sign in
-                    </Link>
-                  </div>
-                  <div>
-                    <Link
-                      to="/signup"
-                      className="bg-blue-600 text-white px-4 py-2 text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
-                    >
-                      Sign up
-                    </Link>
-                  </div>
+                <div className="flex items-center space-x-3">
+                  <Link
+                    to="/signin"
+                    className="text-gray-600 hover:text-gray-900 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300 hover:bg-gray-50"
+                  >
+                    Sign in
+                  </Link>
+                  <Button
+                    variant="primary"
+                    size="small"
+                    onClick={() => navigate('/signup')}
+                  >
+                    Sign up
+                  </Button>
                 </div>
               )}
             </div>
@@ -324,28 +318,23 @@ export default function Navbar() {
               to={item.href}
               className={classNames(
                 ((item.exact && location.pathname === item.href) || (!item.exact && location.pathname.startsWith(item.href) && item.href !== '/') || (item.href === '/' && location.pathname === '/'))
-                  ? 'text-blue-600 scale-110' // Active state: blue text and slightly larger icon/text
-                  : 'text-gray-500 hover:text-blue-500',
-                'flex flex-col items-center justify-center flex-1 pt-1 pb-1 text-xs font-medium transition-all duration-150 ease-in-out focus:outline-none'
+                  ? 'text-gray-900'
+                  : 'text-gray-400',
+                'flex flex-col items-center justify-center flex-1 pt-1 pb-1 text-[10px] font-bold uppercase tracking-tighter transition-all duration-300 focus:outline-none'
               )}
-              onClick={() => {
-                // Optional: close any open modals or perform other actions on tab click
-                // setIsMobileMenuOpen(false); // If we had a modal menu this would be useful
-              }}
             >
               <div className="relative">
-                {/* Show profile picture instead of icon for Account tab when user is logged in */}
                 {item.name === 'Account' && user ? (
                   <img
                     src={profilePic}
                     alt={userName}
-                    className="h-6 w-6 mb-0.5 rounded-full object-cover ring-1 ring-gray-200"
+                    className={`h-6 w-6 mb-1 rounded-full object-cover ring-2 transition-all duration-300 ${location.pathname === item.href ? 'ring-gray-900 scale-110' : 'ring-transparent'}`}
                   />
                 ) : (
-                  <item.icon className="h-6 w-6 mb-0.5" />
+                  <item.icon className={`h-6 w-6 mb-1 transition-transform duration-300 ${((item.exact && location.pathname === item.href) || (!item.exact && location.pathname.startsWith(item.href) && item.href !== '/') || (item.href === '/' && location.pathname === '/')) ? 'scale-110' : ''}`} />
                 )}
                 {item.name === 'Cart' && item.count > 0 && (
-                  <span className="absolute -top-1 -right-2.5 bg-blue-600 text-white text-[10px] font-semibold w-4 h-4 rounded-full flex items-center justify-center ring-1 ring-white">
+                  <span className="absolute -top-1.5 -right-2.5 bg-gray-900 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center ring-2 ring-white shadow-sm">
                     {item.count > 9 ? '9+' : item.count}
                   </span>
                 )}

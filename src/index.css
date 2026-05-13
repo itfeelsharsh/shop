@@ -2,14 +2,70 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  --primary: #111827;
+  --primary-light: #1f2937;
+  --accent: #3b82f6;
+  --background: #ffffff;
+  --surface: #f9fafb;
+  --text-main: #111827;
+  --text-muted: #6b7280;
+  --border-radius: 12px;
+  --shadow-premium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-premium-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-premium-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+@layer base {
+  body {
+    @apply font-['Inter'] antialiased text-gray-900 bg-white;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight text-gray-900;
+  }
+}
+
+@layer components {
+  .premium-shadow {
+    box-shadow: var(--shadow-premium);
+  }
+  
+  .premium-shadow-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .premium-shadow-hover:hover {
+    box-shadow: var(--shadow-premium-xl);
+    transform: translateY(-2px);
+  }
+
+  .premium-card {
+    @apply bg-white border border-gray-100 rounded-[20px] premium-shadow-hover p-6;
+  }
+}
+
+/* Custom Scrollbar for premium feel */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-50;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full hover:bg-gray-400 transition-colors;
+}
+
 /* Loading animations */
 @keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 .animate-shimmer {
@@ -18,18 +74,18 @@
 
 /* Enhanced loading screen styles */
 .loading-screen {
-  background: linear-gradient(135deg, #8B4513 0%, #A0522D 50%, #D2691E 100%);
+  @apply bg-gray-900 flex items-center justify-center;
 }
 
 /* Pulse animation for loading indicators */
 @keyframes pulse-glow {
   0%, 100% {
     opacity: 1;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
   }
   50% {
     opacity: 0.7;
-    box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
   }
 }
 
@@ -39,12 +95,12 @@
 
 /* Receipt PDF Styling */
 .receipt-container {
-  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-family: 'Inter', sans-serif;
   max-width: 800px;
   margin: 0 auto;
   padding: 40px;
   background: white;
-  color: #333;
+  color: #111827;
 }
 
 .receipt-header {
@@ -52,32 +108,21 @@
   justify-content: space-between;
   margin-bottom: 30px;
   padding-bottom: 20px;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 1px solid #f3f4f6;
 }
 
 .store-info h1 {
   font-size: 24px;
-  font-weight: bold;
+  font-weight: 800;
   margin-bottom: 5px;
-  color: #2563eb;
+  @apply text-gray-900;
 }
 
 .receipt-info h2 {
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 700;
   margin-bottom: 10px;
-  color: #333;
-}
-
-.customer-info {
-  margin-bottom: 30px;
-}
-
-.customer-info h3 {
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 10px;
-  color: #555;
+  color: #111827;
 }
 
 .items-section {
@@ -91,54 +136,40 @@
 
 .items-table th {
   background: #f9fafb;
-  padding: 10px;
+  padding: 12px;
   text-align: left;
-  font-weight: bold;
-  border-bottom: 1px solid #e5e7eb;
+  font-weight: 700;
+  font-size: 14px;
+  @apply text-gray-600 uppercase tracking-wider border-b border-gray-100;
 }
 
 .items-table td {
-  padding: 10px;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 16px 12px;
+  @apply border-b border-gray-50 text-gray-800;
 }
 
 .summary-section {
   margin-bottom: 30px;
-  padding: 15px;
-  background: #f9fafb;
-  border-radius: 8px;
+  padding: 24px;
+  @apply bg-gray-50 rounded-2xl;
 }
 
 .summary-row {
   display: flex;
   justify-content: space-between;
   padding: 8px 0;
+  @apply text-gray-600;
 }
 
 .summary-row.total {
-  font-weight: bold;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.payment-info {
-  margin-bottom: 30px;
-}
-
-.payment-info h3 {
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 10px;
-  color: #555;
+  @apply font-bold text-gray-900 text-lg mt-4 pt-4 border-t border-gray-200;
 }
 
 .footer {
   text-align: center;
-  padding-top: 20px;
-  border-top: 2px solid #f0f0f0;
-  color: #666;
-  font-size: 14px;
+  padding-top: 24px;
+  border-top: 1px solid #f3f4f6;
+  @apply text-gray-400 text-sm;
 }
 
   

@@ -9,16 +9,10 @@ import { auth } from '../firebase/config';
 import WishlistButton from './WishlistButton';
 import reviewUtils from '../utils/reviewUtils';
 import { toast } from 'react-toastify';
+import Button from './Button';
 
 /**
- * Modern ProductCard Component
- *
- * Features:
- * - Clean, minimalistic design
- * - Smooth animations and hover effects
- * - Responsive layout
- * - Rating and wishlist integration
- * - Stock status indicators
+ * Premium ProductCard Component
  */
 const ProductCard = memo(function ProductCard({
   product = {},
@@ -55,8 +49,10 @@ const ProductCard = memo(function ProductCard({
   }, [product]);
 
   const handleAddToCart = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
 
     if (!user) {
       toast.error('Please sign in to add items to your cart');
@@ -107,149 +103,139 @@ const ProductCard = memo(function ProductCard({
       ref={ref}
       initial={{ opacity: 0, y: 20 }}
       animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      whileHover={{ y: -4 }}
-      className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full cursor-pointer group border border-gray-100"
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ y: -6 }}
+      className="bg-white rounded-[24px] overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-500 flex flex-col h-full cursor-pointer group border border-gray-100/80"
       onClick={handleViewDetails}
     >
-      {/* Product Image */}
-      <div className="relative overflow-hidden aspect-square bg-gray-50">
-        <img
+      {/* Product Image Section */}
+      <div className="relative overflow-hidden aspect-[4/5] bg-gray-50">
+        <m.img
           src={product?.image}
           alt={product?.name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
           loading="lazy"
         />
 
-        {/* Overlay on hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        {/* Dynamic Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
         {/* Badges */}
-        <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-10">
+        <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-10">
           <div className="flex flex-col gap-2">
             {product?.mrp && product.mrp > product.price && (
-              <div className="bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg">
+              <m.div 
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-md bg-opacity-90"
+              >
                 {calculateDiscount(product.mrp, product.price)}% OFF
-              </div>
+              </m.div>
             )}
             {product?.isNew && (
-              <div className="bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg">
-                NEW
-              </div>
+              <m.div 
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="bg-black text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-lg"
+              >
+                NEW ARRIVAL
+              </m.div>
             )}
           </div>
 
-          {/* Wishlist button */}
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <div className="transform translate-x-12 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
             <WishlistButton product={product} size="sm" />
           </div>
         </div>
 
-        {/* Quick view button */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <button
+        {/* Center Quick View */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-90 group-hover:scale-100">
+          <Button
+            variant="secondary"
+            size="small"
+            icon={<Eye className="w-4 h-4" />}
             onClick={(e) => {
               e.stopPropagation();
               handleViewDetails();
             }}
-            className="bg-white text-gray-900 px-4 py-2 rounded-lg text-sm font-medium shadow-lg hover:bg-gray-50 transition-all flex items-center gap-2"
+            className="bg-white/95 backdrop-blur-sm border-none shadow-xl hover:bg-white"
           >
-            <Eye className="w-4 h-4" />
             Quick View
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Product Content */}
-      <div className="p-4 flex flex-col gap-2 flex-grow">
-        {/* Brand and Stock */}
+      <div className="p-5 flex flex-col gap-3 flex-grow">
+        {/* Category/Brand & Stock */}
         <div className="flex items-center justify-between">
-          {product?.brand && (
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {product.brand}
-            </span>
-          )}
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">
+            {product.brand || 'Premium Collection'}
+          </span>
           <div className="flex items-center gap-1.5">
-            {product?.stock && product.stock > 0 ? (
-              <>
-                <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                <span className="text-xs text-green-600 font-medium">In Stock</span>
-              </>
-            ) : (
-              <>
-                <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                <span className="text-xs text-red-600 font-medium">Out of Stock</span>
-              </>
-            )}
+            <div className={`w-1.5 h-1.5 rounded-full ${product?.stock > 0 ? 'bg-emerald-500' : 'bg-red-500'}`} />
+            <span className={`text-[10px] font-bold uppercase tracking-wider ${product?.stock > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+              {product?.stock > 0 ? 'In Stock' : 'Sold Out'}
+            </span>
           </div>
         </div>
 
         {/* Product Name */}
-        <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-snug min-h-[2.5rem]">
+        <h3 className="text-base font-bold text-gray-900 line-clamp-2 leading-tight min-h-[2.5rem] group-hover:text-blue-600 transition-colors">
           {product?.name}
         </h3>
 
         {/* Rating */}
         <div className="flex items-center gap-2">
           {productRating.total > 0 ? (
-            <>
-              <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-md">
-                <Star className="w-3 h-3 fill-amber-500 stroke-amber-500" />
-                <span className="text-xs font-semibold text-amber-700">
-                  {productRating.average.toFixed(1)}
-                </span>
+            <div className="flex items-center gap-1.5">
+              <div className="flex">
+                {[...Array(5)].map((_, i) => (
+                  <Star 
+                    key={i} 
+                    className={`w-3 h-3 ${i < Math.round(productRating.average) ? 'fill-amber-400 stroke-amber-400' : 'fill-gray-100 stroke-gray-200'}`} 
+                  />
+                ))}
               </div>
-              <span className="text-xs text-gray-500">({productRating.total} reviews)</span>
-            </>
+              <span className="text-xs font-bold text-gray-400">({productRating.total})</span>
+            </div>
           ) : (
-            <span className="text-xs text-gray-400">No reviews yet</span>
+            <span className="text-[10px] font-medium text-gray-300">No reviews yet</span>
           )}
         </div>
 
         {/* Price section */}
-        <div className="flex flex-col gap-1 mt-auto pt-2">
-          <div className="flex items-baseline gap-2">
-            <span className="text-lg font-bold text-gray-900">
-              {formatPrice(product?.price)}
-            </span>
+        <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-50">
+          <div className="flex flex-col">
+            <div className="flex items-baseline gap-2">
+              <span className="text-xl font-black text-gray-900">
+                {formatPrice(product?.price)}
+              </span>
+              {product?.mrp && product.mrp > product.price && (
+                <span className="text-xs text-gray-400 line-through font-medium">
+                  {formatPrice(product.mrp)}
+                </span>
+              )}
+            </div>
             {product?.mrp && product.mrp > product.price && (
-              <span className="text-sm text-gray-400 line-through">
-                {formatPrice(product.mrp)}
+              <span className="text-[10px] font-bold text-emerald-600">
+                SAVE {formatPrice(product.mrp - product.price)}
               </span>
             )}
           </div>
 
-          {product?.mrp && product.mrp > product.price && (
-            <span className="text-xs font-medium text-green-600">
-              You save {formatPrice(product.mrp - product.price)}
-            </span>
-          )}
+          {/* Mini Add to Cart */}
+          <Button
+            variant="primary"
+            size="small"
+            isLoading={isAddingToCart}
+            loadingText="Adding..."
+            disabled={!product?.stock || product.stock <= 0}
+            onClick={handleAddToCart}
+            className="!rounded-full w-10 h-10 !p-0 shadow-lg hover:shadow-gray-300"
+            icon={<ShoppingCart className="w-4 h-4" />}
+          />
         </div>
-
-        {/* Add to Cart Button */}
-        <button
-          onClick={handleAddToCart}
-          disabled={isAddingToCart || !product?.stock || product.stock <= 0}
-          className={`w-full mt-2 text-sm font-semibold rounded-lg py-2.5 transition-all duration-200 flex items-center justify-center gap-2 ${
-            isAddingToCart || !product?.stock || product.stock <= 0
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-gray-900 hover:bg-gray-800 text-white shadow-md hover:shadow-lg'
-          }`}
-        >
-          {isAddingToCart ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Adding...
-            </>
-          ) : (!product?.stock || product.stock <= 0) ? (
-            'Out of Stock'
-          ) : (
-            <>
-              <ShoppingCart className="w-4 h-4" />
-              Add to Cart
-            </>
-          )}
-        </button>
       </div>
     </m.div>
   );

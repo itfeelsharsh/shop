@@ -26,6 +26,8 @@ import {
   FileDown,
   Star
 } from 'lucide-react';
+import Button from '../components/Button';
+import Input from '../components/Input';
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import { useDispatch,
 // eslint-disable-next-line no-unused-vars
@@ -508,8 +510,9 @@ function MyAccount() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-50">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
+      <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900 mb-4"></div>
+        <p className="text-gray-600">Loading your account...</p>
       </div>
     );
   }
@@ -635,51 +638,36 @@ function MyAccount() {
                       Personal Information
                     </h3>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                        <input 
-                          type="text" 
-                          name="name" 
-                          value={profile.name}
-                          onChange={handleChange}
-                          required 
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                        <input 
-                          type="email" 
-                          name="email" 
-                          value={profile.email}
-                          className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
-                          disabled
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                        <input 
-                          type="text" 
-                          name="phone" 
-                          value={profile.phone}
-                          onChange={handleChange}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Profile Picture URL</label>
-                        <input 
-                          type="text" 
-                          name="profilePic" 
-                          value={profile.profilePic}
-                          onChange={handleChange}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <Input
+                        label="Full Name"
+                        name="name"
+                        value={profile.name}
+                        onChange={handleChange}
+                        required
+                        icon={User}
+                      />
+                      <Input
+                        label="Email Address"
+                        name="email"
+                        value={profile.email}
+                        disabled
+                        icon={AlertCircle}
+                      />
+                      <Input
+                        label="Phone Number"
+                        name="phone"
+                        value={profile.phone}
+                        onChange={handleChange}
+                        icon={Truck}
+                      />
+                      <Input
+                        label="Profile Picture URL"
+                        name="profilePic"
+                        value={profile.profilePic}
+                        onChange={handleChange}
+                        icon={Camera}
+                      />
                     </div>
                   </div>
                   
@@ -777,21 +765,16 @@ function MyAccount() {
                     </div>
                   </div>
                   
-                  <div className="pt-4">
-                    <button 
-                      type="submit" 
-                      className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-70"
-                      disabled={saveLoading}
+                  <div className="pt-6">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="large"
+                      isLoading={saveLoading}
+                      loadingText="Saving Changes..."
                     >
-                      {saveLoading ? (
-                        <span className="flex items-center justify-center">
-                          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
-                          Saving...
-                        </span>
-                      ) : (
-                        'Save Changes'
-                      )}
-                    </button>
+                      Save Changes
+                    </Button>
                   </div>
                 </form>
               </m.div>

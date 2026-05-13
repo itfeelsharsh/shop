@@ -2,13 +2,14 @@ import React, { useEffect, useState, useCallback } from "react";
 import { db } from "../firebase/config";
 import { collection, getDocs } from "firebase/firestore";
 import ProductCard from "../components/ProductCard";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { m } from "framer-motion";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
 import DynamicBanner from "../components/DynamicBanner";
 import { useContentLoader } from "../hooks/useContentLoader";
 import { ArrowRight, Package, TrendingUp, Star, ShoppingBag } from "lucide-react";
+import Button from "../components/Button";
 
 /**
  * Modern Home Page Component
@@ -24,6 +25,7 @@ function Home() {
   const [products, setProducts] = useState([]);
   const [isLoadingFresh, setIsLoadingFresh] = useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const { getCachedData, preloadedData } = useContentLoader();
 
@@ -159,13 +161,15 @@ function Home() {
               <h2 className="text-3xl font-bold text-gray-900 mb-2">Featured Products</h2>
               <p className="text-gray-600">Handpicked items just for you</p>
             </div>
-            <Link
-              to="/products"
-              className="hidden md:flex items-center gap-2 text-gray-900 hover:text-gray-700 font-medium transition-colors group"
+            <Button
+              variant="ghost"
+              size="small"
+              onClick={() => navigate('/products')}
+              icon={<ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
+              className="hidden md:flex"
             >
               View All
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
+            </Button>
           </div>
         </m.div>
 
@@ -221,13 +225,14 @@ function Home() {
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No featured products yet</h3>
             <p className="text-gray-600 mb-6">Check out our full collection</p>
-            <Link
-              to="/products"
-              className="inline-flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+            <Button
+              variant="primary"
+              size="medium"
+              onClick={() => navigate('/products')}
+              icon={<ArrowRight className="w-5 h-5" />}
             >
               Browse Products
-              <ArrowRight className="w-5 h-5" />
-            </Link>
+            </Button>
           </m.div>
         )}
       </section>
@@ -252,13 +257,15 @@ function Home() {
             <p className="text-gray-300 text-lg mb-8 max-w-2xl mx-auto">
               Explore hundreds of premium stationery items carefully curated for professionals, students, and creatives.
             </p>
-            <Link
-              to="/products"
-              className="inline-flex items-center gap-2 bg-white text-gray-900 px-8 py-4 rounded-lg hover:bg-gray-100 transition-colors font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-transform"
+            <Button
+              variant="secondary"
+              size="large"
+              onClick={() => navigate('/products')}
+              icon={<ArrowRight className="w-5 h-5" />}
+              className="bg-white !text-gray-900 hover:bg-gray-50 border-none shadow-2xl"
             >
-              Shop Now
-              <ArrowRight className="w-5 h-5" />
-            </Link>
+              Shop the Collection
+            </Button>
           </div>
         </div>
       </m.section>

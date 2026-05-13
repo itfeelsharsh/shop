@@ -7,7 +7,7 @@ import { addToCart } from '../redux/cartSlice';
 import { toast } from 'react-toastify';
 import {
   Truck, ShieldCheck, ArrowLeft, ShoppingCart, ChevronDown, ChevronUp,
-  Star, Globe, Award, Minus, Plus, Loader2, Package, Heart
+  Star, Globe, Award, Minus, Plus, Loader2
 } from 'lucide-react';
 import { m } from 'framer-motion';
 import WishlistButton from '../components/WishlistButton';
@@ -15,6 +15,7 @@ import { Helmet } from 'react-helmet-async';
 import ProductReviews from '../components/ProductReviews';
 import ProductReviewForm from '../components/ProductReviewForm';
 import ProductCard from '../components/ProductCard';
+import Button from '../components/Button';
 
 function ProductView() {
   const { id } = useParams();
@@ -31,6 +32,7 @@ function ProductView() {
 
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user?.currentUser);
+  const [isAdding, setIsAdding] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -80,7 +82,7 @@ function ProductView() {
     return Math.round(((mrp - price) / mrp) * 100);
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!user) {
       toast.error('Please sign in to add items to your cart');
       navigate('/signin');
@@ -92,8 +94,13 @@ function ProductView() {
       return;
     }
 
+    setIsAdding(true);
+    // Simulate a slight delay for smooth animation as requested
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
     dispatch(addToCart({ productId: product.id, quantity }));
     toast.success(`Added ${quantity} item(s) to cart!`);
+    setIsAdding(false);
   };
 
   const toggleSection = (section) => {
@@ -121,15 +128,15 @@ function ProductView() {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
         <div className="container mx-auto px-4 py-8">
           {/* Back Button */}
-          <m.button
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
+          <Button
+            variant="ghost"
+            size="small"
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors font-medium"
+            icon={<ArrowLeft className="w-5 h-5" />}
+            className="mb-6 !px-0"
           >
-            <ArrowLeft className="w-5 h-5" />
-            Back
-          </m.button>
+            Back to Collection
+          </Button>
 
           {/* Product Main Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-12">
@@ -230,16 +237,20 @@ function ProductView() {
                 </div>
               )}
 
-              {/* Action Buttons */}
-              <div className="flex gap-3">
-                <button
+              <div className="flex gap-4">
+                <Button
+                  variant="primary"
+                  size="large"
+                  fullWidth
                   onClick={handleAddToCart}
+                  isLoading={isAdding}
+                  loadingText="Adding to Cart..."
                   disabled={!product.stock || product.stock <= 0}
-                  className="flex-1 bg-gray-900 text-white py-4 px-6 rounded-xl font-bold hover:bg-gray-800 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  icon={<ShoppingCart className="w-5 h-5" />}
+                  className="shadow-2xl"
                 >
-                  <ShoppingCart className="w-5 h-5" />
                   Add to Cart
-                </button>
+                </Button>
                 <div className="flex-shrink-0">
                   <WishlistButton product={product} size="lg" />
                 </div>

@@ -2,12 +2,14 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { db } from "../firebase/config";
 import { collection, getDocs } from "firebase/firestore";
 import ProductCard from "../components/ProductCard";
-import { Search, Filter, X, SlidersHorizontal, Loader2 } from "lucide-react";
+import { Search, X, SlidersHorizontal, Loader2 } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase/config";
+import Button from "../components/Button";
+import Input from "../components/Input";
 
 /**
  * Modern Products Page
@@ -266,36 +268,31 @@ function Products() {
           className="mb-8"
         >
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-            <div className="flex flex-col md:flex-row gap-4">
-              {/* Search */}
-              <div className="flex-grow relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Search products..."
+            <div className="flex flex-col md:flex-row gap-6 items-end">
+              <div className="flex-grow w-full">
+                <Input
+                  label="Search Products"
+                  placeholder="Try 'notebook' or 'pencil'..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 text-gray-900 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
+                  icon={Search}
+                  className="!mb-0"
                 />
               </div>
 
-              {/* Filter Button */}
-              <button
+              <Button
+                variant={showFilters ? 'primary' : 'secondary'}
                 onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
-                  showFilters
-                    ? 'bg-gray-900 text-white shadow-lg'
-                    : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                }`}
+                icon={<SlidersHorizontal className="w-5 h-5" />}
+                className="h-[52px]"
               >
-                <SlidersHorizontal className="w-5 h-5" />
-                <span className="hidden sm:inline">Filters</span>
+                Filters
                 {activeFiltersCount > 0 && (
-                  <span className="bg-white text-gray-900 px-2 py-0.5 rounded-full text-xs font-semibold">
+                  <span className="ml-2 bg-gray-900 text-white px-2 py-0.5 rounded-full text-xs font-bold">
                     {activeFiltersCount}
                   </span>
                 )}
-              </button>
+              </Button>
             </div>
 
             {/* Active Filters Display */}
@@ -546,15 +543,14 @@ function Products() {
                     ))}
                   </div>
 
-                  {/* Load More Button */}
                   {items.length > 12 && !(visibleCounts[category] >= items.length) && (
-                    <div className="flex justify-center mt-6">
-                      <button
+                    <div className="flex justify-center mt-8">
+                      <Button
+                        variant="secondary"
                         onClick={() => handleLoadMore(category)}
-                        className="px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
                       >
-                        Load More
-                      </button>
+                        Load More Products
+                      </Button>
                     </div>
                   )}
                 </div>
