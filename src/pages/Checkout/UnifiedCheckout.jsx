@@ -573,9 +573,7 @@ function UnifiedCheckout() {
   };
 
   const isShippingComplete = areAllRequiredFieldsFilled();
-  const isPaymentComplete = paymentMethod === 'Card'
-    ? Boolean(card.number && card.cvv && card.expiry)
-    : Boolean(upi);
+  const isPaymentComplete = true; // Stripe handles payment collection on its own hosted page
 
   const nextStep = () => {
     if (currentStep === 1) {
