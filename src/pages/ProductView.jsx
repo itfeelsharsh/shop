@@ -128,8 +128,8 @@ function ProductView() {
   return (
     <>
       <Helmet>
-        <title>{product.name} | KamiKoto</title>
-        <meta name="description" content={product.description || product.name} />
+        <title>{product ? `${product.name} | KamiKoto` : 'Loading Product... | KamiKoto'}</title>
+        <meta name="description" content={product ? product.description : 'Explore premium stationery at KamiKoto.'} />
       </Helmet>
 
       <div className="min-h-screen bg-white pt-24 pb-12">

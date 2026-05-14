@@ -27,7 +27,7 @@
   "scope": "/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
-  "orientation": "any",
+  "orientation": "portrait",
   "theme_color": "#8B4513",
   "background_color": "#ffffff",
   "prefer_related_applications": false,

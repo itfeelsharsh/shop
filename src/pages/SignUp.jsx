@@ -18,6 +18,7 @@ import { m } from "framer-motion";
 import { Mail, ArrowRight, CheckCircle2, UserPlus } from "lucide-react";
 import defaultPfp from "../assets/defaultpfp.png";
 import Button from "../components/Button";
+import { Helmet } from "react-helmet-async";
 
 function SignUp() {
   const [email, setEmail] = useState("");
@@ -188,7 +189,11 @@ function SignUp() {
       navigate(from, { replace: true });
     } catch (error) {
       console.error("Error with social sign up:", error);
-      toast.error(error.message || "An error occurred.");
+      if (error.code === 'auth/popup-blocked') {
+        toast.error("Sign-up popup was blocked by your browser. Please allow popups for this site or try again.");
+      } else {
+        toast.error(error.message || "An error occurred.");
+      }
     } finally {
       setSocialLoading({
         ...socialLoading,
@@ -220,6 +225,10 @@ function SignUp() {
       transition={{ duration: 0.5, ease: "easeOut" }}
       className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex items-center justify-center px-2 sm:px-4 py-12"
     >
+      <Helmet>
+        <title>Create Account | KamiKoto</title>
+        <meta name="description" content="Join KamiKoto today and start your journey with premium stationery." />
+      </Helmet>
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">

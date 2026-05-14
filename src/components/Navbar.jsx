@@ -179,7 +179,7 @@ export default function Navbar() {
                   src="/kamikoto-logo-with-name-tagline-dark-brown-bg.png"
                   alt="KamiKoto"
                 />
-                <span className="font-bold text-xl text-gray-800">KamiKoto</span>
+                <span className="text-3xl font-black tracking-tighter hover:opacity-80 transition-opacity text-gray-900">KamiKoto<span className="text-gray-500">.</span></span>
               </Link>
             </div>
 
@@ -217,7 +217,7 @@ export default function Navbar() {
                 >
                   <ShoppingBagIcon className="h-6 w-6" />
                   {cartItemCount > 0 && (
-                    <div className="absolute -top-1 -right-1 bg-gray-900 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-white shadow-sm">
+                    <div className="absolute top-[38%] -translate-y-1/2 -right-1 bg-gray-900 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-white shadow-sm">
                       {cartItemCount}
                     </div>
                   )}
@@ -348,7 +348,7 @@ export default function Navbar() {
                   <item.icon className={`h-6 w-6 mb-1 transition-transform duration-300 ${((item.exact && location.pathname === item.href) || (!item.exact && location.pathname.startsWith(item.href) && item.href !== '/') || (item.href === '/' && location.pathname === '/')) ? 'scale-110' : ''}`} />
                 )}
                 {item.name === 'Cart' && item.count > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-gray-900 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center ring-2 ring-white shadow-sm">
+                  <span className="absolute top-[38%] -translate-y-1/2 -right-1 bg-gray-900 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center ring-2 ring-white shadow-sm">
                     {item.count > 9 ? '9+' : item.count}
                   </span>
                 )}

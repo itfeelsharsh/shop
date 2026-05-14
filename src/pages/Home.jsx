@@ -10,6 +10,7 @@ import DynamicBanner from "../components/DynamicBanner";
 import { useContentLoader } from "../hooks/useContentLoader";
 import { ArrowRight, Zap, ShieldCheck, Globe } from "lucide-react";
 import Button from "../components/Button";
+import { Helmet } from "react-helmet-async";
 
 /**
  * Peak 2020 Premium Home Page
@@ -97,6 +98,10 @@ function Home() {
 
   return (
     <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>KamiKoto | Premium Japanese Stationery & Writing Tools</title>
+        <meta name="description" content="Discover the pinnacle of premium Japanese stationery. Engineered for precision, designed for inspiration. Shop our collection of notebooks, pens, and more." />
+      </Helmet>
       {/* Hero Section */}
       <section className="relative min-h-[85vh] py-20 overflow-hidden flex items-center justify-center">
         {/* Dynamic Background Banner */}

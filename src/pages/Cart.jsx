@@ -16,6 +16,7 @@ import {
 import { m } from 'framer-motion';
 import ProductCard from '../components/ProductCard';
 import Button from '../components/Button';
+import { Helmet } from 'react-helmet-async';
 
 function Cart() {
   const cartItems = useSelector(state => state.cart.items);
@@ -24,6 +25,7 @@ function Cart() {
   const [products, setProducts] = useState([]);
   const [popularProducts, setPopularProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -55,6 +57,13 @@ function Cart() {
 
   const handleRemove = (productId) => {
     dispatch(removeFromCart(productId));
+  };
+
+  const handleCheckout = () => {
+    setIsCheckingOut(true);
+    setTimeout(() => {
+      navigate('/checkout');
+    }, 800);
   };
 
   const handleQuantityChange = (productId, quantity) => {
@@ -92,6 +101,10 @@ function Cart() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <Helmet>
+        <title>Your Shopping Cart | KamiKoto</title>
+        <meta name="description" content="View and manage the items in your shopping cart before proceeding to checkout." />
+      </Helmet>
       <div className="container mx-auto px-2 sm:px-4 py-8">
         {/* Header */}
         <m.div
@@ -260,7 +273,9 @@ function Cart() {
                   variant="primary"
                   size="large"
                   fullWidth
-                  onClick={() => navigate('/checkout')}
+                  onClick={handleCheckout}
+                  isLoading={isCheckingOut}
+                  loadingText="Checking out..."
                   icon={<ArrowRight className="w-5 h-5" />}
                   className="mb-3"
                 >

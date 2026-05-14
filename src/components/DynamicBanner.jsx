@@ -161,15 +161,6 @@ const DynamicBanner = () => {
       >
         {/* Loading shimmer effect */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer"></div>
-        
-        {/* Loading indicator */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="bg-white/80 px-4 py-2 rounded-full shadow-lg">
-            <span className="text-gray-600 text-sm font-medium">
-              {isLoadingFresh ? '🔄 Loading banners...' : '🖼️ Preparing banners...'}
-            </span>
-          </div>
-        </div>
       </m.div>
     );
   }
@@ -229,4 +220,4 @@ const DynamicBanner = () => {
   );
 };
 
-export default DynamicBanner; 
+export default DynamicBanner;

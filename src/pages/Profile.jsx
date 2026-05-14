@@ -29,6 +29,7 @@ import {
 import Button from '../components/Button';
 import Input from '../components/Input';
 import { useNavigate, Link, useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { useDispatch,
 // eslint-disable-next-line no-unused-vars
 useSelector } from 'react-redux';
@@ -519,6 +520,10 @@ function MyAccount() {
 
   return (
     <div className="bg-gray-50 min-h-screen py-12">
+      <Helmet>
+        <title>My Account | KamiKoto</title>
+        <meta name="description" content="Manage your KamiKoto account, view orders, and update your profile." />
+      </Helmet>
       <div className="container mx-auto px-2 sm:px-4">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">My Account</h1>

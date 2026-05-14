@@ -2,14 +2,33 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { db } from "../firebase/config";
 import { collection, getDocs } from "firebase/firestore";
 import ProductCard from "../components/ProductCard";
-import { Search, X, SlidersHorizontal, Loader2 } from "lucide-react";
+import { Search, X, SlidersHorizontal } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase/config";
+import { Helmet } from "react-helmet-async";
 import Button from "../components/Button";
 import Input from "../components/Input";
+
+const ProductSkeleton = () => (
+  <div className="bg-white rounded-[24px] overflow-hidden shadow-sm border border-gray-100 flex flex-col h-full animate-pulse">
+    <div className="aspect-[4/5] bg-gray-100" />
+    <div className="p-5 flex flex-col gap-3 flex-grow">
+      <div className="flex justify-between">
+        <div className="h-3 w-16 bg-gray-100 rounded-full" />
+        <div className="h-3 w-12 bg-gray-100 rounded-full" />
+      </div>
+      <div className="h-5 w-full bg-gray-100 rounded-lg" />
+      <div className="h-5 w-2/3 bg-gray-100 rounded-lg" />
+      <div className="mt-auto pt-3 border-t border-gray-50 flex justify-between items-center">
+        <div className="h-6 w-20 bg-gray-100 rounded-lg" />
+        <div className="h-10 w-10 bg-gray-100 rounded-full" />
+      </div>
+    </div>
+  </div>
+);
 
 /**
  * Modern Products Page
@@ -239,15 +258,40 @@ function Products() {
 
   if (loading) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-        <Loader2 className="w-12 h-12 text-gray-900 animate-spin mb-4" />
-        <p className="text-gray-600">Loading products...</p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+        <Helmet>
+          <title>Loading Products... | KamiKoto</title>
+        </Helmet>
+        <div className="container mx-auto px-2 sm:px-4 py-8">
+          <div className="mb-8 animate-pulse">
+            <div className="h-10 w-64 bg-gray-200 rounded-xl mb-4" />
+            <div className="h-5 w-48 bg-gray-100 rounded-lg" />
+          </div>
+          <div className="space-y-12">
+            {[1, 2].map((cat) => (
+              <div key={cat} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="h-16 bg-gray-200" />
+                <div className="p-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <ProductSkeleton key={i} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <Helmet>
+        <title>Shop All Products | KamiKoto - Premium Stationery</title>
+        <meta name="description" content="Explore our curated collection of premium Japanese stationery, including notebooks, pens, and professional writing tools." />
+      </Helmet>
       <div className="container mx-auto px-2 sm:px-4 py-8">
         {/* Header */}
         <m.div

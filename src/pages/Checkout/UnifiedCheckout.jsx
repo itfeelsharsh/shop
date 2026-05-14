@@ -9,17 +9,26 @@ import { clearCart, applyCoupon, removeCoupon, removePurchasedFromCart, updateQu
 import countriesStatesData from '../../countriesStates.json';
 import { ShoppingBag, Truck, CreditCard, CheckCircle, ChevronRight, ChevronLeft, Tag, X, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { Helmet } from 'react-helmet-async';
 import OrderConfirmation from '../../components/OrderConfirmation';
 import CouponService from '../../utils/couponService';
 import { processNewOrder } from '../../utils/orderService';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import Button from '../../components/Button';
+import { loadStripe } from '@stripe/stripe-js';
+import {
+  EmbeddedCheckoutProvider,
+  EmbeddedCheckout
+} from '@stripe/react-stripe-js';
 
 // Import card logos
 import VisaLogo from '../../assets/visa.png';
 import MasterCardLogo from '../../assets/mastercard.png';
 import RuPayLogo from '../../assets/rupay.png';
 import AMEXLogo from '../../assets/amex.png';
+
+// Initialize Stripe with the publishable key from environment variables
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || "pk_test_51L43XuSGsH9zXXAfNtqlNEiaB8WLmTWesSFNu1OK14QFXiUB0znCcIEiHTj6U9OU7tICyWqYMc1XloJzV5H75qEi00LlWcYnSQ");
 
 const COUNTRY_CODES = {
   "India": "+91",
@@ -78,7 +87,9 @@ function UnifiedCheckout() {
   const [card, setCard] = useState({ number: '', cvv: '', expiry: '', type: 'RuPay' });
   const [upi, setUpi] = useState('');
   const [processingPayment, setProcessingPayment] = useState(false);
-  const [orderComplete] = useState(false);
+  const [error, setError] = useState('');
+  const [clientSecret, setClientSecret] = useState('');
+  const [orderComplete, setOrderComplete] = useState(false);
   const [savePaymentInfo] = useState(true);
   const [completedOrder] = useState(null);
 
@@ -301,14 +312,13 @@ function UnifiedCheckout() {
 
   const processPayment = async (orderId, cartDetails, emailSent) => {
     try {
-      console.log('Creating Stripe Checkout session for order:', orderId);
-      const origin = window.location.origin;
+      console.log('Creating Stripe Embedded Checkout session for order:', orderId);
+      setProcessingPayment(true);
+      setError('');
       
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           items: cartDetails.map(item => ({
             name: item.product.name,
@@ -321,8 +331,6 @@ function UnifiedCheckout() {
           orderId,
           userId: user.uid,
           customer_email: user.email,
-          success_url: `${origin}/summary?orderId=${orderId}&clearCart=true&emailSent=${emailSent}`,
-          cancel_url: `${origin}/cart`
         }),
       });
 
@@ -332,15 +340,18 @@ function UnifiedCheckout() {
         throw new Error(data.error || 'Failed to create checkout session');
       }
 
-      // Redirect to Stripe Checkout
-      window.location.href = data.url;
-      
-      // We return success: false to prevent the immediate redirection to summary in processOrder
-      // because we are navigating away to Stripe.
-      return { success: false, redirecting: true };
+      if (data.clientSecret) {
+        setClientSecret(data.clientSecret);
+        return { success: true, clientSecret: data.clientSecret };
+      } else {
+        throw new Error('No client secret received from server');
+      }
     } catch (error) {
       console.error('Stripe error:', error);
+      setError(error.message);
       return { success: false, error: error.message };
+    } finally {
+      setProcessingPayment(false);
     }
   };
 
@@ -525,8 +536,8 @@ function UnifiedCheckout() {
       // Process payment with Stripe using the generated orderId
       const paymentResult = await processPayment(orderResult.orderId, updatedCartDetails, orderResult.emailSent || false);
       
-      if (paymentResult.redirecting) {
-        // Will be redirected to Stripe
+      if (paymentResult.clientSecret) {
+        // Form is now shown via clientSecret state, stop here
         return;
       }
 
@@ -543,6 +554,7 @@ function UnifiedCheckout() {
 
       setTimeout(() => {
         dispatch(clearCart());
+        setOrderComplete(true);
         navigate(`/summary?orderId=${orderResult.orderId}&paymentId=${orderResult.paymentId || 'direct'}&emailSent=${orderResult.emailSent || 'false'}`);
         setProcessingPayment(false);
       }, 1500);
@@ -710,6 +722,10 @@ function UnifiedCheckout() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 py-12">
+      <Helmet>
+        <title>Secure Checkout | KamiKoto</title>
+        <meta name="description" content="Complete your purchase securely at KamiKoto." />
+      </Helmet>
       <div className="container mx-auto px-2 sm:px-4">
         {/* Checkout Steps */}
         <m.div
@@ -755,7 +771,7 @@ function UnifiedCheckout() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-3">
             {/* Left Column - Content */}
-            <div className="lg:col-span-2 p-6 md:p-8">
+            <div className="lg:col-span-2 p-4 sm:p-6 md:p-8">
               <AnimatePresence mode="wait">
                 {currentStep === 1 && (
                   <m.div
@@ -834,7 +850,7 @@ function UnifiedCheckout() {
                             <select
                               value={selectedCountryCode}
                               onChange={handleCountryCodeChange}
-                              className="w-28 p-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-gray-900 bg-gray-50"
+                              className="w-20 sm:w-28 p-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-gray-900 bg-gray-50 text-sm sm:text-base"
                             >
                               {Object.keys(COUNTRY_CODES).map((country) => (
                                 <option key={country} value={COUNTRY_CODES[country]}>
@@ -847,7 +863,7 @@ function UnifiedCheckout() {
                               type="tel"
                               value={phoneNumber}
                               onChange={handlePhoneChange}
-                              className="flex-1 p-3 border border-l-0 border-gray-300 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                              className="flex-1 min-w-0 p-3 border border-l-0 border-gray-300 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm sm:text-base"
                               placeholder="Phone number"
                               maxLength={12}
                             />
@@ -1069,18 +1085,27 @@ function UnifiedCheckout() {
                         <h3 className="text-xl font-bold text-gray-900 mb-2">Order Completed!</h3>
                         <p className="text-gray-600">Your order has been successfully processed.</p>
                       </div>
+                    ) : clientSecret ? (
+                      <div className="min-h-[600px] bg-white rounded-2xl overflow-hidden shadow-inner border border-gray-100">
+                        <EmbeddedCheckoutProvider
+                          stripe={stripePromise}
+                          options={{ clientSecret }}
+                        >
+                          <EmbeddedCheckout />
+                        </EmbeddedCheckoutProvider>
+                      </div>
                     ) : (
                       <div className="space-y-6">
                         <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8 text-center">
                           <div className="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
                             <CreditCard size={32} className="text-gray-900" />
                           </div>
-                          <h3 className="text-xl font-bold text-gray-900 mb-2">Secure Stripe Checkout</h3>
+                          <h3 className="text-xl font-bold text-gray-900 mb-2">Secure Checkout</h3>
                           <p className="text-gray-600 max-w-sm mx-auto mb-6">
-                            You will be redirected to Stripe's secure payment gateway to complete your purchase.
+                            Finalize your purchase securely using Stripe. All transactions are encrypted and safe.
                           </p>
 
-                          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-left max-w-sm mx-auto">
+                          <div className="hidden md:block bg-amber-50 border border-amber-200 rounded-xl p-4 text-left max-w-sm mx-auto">
                             <div className="flex items-start gap-3">
                               <div className="text-amber-600 mt-0.5">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1090,7 +1115,7 @@ function UnifiedCheckout() {
                               <div className="space-y-2">
                                 <p className="text-xs font-bold text-amber-900 uppercase tracking-wider">RBI Regulation Note</p>
                                 <p className="text-xs text-amber-800 leading-relaxed">
-                                  Due to current RBI guidelines for international transactions in India, please use the following test card on the next page:
+                                  Due to current RBI guidelines for international transactions in India, please use the following test card on the form:
                                 </p>
                                 <div className="bg-white/50 p-2 rounded border border-amber-200">
                                   <code className="text-sm font-bold text-gray-900">4000 0035 6000 0123</code>
@@ -1108,11 +1133,13 @@ function UnifiedCheckout() {
                           </div>
                         </div>
 
-                        <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl flex items-start gap-3">
+                        <div className="hidden md:flex p-4 bg-blue-50 border border-blue-100 rounded-xl items-start gap-3">
                           <div className="bg-blue-500 text-white rounded-full p-1 mt-0.5">
                             <CheckCircle size={14} />
                           </div>
-                   
+                          <p className="text-xs text-blue-900 leading-relaxed">
+                            Your payment is handled by Stripe, ensuring the highest level of security. We never store your credit card details.
+                          </p>
                         </div>
                       </div>
                     )}
@@ -1122,7 +1149,7 @@ function UnifiedCheckout() {
             </div>
 
             {/* Right Column - Order Summary */}
-            <div className="lg:col-span-1 bg-gradient-to-br from-gray-50 to-white p-6 md:p-8 border-t lg:border-t-0 lg:border-l border-gray-200">
+            <div className="lg:col-span-1 bg-gradient-to-br from-gray-50 to-white p-4 sm:p-6 md:p-8 border-t lg:border-t-0 lg:border-l border-gray-200">
               <div className="sticky top-8">
                 <h3 className="text-lg font-bold text-gray-900 mb-6">Order Summary</h3>
 
@@ -1150,7 +1177,7 @@ function UnifiedCheckout() {
                           <Button
                             type="submit"
                             isLoading={validatingCoupon}
-                            loadingText=""
+                            loadingText="Checking out..."
                             className="!rounded-l-none"
                           >
                             Apply
@@ -1234,11 +1261,11 @@ function UnifiedCheckout() {
                     fullWidth
                     onClick={nextStep}
                     isLoading={processingPayment}
-                    loadingText="Processing..."
+                    loadingText="Checking out..."
                     disabled={(currentStep === 2 && !areAllRequiredFieldsFilled()) || cartDetails.length === 0}
                     icon={currentStep === 3 ? null : <ChevronRight size={18} />}
                   >
-                    {currentStep === 3 ? "Place Order" : "Continue"}
+                    {currentStep === 3 ? (clientSecret ? "Checking out..." : "Pay Now") : "Continue"}
                   </Button>
 
                   {currentStep > 1 && (

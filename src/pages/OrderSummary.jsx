@@ -23,6 +23,7 @@ import Confetti from 'react-confetti';
 import useWindowSize from '../hooks/useWindowSize';
 import { downloadOrderReceipt } from '../utils/pdfUtils';
 import Button from '../components/Button';
+import { Helmet } from 'react-helmet-async';
 
 /**
  * Order Summary Page Component
@@ -42,6 +43,7 @@ function OrderSummary() {
   const [error, setError] = useState(null);
   const [confettiActive, setConfettiActive] = useState(true);
   const [downloadingInvoice, setDownloadingInvoice] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const { width, height } = useWindowSize();
   
   // Get query params from URL
@@ -306,6 +308,13 @@ function OrderSummary() {
       setDownloadingInvoice(false);
     }
   };
+
+  const handleContinueShopping = () => {
+    setIsNavigating(true);
+    setTimeout(() => {
+      navigate('/');
+    }, 800);
+  };
   
   // Animation variants
   const containerVariants = {
@@ -427,6 +436,10 @@ function OrderSummary() {
   
   return (
     <>
+      <Helmet>
+        <title>Order Confirmation | KamiKoto</title>
+        <meta name="description" content="Thank you for your order! Your purchase at KamiKoto is confirmed and being prepared." />
+      </Helmet>
       {confettiActive && (
         <Confetti 
           width={width} 
@@ -509,7 +522,7 @@ function OrderSummary() {
 
           
           {/* Main Content */}
-          <div className="bg-white rounded-b-2xl shadow-lg p-6 md:p-8">
+          <div className="bg-white rounded-b-2xl shadow-lg p-4 sm:p-6 md:p-8">
             <motion.div
               variants={containerVariants}
               initial="hidden"
@@ -742,7 +755,9 @@ function OrderSummary() {
                   <Button
                     variant="primary"
                     size="large"
-                    onClick={() => navigate('/')}
+                    onClick={handleContinueShopping}
+                    isLoading={isNavigating}
+                    loadingText="Checking out..."
                   >
                     Continue Shopping
                   </Button>

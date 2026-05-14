@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#8B4513" /> <!-- Aesthetic brown theme color -->
     
     <!-- Content Security Policy -->
-<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'wasm-unsafe-eval' 'inline-speculation-rules' https://firestore.googleapis.com https://www.google.com https://www.gstatic.com https://apis.google.com https://www.recaptcha.net https://cdn.harshbanker.com;">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'wasm-unsafe-eval' 'inline-speculation-rules' https://firestore.googleapis.com https://www.google.com https://www.gstatic.com https://apis.google.com https://www.recaptcha.net https://cdn.harshbanker.com https://js.stripe.com; frame-src https://js.stripe.com https://www.google.com https://www.recaptcha.net https://*.firebaseapp.com; connect-src 'self' https://*.googleapis.com https://*.firebaseapp.com https://*.firebase.io https://api.stripe.com https://www.google.com https://www.recaptcha.net https://www.gstatic.com https://*.qzz.io; img-src 'self' data: https: https://*.stripe.com https://www.gstatic.com https://www.google.com https://i.imgur.com https://cdn.harshbanker.com https://*.qzz.io https://images.unsplash.com;">
     
     <!-- Prerender status detection -->
     <meta name="prerender-status-code" content="200">
@@ -55,14 +55,15 @@
     <meta name="msapplication-TileColor" content="#8B4513" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="KamiKoto" />
     <meta name="format-detection" content="telephone=no" />
+    <meta name="screen-orientation" content="portrait" />
     
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="apple-touch-startup-image" href="%PUBLIC_URL%/splash.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" crossorigin="use-credentials" />
-    <title>KamiKoto - Your Friendly Stationery Shop</title>
+    <title>KamiKoto | Premium Japanese Stationery</title>
     
     <!-- Inline critical CSS to avoid render-blocking -->
     <style>
