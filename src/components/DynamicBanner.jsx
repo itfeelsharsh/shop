@@ -205,9 +205,9 @@ const DynamicBanner = () => {
   }
 
   return (
-    <div className="relative w-full mb-6 rounded-lg overflow-hidden shadow-lg">
+    <div className="relative w-full h-full overflow-hidden">
       {/* Banner Slideshow - Pure banner view without navigation controls */}
-      <div className="relative">
+      <div className="relative h-full">
         <AnimatePresence mode="wait">
           <m.img
             key={currentBannerIndex}
@@ -217,7 +217,7 @@ const DynamicBanner = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="w-full object-cover"
+            className="w-full h-full object-cover"
             onError={(e) => {
               e.target.onerror = null;
               e.target.src = '/banners/3.webp'; // Fallback to default banner on error

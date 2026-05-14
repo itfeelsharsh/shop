@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { AnimatePresence, m } from "framer-motion";
 import Navbar from "./components/Navbar";
 import { ToastContainer } from "react-toastify";
 import Footer from "./components/Footer";
@@ -20,6 +21,7 @@ import LoadingScreen from "./components/LoadingScreen";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AnnouncementStrip from "./components/AnnouncementStrip";
+import TopLoader from "./components/TopLoader";
 import { auth } from "./firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
 import { useDispatch } from "react-redux";
@@ -144,6 +146,7 @@ function App() {
         >
           <Router>
             <ScrollToTop />
+            <TopLoader />
             <ToastContainer
               position="top-center"
               autoClose={3000}
@@ -154,7 +157,7 @@ function App() {
               pauseOnFocusLoss
               draggable
               pauseOnHover
-              theme="colored"
+              theme="light"
               limit={3}
               icon={true}
               className="mt-16"
@@ -164,44 +167,8 @@ function App() {
               <Navbar />
               <AnnouncementStrip />
 
-              <main className="flex-grow">
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/products" element={<Products />} />
-                  <Route path="/product/:id" element={<ProductView />} />
-                  <Route path="/cart" element={<Cart />} />
-                  <Route path="/signin" element={<SignIn />} />
-                  <Route path="/signup" element={<SignUp />} />
-                  <Route path="/password-reset" element={<PasswordReset />} />
-                  
-                  {/* My Account routes */}
-                  <Route path="/my-account" element={
-                    <ProtectedRoute>
-                      <MyAccount />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/my-account/:section" element={
-                    <ProtectedRoute>
-                      <MyAccount />
-                    </ProtectedRoute>
-                  } />
-                  
-                  <Route path="/wishlist" element={
-                    <ProtectedRoute>
-                      <Wishlist />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/checkout" element={<UnifiedCheckout />} />
-                  
-                  {/* Post-checkout order summary page - displays order confirmation */}
-                  {/* Accessible after successful payment with orderId and paymentId query parameters */}
-                  <Route path="/summary" element={<OrderSummary />} />
-                  
-                  <Route path="/about" element={<AboutUs />} />
-                  <Route path="/contact" element={<ContactUs />} />
-                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                  <Route path="/terms-of-service" element={<TermsOfService />} />
-                </Routes>
+              <main className="flex-grow overflow-hidden">
+                <AnimatedRoutes />
               </main>
               <Footer />
             </div>
@@ -209,6 +176,63 @@ function App() {
         </GoogleReCaptchaProvider>
       </HelmetProvider>
     </LazyMotion>
+  );
+}
+
+/**
+ * AnimatedRoutes component handles page transitions using Framer Motion
+ * Must be used within a Router context
+ */
+function AnimatedRoutes() {
+  const location = useLocation();
+  
+  return (
+    <AnimatePresence mode="wait">
+      <m.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+      >
+        <Routes location={location}>
+          <Route path="/" element={<Home />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/product/:id" element={<ProductView />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/password-reset" element={<PasswordReset />} />
+          
+          {/* My Account routes */}
+          <Route path="/my-account" element={
+            <ProtectedRoute>
+              <MyAccount />
+            </ProtectedRoute>
+          } />
+          <Route path="/my-account/:section" element={
+            <ProtectedRoute>
+              <MyAccount />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/wishlist" element={
+            <ProtectedRoute>
+              <Wishlist />
+            </ProtectedRoute>
+          } />
+          <Route path="/checkout" element={<UnifiedCheckout />} />
+          
+          {/* Post-checkout order summary page - displays order confirmation */}
+          <Route path="/summary" element={<OrderSummary />} />
+          
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/contact" element={<ContactUs />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+        </Routes>
+      </m.div>
+    </AnimatePresence>
   );
 }
 

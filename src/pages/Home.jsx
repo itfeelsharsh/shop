@@ -8,18 +8,14 @@ import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
 import DynamicBanner from "../components/DynamicBanner";
 import { useContentLoader } from "../hooks/useContentLoader";
-import { ArrowRight, Package, TrendingUp, Star, ShoppingBag } from "lucide-react";
+import { ArrowRight, Zap, ShieldCheck, Globe } from "lucide-react";
 import Button from "../components/Button";
 
 /**
- * Modern Home Page Component
- *
- * Features:
- * - Hero section with dynamic banner
- * - Featured products showcase
- * - Category highlights
- * - Modern, minimalistic design
- * - Smooth animations and transitions
+ * Peak 2020 Premium Home Page
+ * 
+ * Features a high-end minimalist design with glassmorphism, 
+ * sophisticated typography, and smooth cinematic transitions.
  */
 function Home() {
   const [products, setProducts] = useState([]);
@@ -35,14 +31,11 @@ function Home() {
         const cachedProducts = getCachedData('products');
 
         if (cachedProducts && cachedProducts.length > 0) {
-          console.log('✅ Using preloaded products data');
           setProducts(cachedProducts);
           return;
         }
 
-        console.log('🔄 Fetching fresh products data...');
         setIsLoadingFresh(true);
-
         const productsCol = collection(db, "products");
         const productSnapshot = await getDocs(productsCol);
         const productList = productSnapshot.docs.map((doc) => {
@@ -58,10 +51,8 @@ function Home() {
 
         const filteredProducts = productList.filter(product => product.showOnHome);
         setProducts(filteredProducts);
-        console.log('✅ Fresh products data loaded');
-
       } catch (error) {
-        console.error("❌ Error initializing products:", error);
+        console.error("Error initializing products:", error);
         setProducts([]);
       } finally {
         setIsLoadingFresh(false);
@@ -74,204 +65,216 @@ function Home() {
   useEffect(() => {
     const preloadedProducts = preloadedData?.products;
     if (preloadedProducts && preloadedProducts.length > 0 && products.length === 0) {
-      console.log('📦 Updating with newly preloaded products');
       setProducts(preloadedProducts);
     }
   }, [preloadedData, products.length]);
 
   const handleAddToCart = useCallback((product) => {
-    try {
-      dispatch(addToCart({
-        productId: product.id,
-        quantity: 1
-      }));
-    } catch (error) {
-      console.error('❌ Error adding product to cart:', error);
-    }
+    dispatch(addToCart({
+      productId: product.id,
+      quantity: 1
+    }));
   }, [dispatch]);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut" }
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      {/* Hero Section with Banner */}
-      <m.section
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6 }}
-        className="relative"
+    <div className="min-h-screen bg-white">
+      {/* Hero Section */}
+      <section className="relative min-h-[85vh] py-20 overflow-hidden flex items-center justify-center">
+        {/* Dynamic Background Banner */}
+        <div className="absolute inset-0 z-0">
+          <DynamicBanner />
+          <div className="absolute inset-0 bg-black/40 z-[1]" /> {/* Dark overlay for readability */}
+        </div>
+        
+        {/* Glassmorphic Overlay Card */}
+        <m.div 
+          initial={{ opacity: 0, scale: 0.9, y: 40 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="relative z-10 max-w-4xl w-full mx-4"
+        >
+          <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-[40px] p-8 md:p-16 text-center shadow-2xl">
+            <m.span 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="inline-block px-4 py-1.5 mb-6 text-sm font-bold tracking-[0.2em] text-white uppercase bg-black/20 backdrop-blur-md rounded-full"
+            >
+              New Collection
+            </m.span>
+            <m.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="text-5xl md:text-7xl font-bold text-white mb-8 tracking-tighter leading-tight"
+            >
+              Artistry in <br /> 
+              <span className="text-white">Every Stroke.</span>
+            </m.h1>
+            <m.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="text-lg md:text-xl text-white mb-10 max-w-xl mx-auto font-medium"
+            >
+              Discover the pinnacle of premium Japanese stationery. Engineered for precision, designed for inspiration.
+            </m.p>
+            <m.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            >
+              <Button
+                variant="primary"
+                size="large"
+                onClick={() => navigate('/products')}
+                className="bg-white !text-black hover:bg-gray-100 border-none shadow-xl min-w-[200px]"
+              >
+                Shop Now
+              </Button>
+              <Button
+                variant="secondary"
+                size="large"
+                onClick={() => navigate('/about')}
+                className="bg-white/10 !text-white border-white/30 backdrop-blur-md hover:bg-white/20 min-w-[200px]"
+              >
+                Our Story
+              </Button>
+            </m.div>
+          </div>
+        </m.div>
+      </section>
+
+      {/* Features Grid (Bento Style) */}
+      <m.section 
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        className="container mx-auto px-4 py-24"
       >
-        <DynamicBanner />
-      </m.section>
-
-      {/* Features Section */}
-      <m.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.6 }}
-        className="container mx-auto px-2 sm:px-4 py-12"
-      >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <Package className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Premium Quality</h3>
-                <p className="text-sm text-gray-600">Curated stationery collection</p>
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <m.div variants={itemVariants} className="md:col-span-2 bg-gray-50 rounded-[32px] p-10 flex flex-col justify-between hover:bg-gray-100 transition-colors">
+            <Zap className="w-12 h-12 text-black mb-12" />
+            <div>
+              <h3 className="text-3xl font-bold text-gray-900 mb-4">Precision Engineering</h3>
+              <p className="text-gray-600">Every piece in our collection is selected for its mechanical excellence and tactile feedback.</p>
             </div>
-          </div>
-
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-green-50 rounded-lg">
-                <TrendingUp className="w-6 h-6 text-green-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Best Prices</h3>
-                <p className="text-sm text-gray-600">Competitive pricing guaranteed</p>
-              </div>
+          </m.div>
+          
+          <m.div variants={itemVariants} className="bg-black rounded-[32px] p-10 text-white flex flex-col justify-between hover:bg-gray-900 transition-colors">
+            <ShieldCheck className="w-10 h-10 mb-8 text-white" />
+            <div>
+              <h4 className="text-xl font-bold mb-2 text-white">Lifetime Quality</h4>
+              <p className="text-sm text-white font-medium">Built to last a lifetime of creative work.</p>
             </div>
-          </div>
-
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-purple-50 rounded-lg">
-                <Star className="w-6 h-6 text-purple-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Top Rated</h3>
-                <p className="text-sm text-gray-600">Trusted by thousands</p>
-              </div>
+          </m.div>
+          
+          <m.div variants={itemVariants} className="bg-blue-600 rounded-[32px] p-10 text-white flex flex-col justify-between hover:bg-blue-700 transition-colors">
+            <Globe className="w-10 h-10 mb-8 text-white" />
+            <div>
+              <h4 className="text-xl font-bold mb-2 text-white">Global Sourcing</h4>
+              <p className="text-sm text-white font-medium">Direct imports from Japan and Europe.</p>
             </div>
-          </div>
+          </m.div>
         </div>
       </m.section>
 
-      {/* Featured Products Section */}
-      <section className="container mx-auto px-2 sm:px-4 py-12">
-        <m.div
+      {/* Featured Products */}
+      <section className="container mx-auto px-4 py-12">
+        <m.div 
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-          className="mb-8"
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6"
         >
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Featured Products</h2>
-              <p className="text-gray-600">Handpicked items just for you</p>
-            </div>
-            <Button
-              variant="ghost"
-              size="small"
-              onClick={() => navigate('/products')}
-              icon={<ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
-              className="hidden md:flex"
-            >
-              View All
-            </Button>
+          <div>
+            <h2 className="text-5xl font-bold text-gray-900 tracking-tighter mb-4">The Essentials</h2>
+            <p className="text-xl text-gray-500 max-w-lg">Core pieces of the KamiKoto collection, refined over generations for the modern creator.</p>
           </div>
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/products')}
+            className="text-lg font-bold group"
+            icon={<ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />}
+          >
+            Explore Everything
+          </Button>
         </m.div>
 
-        {/* Loading State */}
-        {isLoadingFresh && products.length === 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, index) => (
-              <div key={index} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-pulse">
-                <div className="w-full h-64 bg-gray-200"></div>
-                <div className="p-4 space-y-3">
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                  <div className="h-6 bg-gray-200 rounded w-2/3"></div>
-                </div>
-              </div>
+        {isLoadingFresh && products.length === 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="aspect-[3/4] bg-gray-100 rounded-[32px] animate-pulse" />
             ))}
           </div>
-        )}
-
-        {/* Products Grid */}
-        {products.length > 0 && (
-          <m.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-          >
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {products.map((product, index) => (
               <m.div
                 key={product.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05, duration: 0.4 }}
+                variants={itemVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
               >
-                <ProductCard
-                  product={product}
-                  onAddToCart={handleAddToCart}
-                />
+                <ProductCard product={product} onAddToCart={handleAddToCart} />
               </m.div>
             ))}
-          </m.div>
-        )}
-
-        {/* No Products State */}
-        {!isLoadingFresh && products.length === 0 && (
-          <m.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-20"
-          >
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
-              <ShoppingBag className="w-8 h-8 text-gray-400" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No featured products yet</h3>
-            <p className="text-gray-600 mb-6">Check out our full collection</p>
-            <Button
-              variant="primary"
-              size="medium"
-              onClick={() => navigate('/products')}
-              icon={<ArrowRight className="w-5 h-5" />}
-            >
-              Browse Products
-            </Button>
-          </m.div>
+          </div>
         )}
       </section>
 
-      {/* Call to Action Section */}
-      <m.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 0.6 }}
-        className="container mx-auto px-4 py-16"
+      {/* Brand Ethos / Video Section */}
+      <m.section 
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        className="container mx-auto px-4 py-24"
       >
-        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl p-12 text-center relative overflow-hidden">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC40Ij48cGF0aCBkPSJNMzYgMzRjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6bTAgMTBjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6TTQ2IDM0YzAtMi4yMSAxLjc5LTQgNC00czQgMS43OSA0IDQtMS43OSA0LTQgNC00LTEuNzktNC00em0wIDEwYzAtMi4yMSAxLjc5LTQgNC00czQgMS43OSA0IDQtMS43OSA0LTQgNC00LTEuNzktNC00eiIvPjwvZz48L2c+PC9zdmc+')] bg-repeat"></div>
-          </div>
-
-          <div className="relative z-10">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Discover Our Complete Collection
-            </h2>
-            <p className="text-gray-300 text-lg mb-8 max-w-2xl mx-auto">
-              Explore hundreds of premium stationery items carefully curated for professionals, students, and creatives.
-            </p>
+        <div className="bg-gray-900 rounded-[48px] overflow-hidden relative group">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10" />
+          <img 
+            src="https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&q=80&w=2070" 
+            alt="Craftsmanship" 
+            className="w-full h-[600px] object-cover transition-transform duration-[3s] group-hover:scale-110"
+          />
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center p-12">
+            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tighter">Beyond Stationery.</h2>
+            <p className="text-xl text-white/70 max-w-2xl mb-10">We believe that the tools you use define the quality of your output. We provide the tools; you provide the vision.</p>
             <Button
               variant="secondary"
               size="large"
-              onClick={() => navigate('/products')}
-              icon={<ArrowRight className="w-5 h-5" />}
-              className="bg-white !text-gray-900 hover:bg-gray-50 border-none shadow-2xl"
+              onClick={() => navigate('/about')}
+              className="bg-white/10 backdrop-blur-xl border-white/20 !text-white hover:bg-white/20"
             >
-              Shop the Collection
+              Watch the Film
             </Button>
           </div>
         </div>
       </m.section>
 
-      {/* Bottom Spacing */}
-      <div className="h-12"></div>
     </div>
   );
 }

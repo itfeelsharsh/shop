@@ -44,6 +44,17 @@ export default function Navbar() {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   }, [cartItems]);
 
+  const [animateCart, setAnimateCart] = useState(false);
+
+  // Trigger animation when cart item count changes
+  useEffect(() => {
+    if (cartItemCount > 0) {
+      setAnimateCart(true);
+      const timer = setTimeout(() => setAnimateCart(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [cartItemCount]);
+
   // Define navigation items for both top navbar and bottom tab bar
   const mainNavItems = [
     { name: 'Home', href: '/', icon: HomeIcon, exact: true }, // Added exact for better active state matching
@@ -199,7 +210,10 @@ export default function Navbar() {
               <div className="relative">
                 <Link
                   to="/cart"
-                  className="text-gray-600 hover:text-gray-900 transition-all duration-300 relative p-2 rounded-xl hover:bg-gray-50"
+                  className={classNames(
+                    "text-gray-600 hover:text-gray-900 transition-all duration-300 relative p-2 rounded-xl hover:bg-gray-50",
+                    animateCart ? "scale-125 text-gray-900" : ""
+                  )}
                 >
                   <ShoppingBagIcon className="h-6 w-6" />
                   {cartItemCount > 0 && (
@@ -334,7 +348,7 @@ export default function Navbar() {
                   <item.icon className={`h-6 w-6 mb-1 transition-transform duration-300 ${((item.exact && location.pathname === item.href) || (!item.exact && location.pathname.startsWith(item.href) && item.href !== '/') || (item.href === '/' && location.pathname === '/')) ? 'scale-110' : ''}`} />
                 )}
                 {item.name === 'Cart' && item.count > 0 && (
-                  <span className="absolute -top-1.5 -right-2.5 bg-gray-900 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center ring-2 ring-white shadow-sm">
+                  <span className="absolute -top-1 -right-1 bg-gray-900 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center ring-2 ring-white shadow-sm">
                     {item.count > 9 ? '9+' : item.count}
                   </span>
                 )}

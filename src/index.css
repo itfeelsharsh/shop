@@ -172,4 +172,96 @@
   @apply text-gray-400 text-sm;
 }
 
+/* Peak 2020 Premium Toast Redesign */
+.Toastify__toast-container {
+  width: auto !important;
+  max-width: 90vw;
+  padding: 0;
+  top: 1.5rem !important;
+}
+
+/* Ensure centering on both mobile and desktop */
+.Toastify__toast-container--top-center {
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+.Toastify__toast {
+  @apply rounded-[28px] p-0 mb-4 overflow-hidden;
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 20px 50px -12px rgba(0, 0, 0, 0.15) !important;
+  min-height: 64px;
+}
+
+/* Premium Mobile Animation */
+@media (max-width: 767px) {
+  .Toastify__toast-container {
+    width: 90vw !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+  
+  .Toastify--animate {
+    animation-duration: 0.6s;
+  }
+}
+
+.Toastify__toast-body {
+  @apply p-4 px-6 flex items-center gap-4;
+  margin: 0;
+}
+
+.Toastify__toast-body > div:last-child {
+  @apply text-sm font-bold tracking-tight text-gray-900 leading-tight;
+}
+
+.Toastify__toast--success .Toastify__toast-icon {
+  fill: #10b981 !important;
+}
+
+.Toastify__toast--error .Toastify__toast-icon {
+  fill: #ef4444 !important;
+}
+
+.Toastify__toast--warning .Toastify__toast-icon {
+  fill: #f59e0b !important;
+}
+
+.Toastify__toast--info .Toastify__toast-icon {
+  fill: #3b82f6 !important;
+}
+
+.Toastify__close-button {
+  @apply mr-4 opacity-30 hover:opacity-100 transition-opacity;
+  color: #000 !important;
+  align-self: center;
+}
+
+.Toastify__progress-bar {
+  height: 3px !important;
+  bottom: 0;
+  background: linear-gradient(to right, rgba(0,0,0,0.1), rgba(0,0,0,0.3)) !important;
+}
+
+.Toastify__progress-bar--success {
+  background: #10b981 !important;
+}
+
+.Toastify__progress-bar--error {
+  background: #ef4444 !important;
+}
+
+/* Ensure centering on desktop */
+@media (min-width: 768px) {
+  .Toastify__toast-container--top-center {
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+}
+
   
