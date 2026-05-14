@@ -1,21 +1,20 @@
 /**
- * Cloudflare Pages Middleware for Dynamic Meta Tags
- *
- * This middleware intercepts requests to product pages and injects dynamic meta tags
- * for social media crawlers (Discord, Twitter, Facebook, WhatsApp, etc.)
- *
- * How it works:
- * 1. Detects if the request is from a bot/crawler
- * 2. If it's a product page request from a crawler, fetches product data from Firestore
- * 3. Injects the proper Open Graph and Twitter Card meta tags into the HTML
- * 4. Returns the modified HTML to the crawler
- * 5. Regular users get the normal React app with client-side rendering
+ * Cloudflare Pages Middleware for World-Class Dynamic Meta Tags & SEO
+ * 
+ * This middleware intercepts requests to product pages from social media crawlers
+ * and search engine bots. it fetches real-time product data and reviews from 
+ * Firestore to inject rich metadata, Open Graph tags, and JSON-LD structured data.
+ * 
+ * Supported Platforms:
+ * - Discord (Rich Embeds with Ratings & Price)
+ * - WhatsApp (Large Preview Banners)
+ * - Twitter/X (Summary Large Image Cards)
+ * - Facebook/Instagram (Product Catalogs)
+ * - Google (Search Results Rich Snippets)
  */
 
 /**
  * Detects if the user agent is a bot or social media crawler
- * @param {string} userAgent - The User-Agent header value
- * @returns {boolean} True if the request is from a bot
  */
 function isBot(userAgent) {
   if (!userAgent) return false;
@@ -41,9 +40,8 @@ function isBot(userAgent) {
     'embedly', 'quora', 'outbrain', 'flipboard',
     'tumblr', 'bitly', 'instapaper', 'pocket',
     'developers.google.com/+/web/snippet',
-    'vkshare', 'w3c_validator', 'redditbot',
-    'applebot', 'rogerbot', 'semrushbot',
-    'dotbot', 'ahrefsbot', 'screaming frog',
+    'vkshare', 'w3c_validator', 'applebot', 'rogerbot', 
+    'semrushbot', 'dotbot', 'ahrefsbot', 'screaming frog',
     'mediapartners-google', 'adsbot-google'
   ];
 
@@ -53,9 +51,6 @@ function isBot(userAgent) {
 
 /**
  * Fetches product data from Firestore using REST API
- * @param {string} productId - The product ID to fetch
- * @param {Object} env - Environment variables
- * @returns {Promise<Object|null>} Product data or null if not found
  */
 async function fetchProductData(productId, env) {
   try {
@@ -63,181 +58,246 @@ async function fetchProductData(productId, env) {
     const apiKey = env.FIREBASE_API_KEY || env.REACT_APP_FIREBASE_API_KEY;
 
     if (!projectId || !apiKey) {
-      console.error('[Meta Middleware] Missing Firebase configuration');
+      console.error('[SEO Middleware] Missing Firebase configuration');
       return null;
     }
 
-    // Use Firestore REST API to fetch product
     const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/products/${productId}`;
-
-    console.log(`[Meta Middleware] Fetching product ${productId} from Firestore...`);
 
     const response = await fetch(`${firestoreUrl}?key=${apiKey}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
     });
 
-    if (!response.ok) {
-      console.error(`[Meta Middleware] Firestore API error: ${response.status} ${response.statusText}`);
-      return null;
-    }
+    if (!response.ok) return null;
 
     const data = await response.json();
 
-    // Transform Firestore document format to a simple object
-    const product = {
+    return {
       id: productId,
       name: data.fields?.name?.stringValue || '',
       description: data.fields?.description?.stringValue || '',
-      price: data.fields?.price?.integerValue || data.fields?.price?.doubleValue || 0,
-      mrp: data.fields?.mrp?.integerValue || data.fields?.mrp?.doubleValue || 0,
+      price: Number(data.fields?.price?.integerValue || data.fields?.price?.doubleValue || 0),
+      mrp: Number(data.fields?.mrp?.integerValue || data.fields?.mrp?.doubleValue || 0),
       image: data.fields?.image?.stringValue || '',
-      brand: data.fields?.brand?.stringValue || '',
-      type: data.fields?.type?.stringValue || '',
-      stock: data.fields?.stock?.integerValue || 0,
+      brand: data.fields?.brand?.stringValue || 'KamiKoto',
+      type: data.fields?.type?.stringValue || 'Stationery',
+      stock: Number(data.fields?.stock?.integerValue || 0),
     };
-
-    console.log(`[Meta Middleware] Product fetched successfully:`, product.name);
-    return product;
   } catch (error) {
-    console.error('[Meta Middleware] Error fetching product:', error);
+    console.error('[SEO Middleware] Error fetching product:', error);
     return null;
   }
 }
 
 /**
- * Formats price with Indian currency format
- * @param {number} price - Price to format
- * @returns {string} Formatted price string
+ * Fetches rating statistics from Firestore reviews collection
  */
-function formatPrice(price) {
-  const priceStr = price.toString();
-  const [integerPart, decimalPart] = priceStr.split('.');
+async function fetchRatingStats(productId, env) {
+  try {
+    const projectId = env.FIREBASE_PROJECT_ID || env.REACT_APP_FIREBASE_PROJECT_ID;
+    const apiKey = env.FIREBASE_API_KEY || env.REACT_APP_FIREBASE_API_KEY;
 
-  const lastThreeDigits = integerPart.slice(-3);
-  const otherDigits = integerPart.slice(0, -3);
-  const formattedInteger = otherDigits.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + (otherDigits ? "," : "") + lastThreeDigits;
+    const firestoreQueryUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery?key=${apiKey}`;
+    
+    const queryBody = {
+      structuredQuery: {
+        from: [{ collectionId: 'reviews' }],
+        where: {
+          fieldFilter: {
+            field: { fieldPath: 'productId' },
+            op: 'EQUAL',
+            value: { stringValue: productId }
+          }
+        }
+      }
+    };
 
-  return decimalPart ? `${formattedInteger}.${decimalPart}` : formattedInteger;
+    const response = await fetch(firestoreQueryUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(queryBody)
+    });
+
+    if (!response.ok) return { average: 0, total: 0 };
+
+    const results = await response.json();
+    
+    // Filter out empty results and transform
+    const reviews = results
+      .filter(r => r.document)
+      .map(r => ({
+        rating: Number(r.document.fields.rating.integerValue || 0)
+      }));
+
+    if (reviews.length === 0) return { average: 0, total: 0 };
+
+    const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
+    const average = totalRating / reviews.length;
+
+    return {
+      average: parseFloat(average.toFixed(1)),
+      total: reviews.length
+    };
+  } catch (error) {
+    console.error('[SEO Middleware] Error fetching ratings:', error);
+    return { average: 0, total: 0 };
+  }
 }
 
 /**
- * Generates meta tags HTML for a product
- * @param {Object} product - Product data
- * @param {string} url - Current page URL
- * @returns {string} HTML meta tags
+ * Formats price for display
  */
-function generateMetaTags(product, url) {
-  const metaDescription = product.description
-    ? product.description.substring(0, 155) + (product.description.length > 155 ? '...' : '')
-    : `Buy ${product.name} online at KamiKoto`;
+function formatPrice(price) {
+  return new Intl.NumberFormat('en-IN', {
+    maximumFractionDigits: 0
+  }).format(price);
+}
 
-  const title = `${product.name} | KamiKoto - Premium Stationery`;
+/**
+ * Generates JSON-LD Structured Data for Product
+ */
+function generateJsonLd(product, rating, url) {
+  const schema = {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": product.name,
+    "image": [product.image],
+    "description": product.description,
+    "brand": {
+      "@type": "Brand",
+      "name": product.brand
+    },
+    "sku": product.id,
+    "offers": {
+      "@type": "Offer",
+      "url": url,
+      "priceCurrency": "INR",
+      "price": product.price,
+      "itemCondition": "https://schema.org/NewCondition",
+      "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      "seller": {
+        "@type": "Organization",
+        "name": "KamiKoto"
+      }
+    }
+  };
+
+  if (rating.total > 0) {
+    schema.aggregateRating = {
+      "@type": "AggregateRating",
+      "ratingValue": rating.average,
+      "reviewCount": rating.total,
+      "bestRating": "5",
+      "worstRating": "1"
+    };
+  }
+
+  return `<script type="application/ld+json">${JSON.stringify(schema)}</script>`;
+}
+
+/**
+ * Generates all meta tags
+ */
+function generateMetaTags(product, rating, url) {
   const priceFormatted = formatPrice(product.price);
-  const ogTitle = `${product.name} - ₹${priceFormatted}`;
+  const mrpFormatted = product.mrp > product.price ? formatPrice(product.mrp) : null;
+  const discountPercent = product.mrp > product.price ? Math.round(((product.mrp - product.price) / product.mrp) * 100) : null;
+  
+  const title = `${product.name} | KamiKoto - Premium Stationery`;
+  const metaDesc = product.description.substring(0, 160) + (product.description.length > 160 ? '...' : '');
+  
+  // Discord/WhatsApp specific title that includes price and discount
+  const embedTitle = `${product.name} - ₹${priceFormatted}${discountPercent ? ` (${discountPercent}% OFF)` : ''}`;
 
   return `
-    <!-- Basic Meta Tags -->
+    <!-- Primary Meta Tags -->
     <title>${title}</title>
-    <meta name="description" content="${metaDescription}">
-
-    <!-- OpenGraph Tags for Facebook/Instagram/WhatsApp/Discord -->
-    <meta property="og:title" content="${ogTitle}">
-    <meta property="og:description" content="${metaDescription}">
-    <meta property="og:image" content="${product.image}">
-    <meta property="og:image:secure_url" content="${product.image}">
-    <meta property="og:image:type" content="image/jpeg">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="${product.name}">
-    <meta property="og:url" content="${url}">
-    <meta property="og:type" content="product">
-    <meta property="og:site_name" content="KamiKoto - Premium Stationery">
-    <meta property="og:locale" content="en_IN">
-    <meta property="og:price:amount" content="${product.price}">
-    <meta property="og:price:currency" content="INR">
-    ${product.stock > 0 ? '<meta property="product:availability" content="in stock">' : ''}
-    ${product.brand ? `<meta property="product:brand" content="${product.brand}">` : ''}
-
-    <!-- Twitter Card Tags -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:site" content="@KamiKoto">
-    <meta name="twitter:title" content="${ogTitle}">
-    <meta name="twitter:description" content="${metaDescription}">
-    <meta name="twitter:image" content="${product.image}">
-    <meta name="twitter:image:alt" content="${product.name}">
-    <meta name="twitter:label1" content="Price">
-    <meta name="twitter:data1" content="₹${priceFormatted}">
-    <meta name="twitter:label2" content="Availability">
-    <meta name="twitter:data2" content="${product.stock > 0 ? 'In Stock' : 'Out of Stock'}">
-
-    <!-- WhatsApp Specific Meta Tags -->
-    <meta property="og:rich_attachment" content="true">
-
-    <!-- Discord Embed Enhancement -->
-    <meta name="theme-color" content="#3B82F6">
-
-    <!-- Additional Meta Tags -->
-    <meta name="keywords" content="${product.name}, ${product.brand || ''}, ${product.type || ''}, stationery, online shopping">
+    <meta name="title" content="${title}">
+    <meta name="description" content="${metaDesc}">
     <link rel="canonical" href="${url}">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="product">
+    <meta property="og:url" content="${url}">
+    <meta property="og:title" content="${embedTitle}">
+    <meta property="og:description" content="${metaDesc}">
+    <meta property="og:image" content="${product.image}">
+    <meta property="og:image:alt" content="${product.name}">
+    <meta property="og:site_name" content="KamiKoto">
+    <meta property="og:locale" content="en_IN">
+
+    <!-- Product Specific Tags (Discord & Catalog) -->
+    <meta property="product:brand" content="${product.brand}">
+    <meta property="product:price:amount" content="${product.price}">
+    <meta property="product:price:currency" content="INR">
+    <meta property="product:availability" content="${product.stock > 0 ? 'in stock' : 'out of stock'}">
+    <meta property="product:condition" content="new">
+    <meta property="product:category" content="${product.type}">
+    ${mrpFormatted ? `<meta property="product:price:standard_amount" content="${product.mrp}">` : ''}
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="${url}">
+    <meta name="twitter:title" content="${embedTitle}">
+    <meta name="twitter:description" content="${metaDesc}">
+    <meta name="twitter:image" content="${product.image}">
+    <meta name="twitter:label1" content="Price">
+    <meta name="twitter:data1" content="₹${priceFormatted}${mrpFormatted ? ` (MRP: ₹${mrpFormatted})` : ''}">
+    <meta name="twitter:label2" content="Rating">
+    <meta name="twitter:data2" content="${rating.total > 0 ? `${rating.average} / 5 (${rating.total} reviews)` : 'No reviews yet'}">
+
+    <!-- Theme & Enhancements -->
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-title" content="KamiKoto">
+    <meta property="og:rich_attachment" content="true">
   `;
 }
 
 /**
- * Main middleware function
- * @param {Object} context - Cloudflare Pages context
- * @returns {Promise<Response>} Modified or original response
+ * Main Middleware Entry
  */
 export async function onRequest(context) {
   const { request, next, env } = context;
   const url = new URL(request.url);
   const userAgent = request.headers.get('User-Agent') || '';
 
-  // Check if this is a product page request
-  const productPageMatch = url.pathname.match(/^\/product\/([^\/]+)$/);
+  // Only run for product detail pages
+  const productMatch = url.pathname.match(/^\/product\/([^\/]+)$/);
 
-  if (productPageMatch && isBot(userAgent)) {
-    const productId = productPageMatch[1];
-
-    console.log(`[Meta Middleware] Bot detected: ${userAgent}`);
-    console.log(`[Meta Middleware] Fetching product page: ${productId}`);
-
-    // Fetch product data
-    const product = await fetchProductData(productId, env);
+  if (productMatch && isBot(userAgent)) {
+    const productId = productMatch[1];
+    
+    // Fetch data in parallel for performance
+    const [product, rating] = await Promise.all([
+      fetchProductData(productId, env),
+      fetchRatingStats(productId, env)
+    ]);
 
     if (product) {
-      // Fetch the base HTML file
       const response = await next();
       let html = await response.text();
 
-      // Generate meta tags
-      const metaTags = generateMetaTags(product, request.url);
-
-      // Remove default meta tags that have data-react-helmet="true"
-      html = html.replace(/<meta[^>]+data-react-helmet="true"[^>]*>/gi, '');
-
-      // Remove default title
+      // Clear existing dynamic tags to prevent duplicates
       html = html.replace(/<title>.*?<\/title>/i, '');
+      html = html.replace(/<meta[^>]+data-react-helmet="true"[^>]*>/gi, '');
+      html = html.replace(/<meta property="og:[^>]+>/gi, '');
+      html = html.replace(/<meta name="twitter:[^>]+>/gi, '');
+      
+      const metaTags = generateMetaTags(product, rating, request.url);
+      const jsonLd = generateJsonLd(product, rating, request.url);
 
-      // Inject new meta tags in the <head>
-      html = html.replace('</head>', `${metaTags}\n</head>`);
+      // Inject into head
+      html = html.replace('</head>', `${metaTags}\n${jsonLd}\n</head>`);
 
-      console.log(`[Meta Middleware] Meta tags injected for product: ${product.name}`);
-
-      // Return modified HTML
       return new Response(html, {
         headers: {
           'Content-Type': 'text/html; charset=utf-8',
-          'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
+          'Cache-Control': 'public, max-age=3600',
         },
       });
-    } else {
-      console.log(`[Meta Middleware] Product ${productId} not found, serving default HTML`);
     }
   }
 
-  // For non-bot requests or non-product pages, continue normally
   return next();
 }
