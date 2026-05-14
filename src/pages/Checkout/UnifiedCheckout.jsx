@@ -334,6 +334,9 @@ function UnifiedCheckout() {
         }),
       });
 
+      if (!response.headers.get('content-type')?.includes('application/json')) {
+        throw new Error('API returned HTML instead of JSON. This usually means the Functions server is not running or the path is incorrect.');
+      }
       const data = await response.json();
       
       if (!response.ok) {

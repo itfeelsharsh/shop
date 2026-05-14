@@ -10,6 +10,9 @@ export async function onRequestPost(context) {
   const stripe = new Stripe(env.STRIPE_SECRET_KEY);
   
   try {
+    const url = new URL(request.url);
+    const origin = url.origin;
+    
     const payload = await request.json();
     const { items, orderId, success_url, cancel_url, customer_email } = payload;
     
