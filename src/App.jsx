@@ -37,6 +37,7 @@ import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { HelmetProvider } from 'react-helmet-async';
 import { LazyMotion, domAnimation } from "framer-motion";
 import CartSync from "./components/CartSync";
+import NotificationManager from "./components/NotificationManager";
 
 /**
  * Main application component with routing and providers setup
@@ -150,6 +151,7 @@ function App() {
         >
           <Router>
             <CartSync />
+            <NotificationManager />
             <ScrollToTop />
             <TopLoader />
             <ToastContainer

@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, FacebookAuthProvider } from "firebase/auth";
 import { initializeFirestore } from "firebase/firestore";
+import { getMessaging } from "firebase/messaging";
 
 const firebaseConfig = {
     apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -26,3 +27,6 @@ export const db = initializeFirestore(app, {
     experimentalForceLongPolling: true,
     useFetchStreams: false
 });
+
+// Initialize Messaging
+export const messaging = getMessaging(app);
