@@ -113,7 +113,7 @@ export async function onRequest(context) {
     }
     
     // Prepare email payload with validation
-    const defaultFrom = 'KamiKoto <noreply@kamikoto.nsl>';
+    const defaultFrom = 'KamiKoto <hello@kamikoto.qzz.io>';
     const emailPayload = {
       from: body.from || defaultFrom,
       to: Array.isArray(body.to) ? body.to : [body.to], // Ensure to is an array

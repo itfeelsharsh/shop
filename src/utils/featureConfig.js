@@ -33,11 +33,11 @@ const featureConfig = {
    * Format for Cloudflare: RESEND_API_KEY=your_api_key_here
    */
   email: {
-    enabled: getEnvVar('EMAIL_ENABLED') === 'true',
+    enabled: true, // Force true to avoid build-time env var issues
     // Always false - we always use Resend API now
     useEmailServer: false,
-    fromAddress: getEnvVar('EMAIL_FROM'),
-    supportEmail: getEnvVar('SUPPORT_EMAIL'),
+    fromAddress: getEnvVar('EMAIL_FROM') || 'hello@kamikoto.qzz.io',
+    supportEmail: getEnvVar('SUPPORT_EMAIL') || 'support@kamikoto.qzz.io',
   },
 
   /**
