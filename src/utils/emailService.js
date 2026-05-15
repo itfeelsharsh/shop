@@ -1,3 +1,5 @@
+import featureConfig from './featureConfig';
+
 /**
  * Process image URL to ensure compatibility with email clients
  * Handles i.imgur.com and other image hosting services for better email delivery
@@ -276,14 +278,6 @@ const generateOrderConfirmationHTML = (order, user) => {
  * Generates HTML content for order shipped emails
  */
 const generateOrderShippedHTML = (order, user, shipmentInfo) => {
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      minimumFractionDigits: 2,
-    }).format(amount);
-  };
-
   const itemsHTML = order.items.map((item) => `
     <tr>
       <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9;">
@@ -406,8 +400,6 @@ const generateMagicLinkHTML = (email, magicLink) => {
 /**
  * Main Email Service Interface
  */
-
-import featureConfig from './featureConfig';
 
 const getApiFunctionBaseUrl = () => {
   const isDevelopment = process.env.NODE_ENV === 'development';

@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import Button from '../components/Button';
 import Input from '../components/Input';
-import { useNavigate, Link, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useDispatch,
 // eslint-disable-next-line no-unused-vars
