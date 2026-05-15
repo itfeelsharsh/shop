@@ -79,6 +79,15 @@ const cartSlice = createSlice({
     },
 
     /**
+     * Set the entire cart state (used for syncing with Firestore)
+     * @param {Object} state - Current cart state
+     * @param {Object} action - Action with items array
+     */
+    setCart(state, action) {
+      state.items = action.payload || [];
+    },
+
+    /**
      * Remove purchased items from the cart after successful order
      * @param {Object} state - Current cart state
      * @param {Object} action - Action with array of purchased product IDs
@@ -98,6 +107,7 @@ export const {
   removeFromCart, 
   updateQuantity, 
   clearCart,
+  setCart,
   applyCoupon,
   removeCoupon,
   removePurchasedFromCart

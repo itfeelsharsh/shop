@@ -462,34 +462,30 @@ export const createReceiptTemplate = (order, containerId) => {
                    margin-left: 8px;
                  ">Completed</span>
                </div>
-               <div style="margin-bottom: 8px;">
-                 <strong style="color: #1d1d1f;">Method:</strong>
-                 <span style="margin-left: 8px;">${order.payment?.method || 'Not specified'}</span>
-               </div>
-               ${order.payment?.method === 'Card' ? `
-                 <div style="margin-bottom: 8px;">
-                   <strong style="color: #1d1d1f;">Card Type:</strong>
-                   <span style="margin-left: 8px;">${order.payment.details?.cardType || 'Not specified'}</span>
-                 </div>
-                 <div style="margin-bottom: 8px;">
-                   <strong style="color: #1d1d1f;">Card:</strong>
-                   <span style="margin-left: 8px;">•••• •••• •••• ${order.payment.details?.lastFour || '••••'}</span>
-                 </div>
-                 <div>
-                   <strong style="color: #1d1d1f;">Transaction ID:</strong>
-                   <span style="margin-left: 8px;">TXN${order.orderId.substring(5)}</span>
-                 </div>
-               ` : ''}
-               ${order.payment?.method === 'UPI' ? `
-                 <div style="margin-bottom: 8px;">
-                   <strong style="color: #1d1d1f;">UPI ID:</strong>
-                   <span style="margin-left: 8px;">${order.payment.details?.upiId || 'Not specified'}</span>
-                 </div>
-                 <div>
-                   <strong style="color: #1d1d1f;">Transaction ID:</strong>
-                   <span style="margin-left: 8px;">UPI${order.orderId.substring(5)}</span>
-                 </div>
-               ` : ''}
+                <div style="margin-bottom: 8px;">
+                  <strong style="color: #1d1d1f;">Method:</strong>
+                  <span style="margin-left: 8px;">${(order.payment?.method === 'Stripe' || order.payment?.method === 'Card') ? 'Stripe (Card)' : (order.payment?.method || 'Stripe')}</span>
+                </div>
+                ${(order.payment?.method === 'Card' || order.payment?.method === 'Stripe') ? `
+                  <div style="margin-bottom: 8px;">
+                    <strong style="color: #1d1d1f;">Card:</strong>
+                    <span style="margin-left: 8px;">•••• •••• •••• ${order.payment.details?.lastFour || '••••'}</span>
+                  </div>
+                  <div>
+                    <strong style="color: #1d1d1f;">Transaction ID:</strong>
+                    <span style="margin-left: 8px;">${(order.payment.transactionId || order.orderId).substring(0, 10).toUpperCase()}</span>
+                  </div>
+                ` : ''}
+                ${order.payment?.method === 'UPI' ? `
+                  <div style="margin-bottom: 8px;">
+                    <strong style="color: #1d1d1f;">UPI ID:</strong>
+                    <span style="margin-left: 8px;">${order.payment.details?.upiId || 'Not specified'}</span>
+                  </div>
+                  <div>
+                    <strong style="color: #1d1d1f;">Transaction ID:</strong>
+                    <span style="margin-left: 8px;">${(order.payment.transactionId || order.orderId).substring(0, 10).toUpperCase()}</span>
+                  </div>
+                ` : ''}
              </div>
            </div>
 

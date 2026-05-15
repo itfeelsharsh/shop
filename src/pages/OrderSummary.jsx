@@ -513,8 +513,8 @@ function OrderSummary() {
                 <CheckCircle className="w-12 h-12 text-white" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold mb-2 tracking-tight">Order Confirmed!</h1>
-                <p className="text-gray-300 text-lg">Your items are being prepared for shipment.</p>
+                <h1 className="text-4xl font-bold mb-2 tracking-tight text-white">Order Confirmed!</h1>
+                <p className="text-white text-lg opacity-90">Your items are being prepared for shipment.</p>
               </div>
             </div>
           </motion.div>
@@ -691,13 +691,17 @@ function OrderSummary() {
                         <span className="text-gray-600 text-sm">Payment Method:</span>
                       </div>
                       <p className="font-medium mt-1">
-                        {order?.payment?.method === 'Card' 
-                          ? `${order?.payment?.details?.cardType} **** ${order?.payment?.details?.lastFour}`
-                          : `UPI (${order?.payment?.details?.upiId})`
+                        {order?.payment?.method === 'Card' || order?.payment?.method === 'Stripe'
+                          ? (order?.payment?.details?.cardType || order?.payment?.details?.selectedMethod === 'Card' 
+                              ? `${order?.payment?.details?.cardType || 'Stripe'} **** ${order?.payment?.details?.lastFour || 'Card'}`
+                              : 'Stripe (Card)')
+                          : (order?.payment?.details?.upiId 
+                              ? `UPI (${order?.payment?.details?.upiId})` 
+                              : (order?.payment?.method || 'Stripe'))
                         }
                       </p>
                       <p className="text-green-600 text-sm font-medium">
-                        Payment ID: {paymentId}
+                        Payment ID: {paymentId ? (paymentId.length > 10 ? paymentId.slice(0, 10) : paymentId) : 'Stripe'}
                       </p>
                     </div>
                   </div>

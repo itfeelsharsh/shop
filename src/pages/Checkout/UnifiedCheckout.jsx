@@ -5,7 +5,7 @@ import { m, AnimatePresence } from 'framer-motion';
 import { auth, db } from '../../firebase/config';
 import { doc, getDoc, updateDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { clearCart, applyCoupon, removeCoupon, removePurchasedFromCart, updateQuantity, removeFromCart } from '../../redux/cartSlice';
+import { applyCoupon, removeCoupon, removePurchasedFromCart, updateQuantity, removeFromCart } from '../../redux/cartSlice';
 import countriesStatesData from '../../countriesStates.json';
 import { ShoppingBag, Truck, CreditCard, CheckCircle, ChevronRight, ChevronLeft, Tag, X, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
@@ -82,8 +82,6 @@ function UnifiedCheckout() {
   const [card, setCard] = useState({ number: '', cvv: '', expiry: '', type: 'RuPay' });
   const [upi, setUpi] = useState('');
   const [processingPayment, setProcessingPayment] = useState(false);
-  const [error, setError] = useState('');
-  const [clientSecret, setClientSecret] = useState('');
   const [orderComplete, setOrderComplete] = useState(false);
   const [savePaymentInfo] = useState(true);
   const [completedOrder] = useState(null);
@@ -309,7 +307,6 @@ function UnifiedCheckout() {
     try {
       console.log('Creating Stripe Checkout session for order:', orderId);
       setProcessingPayment(true);
-      setError('');
       
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
@@ -346,7 +343,6 @@ function UnifiedCheckout() {
       }
     } catch (error) {
       console.error('Stripe error:', error);
-      setError(error.message);
       return { success: false, error: error.message };
     } finally {
       setProcessingPayment(false);
@@ -546,7 +542,6 @@ function UnifiedCheckout() {
       }
 
       setTimeout(() => {
-        dispatch(clearCart());
         setOrderComplete(true);
         navigate(`/summary?orderId=${orderResult.orderId}&paymentId=${orderResult.paymentId || 'direct'}&emailSent=${orderResult.emailSent || 'false'}`);
         setProcessingPayment(false);

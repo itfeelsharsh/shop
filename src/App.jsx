@@ -36,6 +36,7 @@ import OrderSummary from './pages/OrderSummary';
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { HelmetProvider } from 'react-helmet-async';
 import { LazyMotion, domAnimation } from "framer-motion";
+import CartSync from "./components/CartSync";
 
 /**
  * Main application component with routing and providers setup
@@ -148,6 +149,7 @@ function App() {
           scriptLoadingTimeout={10000} // 10 seconds timeout (adjust as needed)
         >
           <Router>
+            <CartSync />
             <ScrollToTop />
             <TopLoader />
             <ToastContainer
