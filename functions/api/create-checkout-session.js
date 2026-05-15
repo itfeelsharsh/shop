@@ -59,7 +59,7 @@ export async function onRequestPost(context) {
     
     // Stripe checkout session in embedded mode
     const session = await stripe.checkout.sessions.create({
-      ui_mode: 'embedded',
+      ui_mode: 'embedded_page',
       line_items,
       mode: 'payment',
       customer_email,
