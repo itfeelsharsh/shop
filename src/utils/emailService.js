@@ -487,7 +487,7 @@ const generateOrderConfirmationHTML = (order, user) => {
                             <td style="padding-bottom: ${discount > 0 ? '8px' : '0'};">
                               <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
                                 <tr>
-                                  <td style="font-size: 14px; color: #ea580c;">Import Duty (69%)</td>
+                                  <td style="font-size: 14px; color: #ea580c;">Import Duty</td>
                                   <td style="font-size: 14px; color: #ea580c; text-align: right;">${formatCurrency(importDuty)}</td>
                                 </tr>
                               </table>
