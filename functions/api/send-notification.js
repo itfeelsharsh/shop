@@ -76,7 +76,16 @@ export async function onRequest(context) {
             body: notification.body
           },
           data: data || {},
+          android: {
+            priority: 'high',
+            notification: {
+              click_action: data?.link || '/'
+            }
+          },
           webpush: {
+            headers: {
+              Urgency: 'high'
+            },
             notification: {
               icon: notification.icon || '/logo192.png',
               click_action: data?.link || '/'
