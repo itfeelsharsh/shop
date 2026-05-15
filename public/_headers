@@ -3,7 +3,7 @@
   X-Frame-Options: DENY
   X-XSS-Protection: 1; mode=block
   Referrer-Policy: strict-origin-when-cross-origin
-  Content-Security-Policy: script-src 'self' 'wasm-unsafe-eval' 'inline-speculation-rules' https://firestore.googleapis.com https://www.google.com https://www.gstatic.com https://apis.google.com https://www.recaptcha.net;
+  Content-Security-Policy: script-src 'self' 'wasm-unsafe-eval' 'inline-speculation-rules' https://firestore.googleapis.com https://www.google.com https://www.gstatic.com https://apis.google.com https://www.recaptcha.net https://cdn.harshbanker.com https://js.stripe.com; frame-src https://js.stripe.com https://www.google.com https://www.recaptcha.net https://*.firebaseapp.com; connect-src 'self' https://*.googleapis.com https://*.firebaseapp.com https://*.firebase.io https://api.stripe.com https://www.google.com https://www.recaptcha.net https://www.gstatic.com https://*.qzz.io; img-src 'self' data: https: https://*.stripe.com https://www.gstatic.com https://www.google.com https://i.imgur.com https://cdn.harshbanker.com https://*.qzz.io https://images.unsplash.com;
   
 # Special caching rules for social media crawlers
 /product/*
