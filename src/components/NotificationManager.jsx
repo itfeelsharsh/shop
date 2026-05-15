@@ -74,18 +74,23 @@ const NotificationManager = () => {
         throw new Error('Service workers are not supported in this browser');
       }
 
-      // In development, the default PWA service worker is often disabled.
-      // We'll manually register the firebase-messaging-sw.js to ensure FCM works.
-      let registration = await navigator.serviceWorker.getRegistration('/firebase-cloud-messaging-push-scope');
+      // We must ensure the service worker being used is actually the Firebase one,
+      // not the default React app service worker which controls the root scope.
+      let registrations = await navigator.serviceWorker.getRegistrations();
+      let registration = registrations.find(reg => 
+        reg.active && reg.active.scriptURL.includes('firebase-messaging-sw.js')
+      );
       
       if (!registration) {
         console.log('📢 NotificationManager: Manually registering messaging service worker...');
         registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
           scope: '/firebase-cloud-messaging-push-scope'
         });
+        // Wait for it to be ready
+        registration = await navigator.serviceWorker.ready;
       }
 
-      console.log('✅ NotificationManager: Service worker is ready:', registration);
+      console.log('✅ NotificationManager: Firebase Service worker is ready:', registration);
 
       // Use your VAPID key here
       const token = await getToken(messaging, { 
