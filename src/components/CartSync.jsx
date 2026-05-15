@@ -49,15 +49,19 @@ const CartSync = () => {
     const saveCartToFirestore = async () => {
       const user = auth.currentUser;
       
-      // Don't sync if it's the initial load (we just fetched) 
-      // or if the user is not logged in
-      if (isInitialLoad.current || !user) return;
+      // Don't sync if the user is not logged in
+      if (!user) return;
+
+      // Special case: if cart was cleared, we always want to save that
+      // but only if we've already done the initial load from Firestore
+      // to avoid accidentally clearing a cart during startup
+      if (isInitialLoad.current) return;
 
       // Check if cart actually changed to avoid redundant writes
       if (JSON.stringify(prevCartRef.current) === JSON.stringify(cartItems)) return;
 
       try {
-        console.log('🛒 CartSync: Saving cart to Firestore...');
+        console.log(`🛒 CartSync: Saving cart to Firestore (${cartItems.length} items)...`);
         const userRef = doc(db, 'users', user.uid);
         
         // Use setDoc with merge to only update the cart field

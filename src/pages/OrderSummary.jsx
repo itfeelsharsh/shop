@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { auth, db } from '../firebase/config';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { sendOrderConfirmationEmail } from '../utils/emailService';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useDispatch } from 'react-redux';
@@ -105,116 +105,72 @@ function OrderSummary() {
       return false;
     };
 
-    /**
-     * Fetch order details from Firestore
-     * Handles authentication, validation, and error cases
-     * 
-     * This function performs the following validations:
-     * 1. Checks if orderId exists in URL parameters
-     * 2. Verifies user is authenticated
-     * 3. Fetches order from Firestore
-     * 4. Validates order exists and belongs to current user
-     * 5. Sets appropriate error states for each failure case
-     */
-    const fetchOrderDetails = async () => {
+    const fetchOrderDetails = () => {
       // Early validation - check if required parameters exist
       if (!hasValidUrlParams()) {
         console.error("OrderSummary: Missing or invalid orderId parameter in URL");
         setError("Invalid order link. Please check your URL or access your order from your account page.");
         setLoading(false);
-        return;
-      }
-      
-      if (!user) {
-        console.error("OrderSummary: User not authenticated");
-        
-        // For direct checkout flow, we'll still try to fetch the order
-        // The canAccessOrder function will handle security for recent orders
-        console.log("OrderSummary: Proceeding without authentication for potential direct checkout flow");
+        return () => {};
       }
       
       try {
-        console.log(`OrderSummary: Fetching order details for orderId: ${orderId}`);
-        
-        // Fetch order document from Firestore
+        console.log(`OrderSummary: Setting up listener for orderId: ${orderId}`);
         const orderRef = doc(db, "orders", orderId);
-        const orderSnapshot = await getDoc(orderRef);
         
-        // Check if order document exists
-        if (!orderSnapshot.exists()) {
-          console.error(`OrderSummary: Order not found in database: ${orderId}`);
-          setError("Order not found. This order may not exist or may have been removed.");
+        // Use onSnapshot for real-time updates
+        const unsubscribe = onSnapshot(orderRef, (docSnap) => {
+          if (docSnap.exists()) {
+            const orderData = docSnap.data();
+            console.log("OrderSummary: Received real-time update:", orderData);
+            
+            // Security check - ensure order belongs to current user or is accessible
+            if (!canAccessOrder(orderData, user)) {
+              console.error("OrderSummary: Unauthorized access attempt to order", orderId);
+              setError("You don't have permission to view this order.");
+            } else {
+              // Create complete order object with fallback values
+              const completeOrder = {
+                id: docSnap.id,
+                orderId: docSnap.id,
+                ...orderData,
+                // Ensure critical fields have fallback values
+                userName: orderData.userName || user?.displayName || user?.email || 'Valued Customer',
+                userEmail: orderData.userEmail || user?.email || '',
+                orderDate: orderData.orderDate || new Date().toISOString(),
+                totalAmount: orderData.totalAmount || orderData.total || 0,
+                subtotal: orderData.subtotal || 0,
+                tax: orderData.tax || 0,
+                items: orderData.items || [],
+                shipping: orderData.shipping || { cost: 0, method: 'Standard' },
+                shippingAddress: orderData.shippingAddress || {},
+              };
+              
+              setOrder(completeOrder);
+              setError(null);
+            }
+          } else {
+            console.error("OrderSummary: Order document not found", orderId);
+            setError("Order not found. Please verify your order number.");
+          }
           setLoading(false);
-          return;
-        }
-        
-        // Get order data and validate structure
-        const orderData = orderSnapshot.data();
-        console.log("OrderSummary: Retrieved order data:", orderData);
-        
-        // Security check - ensure order belongs to current user
-        if (!canAccessOrder(orderData)) {
-          console.error(`OrderSummary: Unauthorized access attempt. Order userId: ${orderData.userId}, Current user: ${user.uid}`);
-          setError("You don't have permission to view this order.");
+        }, (err) => {
+          console.error("OrderSummary: Firestore listener error:", err);
+          setError("Failed to load order details. Please check your connection.");
           setLoading(false);
-          return;
-        }
+        });
         
-        // Validate essential order data structure
-        if (!orderData.items || !Array.isArray(orderData.items) || orderData.items.length === 0) {
-          console.error("OrderSummary: Invalid order data - missing or empty items array");
-          setError("This order appears to be incomplete or corrupted.");
-          setLoading(false);
-          return;
-        }
-        
-        // Create complete order object with fallback values
-        const completeOrder = {
-          id: orderSnapshot.id,
-          orderId: orderSnapshot.id, // Ensure orderId is always available
-          ...orderData,
-          // Ensure critical fields have fallback values
-          userName: orderData.userName || user.displayName || user.email || 'Valued Customer',
-          userEmail: orderData.userEmail || user.email || '',
-          orderDate: orderData.orderDate || new Date().toISOString(),
-          totalAmount: orderData.totalAmount || orderData.total || 0,
-          subtotal: orderData.subtotal || 0,
-          tax: orderData.tax || 0,
-          items: orderData.items || [],
-          shipping: orderData.shipping || { cost: 0, method: 'Standard' },
-          shippingAddress: orderData.shippingAddress || {},
-          payment: orderData.payment || { method: 'Unknown' },
-          status: orderData.status || 'Processing'
-        };
-        
-        console.log("OrderSummary: Order data processed successfully:", completeOrder);
-        setOrder(completeOrder);
-        
-        // Start confetti celebration effect
-        // Turn off confetti after 5 seconds to avoid performance issues
-        setTimeout(() => {
-          setConfettiActive(false);
-        }, 5000);
-        
+        return unsubscribe;
       } catch (err) {
-        console.error("OrderSummary: Error fetching order details:", err);
-        
-        // Provide specific error messages based on error type
-        if (err.code === 'permission-denied') {
-          setError("You don't have permission to access this order.");
-        } else if (err.code === 'unavailable') {
-          setError("Service temporarily unavailable. Please try again later.");
-        } else if (err.message?.includes('network')) {
-          setError("Network error. Please check your internet connection and try again.");
-        } else {
-          setError("Failed to load order details. Please try refreshing the page.");
-        }
-      } finally {
+        console.error("OrderSummary: Error setting up order listener:", err);
+        setError("An unexpected error occurred.");
         setLoading(false);
+        return () => {};
       }
     };
     
-    fetchOrderDetails();
+    const unsubscribe = fetchOrderDetails();
+    return () => unsubscribe();
   }, [orderId, user]); // Dependencies: re-run if orderId or user changes
 
   // Send confirmation email once order is confirmed and status is Paid
@@ -247,6 +203,16 @@ function OrderSummary() {
 
     triggerEmail();
   }, [order]);
+
+  // Turn off confetti after a celebration period
+  useEffect(() => {
+    if (confettiActive) {
+      const timer = setTimeout(() => {
+        setConfettiActive(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [confettiActive]);
   
   // Format price with Indian currency format
   const formatPrice = (price) => {

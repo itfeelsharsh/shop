@@ -365,9 +365,6 @@ const generateOrderConfirmationHTML = (order, user) => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
   <meta name="x-apple-disable-message-reformatting">
-  <link rel="dns-prefetch" href="https://cdn.kamikoto.qzz.io">
-  <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:ital,wght@0,400;0,400;0,600;0,700;0,800" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css?family=Nunito:ital,wght@0,400;0,700" rel="stylesheet">
   <title>Order Confirmation</title>
   <style type="text/css">
     /* Base styles */
@@ -565,10 +562,14 @@ const generateOrderConfirmationHTML = (order, user) => {
                   <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                     <tr>
                       <td style="text-align: center;">
-                        <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #111827;">KamiKoto</p>
-                        <p style="margin: 0 0 16px 0; font-size: 13px; color: #6b7280;">Your Premium Stationery Destination</p>
-                        <p style="margin: 0 0 8px 0; font-size: 13px; color: #6b7280;">
-                          Questions? <a href="mailto:${featureConfig.email.supportEmail}" style="color: #111827; text-decoration: underline;">${featureConfig.email.supportEmail}</a>
+                        <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #111827;">KamiKoto Stationery</p>
+                        <p style="margin: 0 0 16px 0; font-size: 12px; color: #6b7280; line-height: 1.5;">
+                          This is a transactional email regarding your recent purchase at kamikoto.qzz.io.<br>
+                          Questions? Contact us at <a href="mailto:${featureConfig.email.supportEmail}" style="color: #111827; text-decoration: underline;">${featureConfig.email.supportEmail}</a>
+                        </p>
+                        <p style="margin: 0 0 16px 0; font-size: 12px; color: #9ca3af;">
+                          KamiKoto Stationery Ltd.<br>
+                          123 Paper Street, Chiyoda City, Tokyo 100-0001, Japan
                         </p>
                         <p style="margin: 0; font-size: 12px; color: #9ca3af;">
                           © ${new Date().getFullYear()} KamiKoto. All Rights Reserved.
