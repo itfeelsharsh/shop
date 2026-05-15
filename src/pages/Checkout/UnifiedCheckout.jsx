@@ -15,11 +15,7 @@ import CouponService from '../../utils/couponService';
 import { processNewOrder } from '../../utils/orderService';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import Button from '../../components/Button';
-import { loadStripe } from '@stripe/stripe-js';
-import {
-  EmbeddedCheckoutProvider,
-  EmbeddedCheckout
-} from '@stripe/react-stripe-js';
+
 
 // Import card logos
 import VisaLogo from '../../assets/visa.png';
@@ -27,8 +23,7 @@ import MasterCardLogo from '../../assets/mastercard.png';
 import RuPayLogo from '../../assets/rupay.png';
 import AMEXLogo from '../../assets/amex.png';
 
-// Initialize Stripe with the publishable key from environment variables
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || "pk_test_51L43XuSGsH9zXXAfNtqlNEiaB8WLmTWesSFNu1OK14QFXiUB0znCcIEiHTj6U9OU7tICyWqYMc1XloJzV5H75qEi00LlWcYnSQ");
+
 
 const COUNTRY_CODES = {
   "India": "+91",
@@ -312,7 +307,7 @@ function UnifiedCheckout() {
 
   const processPayment = async (orderId, cartDetails, emailSent) => {
     try {
-      console.log('Creating Stripe Embedded Checkout session for order:', orderId);
+      console.log('Creating Stripe Checkout session for order:', orderId);
       setProcessingPayment(true);
       setError('');
       
@@ -343,11 +338,11 @@ function UnifiedCheckout() {
         throw new Error(data.error || 'Failed to create checkout session');
       }
 
-      if (data.clientSecret) {
-        setClientSecret(data.clientSecret);
-        return { success: true, clientSecret: data.clientSecret };
+      if (data.url) {
+        window.location.href = data.url;
+        return { success: true };
       } else {
-        throw new Error('No client secret received from server');
+        throw new Error('No checkout URL received from server');
       }
     } catch (error) {
       console.error('Stripe error:', error);
@@ -539,11 +534,6 @@ function UnifiedCheckout() {
       // Process payment with Stripe using the generated orderId
       const paymentResult = await processPayment(orderResult.orderId, updatedCartDetails, orderResult.emailSent || false);
       
-      if (paymentResult.clientSecret) {
-        // Form is now shown via clientSecret state, stop here
-        return;
-      }
-
       if (!paymentResult.success) {
         throw new Error(paymentResult.error || "Payment failed");
       }
@@ -1088,15 +1078,7 @@ function UnifiedCheckout() {
                         <h3 className="text-xl font-bold text-gray-900 mb-2">Order Completed!</h3>
                         <p className="text-gray-600">Your order has been successfully processed.</p>
                       </div>
-                    ) : clientSecret ? (
-                      <div className="min-h-[600px] bg-white rounded-2xl overflow-hidden shadow-inner border border-gray-100">
-                        <EmbeddedCheckoutProvider
-                          stripe={stripePromise}
-                          options={{ clientSecret }}
-                        >
-                          <EmbeddedCheckout />
-                        </EmbeddedCheckoutProvider>
-                      </div>
+
                     ) : (
                       <div className="space-y-6">
                         <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8 text-center">
@@ -1268,7 +1250,7 @@ function UnifiedCheckout() {
                     disabled={(currentStep === 2 && !areAllRequiredFieldsFilled()) || cartDetails.length === 0}
                     icon={currentStep === 3 ? null : <ChevronRight size={18} />}
                   >
-                    {currentStep === 3 ? (clientSecret ? "Checking out..." : "Pay Now") : "Continue"}
+                    {currentStep === 3 ? "Pay Now" : "Continue"}
                   </Button>
 
                   {currentStep > 1 && (

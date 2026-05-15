@@ -57,20 +57,21 @@ export async function onRequestPost(context) {
       });
     }
     
-    // Stripe checkout session in embedded mode
+    // Stripe checkout session in hosted mode
     const session = await stripe.checkout.sessions.create({
-      ui_mode: 'embedded_page',
+      ui_mode: 'hosted_page',
       line_items,
       mode: 'payment',
       customer_email,
-      return_url: `${origin}/summary?orderId=${orderId}&clearCart=true&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${origin}/summary?orderId=${orderId}&paymentId={CHECKOUT_SESSION_ID}&clearCart=true`,
+      cancel_url: `${origin}/checkout`,
       metadata: {
         orderId: orderId,
         userId: payload.userId,
       },
     });
     
-    return Response.json({ clientSecret: session.client_secret });
+    return Response.json({ url: session.url });
   } catch (err) {
     console.error('Error creating checkout session:', err);
     return Response.json({ error: err.message }, { status: 400 });
