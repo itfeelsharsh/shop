@@ -17,12 +17,11 @@ const getApiFunctionBaseUrl = () => {
   const isDevelopment = process.env.NODE_ENV === 'development';
   
   if (isDevelopment) {
-    // In development, use a local URL that can be proxied to the real endpoint
-    // This should be configured in your package.json proxy field
-    return '/api';
+    // In development, use absolute url
+    return 'https://kamikoto.qzz.io/api';
   } else {
-    // In production, use the same domain as the application
-    return '';
+    // In production, use the same domain as the application /api
+    return '/api';
   }
 };
 
