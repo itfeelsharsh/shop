@@ -190,11 +190,16 @@ function App() {
  */
 function AnimatedRoutes() {
   const location = useLocation();
-  
+  // Custom key to prevent re-animation for sub-routes of /my-account
+  const getAnimationKey = (path) => {
+    if (path.startsWith('/my-account')) return '/my-account';
+    return path;
+  };
+
   return (
     <AnimatePresence mode="wait">
       <m.div
-        key={location.pathname}
+        key={getAnimationKey(location.pathname)}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}

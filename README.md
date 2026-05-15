@@ -131,7 +131,7 @@ Welcome to KamiKoto, a beautifully crafted e-commerce platform offering a seamle
 
 </div>
 
-**Live Demo:** [kamikoto.pages.dev](https://kamikoto.pages.dev)
+**Live Demo:** [kamikoto.qzz.io](https://kamikoto.qzz.io)
 
 ---
 

@@ -366,7 +366,7 @@ const generateOrderConfirmationHTML = (order, user) => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
   <meta name="x-apple-disable-message-reformatting">
-  <link rel="dns-prefetch" href="https://cdn.harshbanker.com">
+  <link rel="dns-prefetch" href="https://cdn.kamikoto.qzz.io">
   <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:ital,wght@0,400;0,400;0,600;0,700;0,800" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css?family=Nunito:ital,wght@0,400;0,700" rel="stylesheet">
   <title>Order Confirmation</title>

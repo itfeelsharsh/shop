@@ -1093,9 +1093,9 @@ function UnifiedCheckout() {
                                 </svg>
                               </div>
                               <div className="space-y-2">
-                                <p className="text-xs font-bold text-amber-900 uppercase tracking-wider">RBI Regulation Note</p>
+                                <p className="text-xs font-bold text-amber-900 uppercase tracking-wider">Stripe Test Mode</p>
                                 <p className="text-xs text-amber-800 leading-relaxed">
-                                  Due to current RBI guidelines for international transactions in India, please use the following test card on the form:
+                                  You are currently in test mode. Please use the following test card to complete your transaction:
                                 </p>
                                 <div className="bg-white/50 p-2 rounded border border-amber-200">
                                   <code className="text-sm font-bold text-gray-900">4000 0035 6000 0123</code>
