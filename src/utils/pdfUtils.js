@@ -473,7 +473,7 @@ export const createReceiptTemplate = (order, containerId) => {
                   </div>
                   <div>
                     <strong style="color: #1d1d1f;">Transaction ID:</strong>
-                    <span style="margin-left: 8px;">${(order.payment.transactionId || order.orderId).substring(0, 10).toUpperCase()}</span>
+                    <span style="margin-left: 8px;">${(order.payment?.transactionId || order.orderId || order.id || '').substring(0, 10).toUpperCase()}</span>
                   </div>
                 ` : ''}
                 ${order.payment?.method === 'UPI' ? `
@@ -483,7 +483,7 @@ export const createReceiptTemplate = (order, containerId) => {
                   </div>
                   <div>
                     <strong style="color: #1d1d1f;">Transaction ID:</strong>
-                    <span style="margin-left: 8px;">${(order.payment.transactionId || order.orderId).substring(0, 10).toUpperCase()}</span>
+                    <span style="margin-left: 8px;">${(order.payment?.transactionId || order.orderId || order.id || '').substring(0, 10).toUpperCase()}</span>
                   </div>
                 ` : ''}
              </div>
