@@ -192,39 +192,58 @@ function OrderSummary() {
     return () => unsubscribe();
   }, [orderId, user]); // Dependencies: re-run if orderId or user changes
 
-  // Send confirmation email once order is confirmed
+  // Ref to prevent multiple email sends per page load
+  const emailSendAttempted = React.useRef(false);
+  const latestOrderRef = React.useRef(null);
+
+  // Keep a ref to the latest order data (no re-renders)
+  React.useEffect(() => {
+    latestOrderRef.current = order;
+  }, [order]);
+
+  // Send confirmation email ONCE when order first loads and emailSent is false
+  // Uses orderId as dependency (stable) + ref gate to prevent loops
   useEffect(() => {
+    if (!orderId || emailSendAttempted.current) return;
+
     const triggerEmail = async () => {
-      // Relaxed condition: don't rely solely on Stripe webhook setting status to 'Paid'
-      if (order && !order.emailSent) {
-        console.log(`📧 OrderSummary: Order is ${order.status}, triggering confirmation email...`);
-        try {
-          const userForEmail = {
-            email: order.userEmail,
-            displayName: order.userName || order.userEmail?.split('@')[0] || 'Valued Customer'
-          };
-          
-          const result = await sendOrderConfirmationEmail(order, userForEmail);
-          
-          if (result.success) {
-            console.log('✅ OrderSummary: Email sent successfully');
-            // Update Firestore so we don't send it again
-            const orderRef = doc(db, "orders", order.id);
+      // Wait a tick for order data to settle from onSnapshot
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      const currentOrder = latestOrderRef.current;
+      if (!currentOrder || currentOrder.emailSent || emailSendAttempted.current) return;
+
+      // Mark as attempted BEFORE sending to prevent any re-entry
+      emailSendAttempted.current = true;
+
+      console.log(`📧 OrderSummary: Sending ONE confirmation email for order ${currentOrder.id}`);
+      try {
+        const userForEmail = {
+          email: currentOrder.userEmail,
+          displayName: currentOrder.userName || currentOrder.userEmail?.split('@')[0] || 'Valued Customer'
+        };
+        
+        const result = await sendOrderConfirmationEmail(currentOrder, userForEmail);
+        
+        if (result.success) {
+          console.log('✅ OrderSummary: Email sent successfully (single send)');
+          // Update Firestore so other clients know email was sent
+          try {
+            const orderRef = doc(db, "orders", currentOrder.id);
             await updateDoc(orderRef, { emailSent: true });
-            
-            // Also update local state to reflect change
-            setOrder(prev => ({ ...prev, emailSent: true }));
-          } else {
-            console.error('❌ OrderSummary: Email service returned false:', result);
+          } catch (updateErr) {
+            console.warn('⚠️ OrderSummary: Could not mark emailSent in Firestore:', updateErr);
           }
-        } catch (emailError) {
-          console.error('❌ OrderSummary: Failed to send confirmation email:', emailError);
+        } else {
+          console.error('❌ OrderSummary: Email service returned false:', result);
         }
+      } catch (emailError) {
+        console.error('❌ OrderSummary: Failed to send confirmation email:', emailError);
       }
     };
 
     triggerEmail();
-  }, [order]);
+  }, [orderId]); // Only depends on orderId (stable), NOT on order object
 
   // Turn off confetti after a celebration period
   useEffect(() => {

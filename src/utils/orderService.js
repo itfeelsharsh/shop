@@ -17,7 +17,7 @@
  * @version 2.0.0
  */
 
-import { sendOrderShippedEmail, sendOrderConfirmationEmail } from './emailService';
+import { sendOrderShippedEmail } from './emailService';
 import featureConfig from './featureConfig';
 import { 
   doc, 
@@ -232,45 +232,11 @@ const processNewOrder = async (orderData, userData, options = {}) => {
     
     console.log('✅ orderService: Order created successfully with Global ID:', orderResult.globalOrderId);
     
-    // Prepare enriched order data for email with final IDs
-    const orderForEmail = {
-      ...completeOrderData,
-      id: orderResult.globalOrderId,
-      orderId: orderResult.globalOrderId
-    };
-    
-    // Handle email notification dispatch
-    let emailResult = { success: false, error: 'Email not attempted' };
-    
-    if (featureConfig.email.enabled && !options.skipEmail) {
-      console.log('📧 orderService: Email service enabled, dispatching order confirmation');
-      
-      try {
-        // Prepare user data for email service with fallbacks
-        const userForEmail = {
-          email: userData?.email || orderData.userEmail,
-          displayName: userData?.displayName || userData?.name || orderData.userName || 'Valued Customer',
-          name: userData?.name || userData?.displayName || orderData.userName || 'Valued Customer'
-        };
-   
-        console.log('📤 orderService: Sending order confirmation email to:', userForEmail.email);
-        
-        // Dispatch order confirmation email
-        emailResult = await sendOrderConfirmationEmail(orderForEmail, userForEmail);
-        
-        if (emailResult.success) {
-          console.log('✅ orderService: Order confirmation email sent successfully');
-        } else {
-          console.error('❌ orderService: Failed to send order confirmation email:', emailResult.error);
-        }
-      } catch (emailError) {
-        console.error('❌ orderService: Exception in email sending:', emailError);
-        emailResult = { success: false, error: emailError.message };
-      }
-    } else {
-      console.log('⚠️ orderService: Email service disabled in configuration, skipping email dispatch');
-      emailResult = { success: false, error: 'Email disabled in configuration' };
-    }
+    // EMAIL SENDING DISABLED HERE — OrderSummary.jsx handles email dispatch
+    // with proper deduplication guards to prevent spam loops.
+    // processNewOrder only creates the Firestore order document.
+    const emailResult = { success: false, error: 'Deferred to client-side OrderSummary' };
+    console.log('📧 orderService: Email deferred to OrderSummary.jsx (anti-spam architecture)');
     
     // Return comprehensive result object
     return {
