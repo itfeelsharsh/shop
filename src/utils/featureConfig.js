@@ -36,8 +36,8 @@ const featureConfig = {
     enabled: true, // Force true to avoid build-time env var issues
     // Always false - we always use Resend API now
     useEmailServer: false,
-    fromAddress: getEnvVar('EMAIL_FROM') || 'hello@kamikoto.qzz.io',
-    supportEmail: getEnvVar('SUPPORT_EMAIL') || 'support@kamikoto.qzz.io',
+    fromAddress: getEnvVar('EMAIL_FROM') || 'hello@mailer.kamikoto.click',
+    supportEmail: getEnvVar('SUPPORT_EMAIL') || 'support@kamikoto.click',
   },
 
   /**

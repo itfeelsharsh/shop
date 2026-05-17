@@ -264,6 +264,13 @@ function MyAccount() {
           address: profile.address,
           profilePic: profile.profilePic
         });
+        
+        // Update the cached profile in sessionStorage
+        sessionStorage.setItem(`profile_${user.uid}`, JSON.stringify({
+          profilePic: profile.profilePic || defaultPfp,
+          name: profile.name || 'User'
+        }));
+        
         toast.success("Profile updated successfully!");
       } catch (error) {
         toast.error("Error updating profile: " + error.message);

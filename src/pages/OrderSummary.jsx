@@ -54,14 +54,33 @@ function OrderSummary() {
   const shouldClearCart = params.get('clearCart') === 'true';
   const dispatch = useDispatch();
 
+  // Clear Redux cart state immediately when an order is loaded
   useEffect(() => {
-    if (shouldClearCart) {
+    if (orderId) {
       dispatch(clearCart());
-      // Optionally remove clearCart from URL using history replace
+    }
+    if (shouldClearCart) {
+      // Remove clearCart from URL using history replace to keep it clean
       const newUrl = window.location.pathname + window.location.search.replace('&clearCart=true', '').replace('clearCart=true&', '');
       window.history.replaceState({}, '', newUrl);
     }
-  }, [shouldClearCart, dispatch]);
+  }, [orderId, shouldClearCart, dispatch]);
+
+  // Clear Firestore cart as soon as the authenticated user is resolved
+  useEffect(() => {
+    if (orderId && user) {
+      const clearFirestoreCart = async () => {
+        try {
+          console.log('🛒 OrderSummary: Explicitly clearing user cart in Firestore...');
+          const userRef = doc(db, 'users', user.uid);
+          await updateDoc(userRef, { cart: [] });
+        } catch (error) {
+          console.error('❌ OrderSummary: Failed to clear Firestore cart:', error);
+        }
+      };
+      clearFirestoreCart();
+    }
+  }, [orderId, user]);
   
   // Fetch order details using the orderId
   useEffect(() => {

@@ -32,8 +32,8 @@ const processImageForEmail = (imageUrl) => {
  */
 const generateBaseEmailTemplate = ({ title, previewText, content }) => {
   const currentYear = new Date().getFullYear();
-  const logoUrl = 'https://kamikoto.qzz.io/kamikoto-logo-transparent-darkish-logo-for-better-visibility.png';
-  const siteUrl = 'https://kamikoto.qzz.io';
+  const logoUrl = 'https://kamikoto.click/kamikoto-logo-transparent-darkish-logo-for-better-visibility.png';
+  const siteUrl = 'https://kamikoto.click';
   
   return `
 <!DOCTYPE html>
@@ -114,7 +114,7 @@ const generateBaseEmailTemplate = ({ title, previewText, content }) => {
               North Sentinel Island, Andaman and Nicobar Islands, India
             </p>
             <p style="margin-bottom: 24px;">
-              Email: <a href="mailto:support@kamikoto.qzz.io">support@kamikoto.qzz.io</a> • Phone: <a href="tel:+91180069696969">+91 1800 6969 6969</a>
+              Email: <a href="mailto:support@kamikoto.click">support@kamikoto.click</a> • Phone: <a href="tel:+91180069696969">+91 1800 6969 6969</a>
             </p>
             
             <div style="height: 1px; background-color: #e2e8f0; margin: 24px 0;"></div>
@@ -129,7 +129,7 @@ const generateBaseEmailTemplate = ({ title, previewText, content }) => {
             <!-- Anti-Spam Compliance -->
             <p style="margin-top: 16px; font-size: 11px; color: #cbd5e1;">
               You are receiving this because you signed up for an account or made a purchase at KamiKoto.
-              <br>To ensure delivery, add <strong>hello@kamikoto.qzz.io</strong> to your address book.
+              <br>To ensure delivery, add <strong>hello@mailer.kamikoto.click</strong> to your address book.
             </p>
           </div>
         </div>
@@ -239,7 +239,7 @@ const generateOrderConfirmationHTML = (order, user) => {
       </div>
 
       <div style="margin-top: 40px; text-align: center;">
-        <a href="https://kamikoto.qzz.io/account/orders" class="btn">View Order Status</a>
+        <a href="https://kamikoto.click/account/orders" class="btn">View Order Status</a>
       </div>
 
       <div style="margin-top: 40px; border-top: 1px solid #f1f5f9; padding-top: 32px;">
@@ -404,7 +404,7 @@ const generateMagicLinkHTML = (email, magicLink) => {
 const getApiFunctionBaseUrl = () => {
   const isDevelopment = process.env.NODE_ENV === 'development';
   if (isDevelopment) {
-    return 'https://kamikoto.qzz.io/api';
+    return 'https://kamikoto.click/api';
   } else {
     return '/api';
   }

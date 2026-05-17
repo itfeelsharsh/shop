@@ -34,7 +34,7 @@ import "react-toastify/dist/ReactToastify.css";
 import PasswordReset from './pages/PasswordReset'; 
 import OrderSummary from './pages/OrderSummary';
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
-import { HelmetProvider } from 'react-helmet-async';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { LazyMotion, domAnimation } from "framer-motion";
 import CartSync from "./components/CartSync";
 import NotificationManager from "./components/NotificationManager";
@@ -137,6 +137,15 @@ function App() {
   return (
     <LazyMotion features={domAnimation}>
       <HelmetProvider>
+        <Helmet>
+          <meta name="robots" content="noindex, nofollow, noimageindex, noarchive, nosnippet" />
+          <meta name="googlebot" content="noindex, nofollow, noimageindex, noarchive, nosnippet" />
+          <meta name="googlebot-news" content="noindex, nofollow" />
+          <meta name="slurp" content="noindex, nofollow" />
+          <meta name="msnbot" content="noindex, nofollow" />
+          <meta name="bingbot" content="noindex, nofollow, noimageindex, noarchive, nosnippet" />
+          <meta name="teoma" content="noindex, nofollow" />
+        </Helmet>
         <GoogleReCaptchaProvider
           reCaptchaKey="6LdQtjcrAAAAAB-gw9QaVLt8zIUTcvWAjCmlVwDs"
           scriptProps={{
@@ -171,8 +180,8 @@ function App() {
             />
 
             <div className="flex flex-col min-h-screen">
-              <Navbar />
               <AnnouncementStrip />
+              <Navbar />
 
               <main className="flex-grow overflow-hidden">
                 <AnimatedRoutes />

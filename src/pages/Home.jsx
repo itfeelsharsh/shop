@@ -102,71 +102,17 @@ function Home() {
         <title>KamiKoto | Premium Japanese Stationery & Writing Tools</title>
         <meta name="description" content="Discover the pinnacle of premium Japanese stationery. Engineered for precision, designed for inspiration. Shop our collection of notebooks, pens, and more." />
       </Helmet>
-      {/* Hero Section */}
-      <section className="relative min-h-[85vh] py-20 overflow-hidden flex items-center justify-center">
-        {/* Dynamic Background Banner */}
-        <div className="absolute inset-0 z-0">
-          <DynamicBanner />
-          <div className="absolute inset-0 bg-black/40 z-[1]" /> {/* Dark overlay for readability */}
-        </div>
-        
-        {/* Glassmorphic Overlay Card */}
-        <m.div 
-          initial={{ opacity: 0, scale: 0.9, y: 40 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative z-10 max-w-4xl w-full mx-4"
+      {/* Thin Premium Banner Section */}
+      <section className="container mx-auto px-4 pt-6">
+        <m.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="relative w-full h-[180px] sm:h-[260px] md:h-[320px] lg:h-[380px] rounded-[32px] overflow-hidden shadow-lg border border-gray-100"
         >
-          <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-[40px] p-8 md:p-16 text-center shadow-2xl">
-            <m.span 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="inline-block px-4 py-1.5 mb-6 text-sm font-bold tracking-[0.2em] text-white uppercase bg-black/20 backdrop-blur-md rounded-full"
-            >
-              New Collection
-            </m.span>
-            <m.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="text-5xl md:text-7xl font-bold text-white mb-8 tracking-tighter leading-tight"
-            >
-              Artistry in <br /> 
-              <span className="text-white">Every Stroke.</span>
-            </m.h1>
-            <m.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              className="text-lg md:text-xl text-white mb-10 max-w-xl mx-auto font-medium"
-            >
-              Discover the pinnacle of premium Japanese stationery. Engineered for precision, designed for inspiration.
-            </m.p>
-            <m.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4"
-            >
-              <Button
-                variant="primary"
-                size="large"
-                onClick={() => navigate('/products')}
-                className="bg-white !text-black hover:bg-gray-100 border-none shadow-xl min-w-[200px]"
-              >
-                Shop Now
-              </Button>
-              <Button
-                variant="secondary"
-                size="large"
-                onClick={() => navigate('/about')}
-                className="bg-white/10 !text-white border-white/30 backdrop-blur-md hover:bg-white/20 min-w-[200px]"
-              >
-                Our Story
-              </Button>
-            </m.div>
-          </div>
+          <DynamicBanner />
+          {/* Elegant premium gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10 pointer-events-none z-10" />
         </m.div>
       </section>
 

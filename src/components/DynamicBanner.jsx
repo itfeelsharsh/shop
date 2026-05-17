@@ -168,16 +168,11 @@ const DynamicBanner = () => {
   // If no banners are found, use default banner with enhanced styling
   if (banners.length === 0) {
     return (
-      <m.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="relative w-full mb-6 rounded-lg overflow-hidden shadow-lg"
-      >
+      <div className="relative w-full h-full">
         <m.img
           src="/banners/3.webp"
           alt="KamiKoto Default Banner"
-          className="w-full object-cover"
+          className="w-full h-full object-cover"
           onError={(e) => {
             e.target.onerror = null;
             e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjOEI0NTEzIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5LYW1pS290bzwvdGV4dD4KICA8dGV4dCB4PSI1MCUiIHk9IjY1JSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPllvdXIgUHJlbWl1bSBTdGF0aW9uZXJ5IERlc3RpbmF0aW9uPC90ZXh0Pgo8L3N2Zz4K'; // Fallback SVG banner
@@ -185,13 +180,13 @@ const DynamicBanner = () => {
         />
         
         {/* Default banner overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent flex items-center justify-center">
-          <div className="text-white text-center">
-            <h1 className="text-2xl md:text-4xl font-bold mb-2">Welcome to KamiKoto</h1>
-            <p className="text-sm md:text-lg opacity-90">Your Premium Stationery Destination</p>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/15 to-transparent flex items-center justify-center">
+          <div className="text-white text-center px-4">
+            <h1 className="text-3xl md:text-5xl font-black mb-2 tracking-tight text-white">KamiKoto<span className="text-gray-400">.</span></h1>
+            <p className="text-xs md:text-sm font-black tracking-[0.2em] uppercase opacity-90 text-white/95">Your Premium Stationery Destination</p>
           </div>
         </div>
-      </m.div>
+      </div>
     );
   }
 

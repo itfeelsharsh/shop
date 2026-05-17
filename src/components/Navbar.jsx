@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { Fragment, useState, useEffect, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, Transition } from '@headlessui/react';
 import {
@@ -12,7 +12,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '../firebase/config';
 import { signOut } from 'firebase/auth';
 import { toast } from 'react-toastify';
-import { getDoc, doc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { useSelector } from 'react-redux';
 import logger from '../utils/logger';
 import defaultPfp from '../assets/defaultpfp.png';
@@ -29,9 +29,8 @@ function classNames(...classes) {
 
 export default function Navbar() {
   const [user] = useAuthState(auth);
-  const [profilePic, setProfilePic] = useState('');
+  const [profilePic, setProfilePic] = useState(defaultPfp);
   const [userName, setUserName] = useState('User');
-  const [profileLoading, setProfileLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -70,58 +69,59 @@ export default function Navbar() {
     { name: 'Account', href: user ? '/my-account' : '/signin', icon: UserCircleIcon }, // Dynamic link based on auth state
   ];
 
-  /**
-   * Fetches user profile data from Firestore
-   * Uses caching mechanism to avoid redundant fetches
-   * Has proper error handling to prevent app crashes
-   */
-  const fetchProfileData = useCallback(async () => {
-    // Skip if user not authenticated or if already loading
-    if (!user || profileLoading) return;
-    
-    // Use cached profile data from sessionStorage if available
+  // Set up real-time listener for user profile updates
+  useEffect(() => {
+    if (!user) {
+      setProfilePic(defaultPfp);
+      setUserName('User');
+      return;
+    }
+
+    // Load from cache first for instant initial render
     const cachedProfile = sessionStorage.getItem(`profile_${user.uid}`);
     if (cachedProfile) {
       try {
         const profileData = JSON.parse(cachedProfile);
-        setProfilePic(profileData.profilePic || defaultPfp);
-        setUserName(profileData.name || 'User');
-        return;
-      } catch (error) {
-        // If parse fails, proceed with fetch
-        logger.error("Failed to parse cached profile", error, "Navbar");
+        setProfilePic(profileData.profilePic || user.photoURL || defaultPfp);
+        setUserName(profileData.name || user.displayName || 'User');
+      } catch (e) {
+        logger.error("Failed to parse cached profile", e, "Navbar");
       }
+    } else {
+      // Fallback to Auth details if cache is empty
+      setProfilePic(user.photoURL || defaultPfp);
+      setUserName(user.displayName || 'User');
     }
-    
-    try {
-      setProfileLoading(true);
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        // Cache the profile data
+
+    // Listen to Firestore changes in real-time
+    const userDocRef = doc(db, "users", user.uid);
+    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        const name = userData.name || user.displayName || 'User';
+        const pic = userData.profilePic || user.photoURL || defaultPfp;
+        
+        // Cache the latest profile data
         sessionStorage.setItem(`profile_${user.uid}`, JSON.stringify({
-          profilePic: userData.profilePic || defaultPfp,
-          name: userData.name || 'User'
+          profilePic: pic,
+          name: name
         }));
 
-        setProfilePic(userData.profilePic || defaultPfp);
-        setUserName(userData.name || 'User');
+        setProfilePic(pic);
+        setUserName(name);
+      } else {
+        // Fallback to Auth details if document doesn't exist
+        const name = user.displayName || 'User';
+        const pic = user.photoURL || defaultPfp;
+        setProfilePic(pic);
+        setUserName(name);
       }
-    } catch (error) {
-      logger.error("Failed to fetch profile data", error, "Navbar");
-      // Use default values on error
-      setProfilePic(defaultPfp);
-      setUserName('User');
-    } finally {
-      setProfileLoading(false);
-    }
-  }, [user, profileLoading]);
+    }, (error) => {
+      logger.error("Failed to fetch profile data in real-time", error, "Navbar");
+    });
 
-  useEffect(() => {
-    if (user) {
-      fetchProfileData();
-    }
-  }, [user, fetchProfileData]);
+    return () => unsubscribe();
+  }, [user]);
 
   useEffect(() => {
     let ticking = false;
@@ -162,9 +162,9 @@ export default function Navbar() {
       {/* Top Navigation Bar (for desktop and tablet) */}
       <nav
         className={`
-          fixed top-0 left-0 right-0 z-50
+          sticky top-0 left-0 right-0 z-50
           transition-all duration-300 backdrop-blur-md
-          hidden md:block {/* Hidden on mobile, block on md and larger */}
+          hidden md:block
           ${isScrolled 
             ? 'bg-white/95 shadow-lg' 
             : 'bg-white/50'}
@@ -320,8 +320,7 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Spacer for the fixed top navbar (only for desktop/tablet) */}
-      <div className="hidden md:block h-16"></div>
+
 
       {/* Bottom Tab Navigation (for mobile) */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
