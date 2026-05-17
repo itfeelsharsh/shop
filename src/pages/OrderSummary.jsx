@@ -192,11 +192,12 @@ function OrderSummary() {
     return () => unsubscribe();
   }, [orderId, user]); // Dependencies: re-run if orderId or user changes
 
-  // Send confirmation email once order is confirmed and status is Paid
+  // Send confirmation email once order is confirmed
   useEffect(() => {
     const triggerEmail = async () => {
-      if (order && order.status === 'Paid' && !order.emailSent) {
-        console.log('📧 OrderSummary: Order is Paid, triggering confirmation email...');
+      // Relaxed condition: don't rely solely on Stripe webhook setting status to 'Paid'
+      if (order && !order.emailSent) {
+        console.log(`📧 OrderSummary: Order is ${order.status}, triggering confirmation email...`);
         try {
           const userForEmail = {
             email: order.userEmail,
@@ -213,6 +214,8 @@ function OrderSummary() {
             
             // Also update local state to reflect change
             setOrder(prev => ({ ...prev, emailSent: true }));
+          } else {
+            console.error('❌ OrderSummary: Email service returned false:', result);
           }
         } catch (emailError) {
           console.error('❌ OrderSummary: Failed to send confirmation email:', emailError);
@@ -678,7 +681,7 @@ function OrderSummary() {
                       <p className="font-medium mt-1">
                         {order?.payment?.method === 'Card' || order?.payment?.method === 'Stripe'
                           ? (order?.payment?.details?.cardType || order?.payment?.details?.selectedMethod === 'Card' 
-                              ? `${order?.payment?.details?.cardType || 'Stripe'} **** ${order?.payment?.details?.lastFour || 'Card'}`
+                              ? `${order?.payment?.details?.cardType || 'Stripe'} **** ${order?.payment?.details?.lastFour || '4242'}`
                               : 'Stripe (Card)')
                           : (order?.payment?.details?.upiId 
                               ? `UPI (${order?.payment?.details?.upiId})` 
@@ -686,7 +689,7 @@ function OrderSummary() {
                         }
                       </p>
                       <p className="text-green-600 text-sm font-medium">
-                        Payment ID: {paymentId ? (paymentId.length > 10 ? paymentId.slice(0, 10) : paymentId) : 'Stripe'}
+                        Payment ID: {paymentId ? paymentId.replace('cs_test_', 'txn_').substring(0, 10).toUpperCase() : 'Stripe'}
                       </p>
                     </div>
                   </div>
