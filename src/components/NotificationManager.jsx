@@ -74,7 +74,7 @@ const NotificationManager = () => {
         throw new Error('Service workers are not supported in this browser');
       }
 
-      // Construct the service worker URL with Firebase environment variables as query parameters
+      // Construct the service worker URL with Firebase environment variables as query parameters to inject at runtime.
       const swParams = new URLSearchParams({
         apiKey: process.env.REACT_APP_FIREBASE_API_KEY || '',
         authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || '',
