@@ -147,7 +147,7 @@ function App() {
           <meta name="teoma" content="noindex, nofollow" />
         </Helmet>
         <GoogleReCaptchaProvider
-          reCaptchaKey="6LdQtjcrAAAAAB-gw9QaVLt8zIUTcvWAjCmlVwDs"
+          reCaptchaKey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
           scriptProps={{
             async: true, // Async load to improve page load time
             defer: true,

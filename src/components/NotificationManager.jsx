@@ -74,6 +74,17 @@ const NotificationManager = () => {
         throw new Error('Service workers are not supported in this browser');
       }
 
+      // Construct the service worker URL with Firebase environment variables as query parameters
+      const swParams = new URLSearchParams({
+        apiKey: process.env.REACT_APP_FIREBASE_API_KEY || '',
+        authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || '',
+        projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || '',
+        storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || '',
+        messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || '',
+        appId: process.env.REACT_APP_FIREBASE_APP_ID || ''
+      }).toString();
+      const swUrl = `/firebase-messaging-sw.js?${swParams}`;
+
       // We must ensure the service worker being used is actually the Firebase one,
       // not the default React app service worker which controls the root scope.
       let registrations = await navigator.serviceWorker.getRegistrations();
@@ -81,9 +92,11 @@ const NotificationManager = () => {
         reg.active && reg.active.scriptURL.includes('firebase-messaging-sw.js')
       );
       
-      if (!registration) {
-        console.log('📢 NotificationManager: Manually registering messaging service worker...');
-        registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+      // If no registration exists, or if it exists but is using the legacy path without query params,
+      // register/update it with the parameterized URL.
+      if (!registration || !registration.active.scriptURL.includes('?apiKey=')) {
+        console.log('📢 NotificationManager: Registering messaging service worker with environment parameters...');
+        registration = await navigator.serviceWorker.register(swUrl, {
           scope: '/firebase-cloud-messaging-push-scope'
         });
         // Wait for it to be ready

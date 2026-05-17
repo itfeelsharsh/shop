@@ -2,17 +2,21 @@
 importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js');
 
+// Parse Firebase config from query parameters to keep API keys secure and dynamic
+const urlParams = new URLSearchParams(self.location.search);
+const firebaseConfig = {
+  apiKey: urlParams.get('apiKey') || '',
+  authDomain: urlParams.get('authDomain') || '',
+  projectId: urlParams.get('projectId') || '',
+  storageBucket: urlParams.get('storageBucket') || '',
+  messagingSenderId: urlParams.get('messagingSenderId') || '',
+  appId: urlParams.get('appId') || ''
+};
+
 // Initialize the Firebase app in the service worker by passing in
 // your app's Firebase config object.
 // https://firebase.google.com/docs/web/setup#config-object
-firebase.initializeApp({
-  apiKey: "AIzaSyBu4Ihw8kgCm6NYeg2CQoy3wBdnAwTv7WM",
-  authDomain: "kamikoto-shop.firebaseapp.com",
-  projectId: "kamikoto-shop",
-  storageBucket: "kamikoto-shop.firebasestorage.app",
-  messagingSenderId: "90397336474",
-  appId: "1:90397336474:web:61a089a41455b01b2fd023"
-});
+firebase.initializeApp(firebaseConfig);
 
 // Retrieve an instance of Firebase Messaging so that it can handle background
 // messages.
