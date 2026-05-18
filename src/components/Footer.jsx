@@ -169,8 +169,8 @@ const Footer = () => {
 
         {/* Bottom Bar: Copyright & Ornamental Tag */}
         <div className="pt-8 mt-4 border-t border-zinc-200 flex justify-between items-center text-zinc-400 font-semibold text-[10px] font-mono">
-          <p>© {new Date().getFullYear()} KamiKoto. All rights reserved.</p>
-          <p className="tracking-[0.25em] opacity-50 select-none hidden sm:block">DESIGNED FOR CREATIVES</p>
+          <p>© {new Date().getFullYear()} KamiKoto. No rights reserved.</p>
+         
         </div>
 
       </div>

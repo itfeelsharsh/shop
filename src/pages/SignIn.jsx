@@ -44,6 +44,17 @@ function SignIn() {
     }
   }, [user, loading, socialLoading, navigate]);
 
+  // Handle redirection for Firebase auth action links (e.g. password reset)
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const mode = searchParams.get('mode');
+    const oobCode = searchParams.get('oobCode');
+    
+    if (mode === 'resetPassword' && oobCode) {
+      navigate(`/password-reset?mode=resetPassword&oobCode=${oobCode}`, { replace: true });
+    }
+  }, [location, navigate]);
+
   // Check if this is an email link sign-in on component mount
   useEffect(() => {
     const handleEmailLinkSignIn = async () => {
