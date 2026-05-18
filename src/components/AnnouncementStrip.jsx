@@ -1,26 +1,36 @@
-import React, { useEffect, useState } from 'react';
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import React, { useEffect, useState, useMemo } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import { Bell, X, ArrowRight } from 'lucide-react';
-import { m, AnimatePresence } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
+/**
+ * World-Class Infinite Scrolling Announcement Strip
+ * 
+ * Features:
+ * - Dynamically loaded from Firestore announcements database.
+ * - Sorts by priority; applies color styling from the top-priority active item.
+ * - Restricts rendering STRICTLY to the Home Page ('/').
+ * - Renders a perfectly seamless, hardware-accelerated CSS infinite marquee.
+ * - Auto-duplicates items to ensure viewport-width coverage on all screen sizes.
+ */
 const AnnouncementStrip = () => {
+  const location = useLocation();
   const [announcements, setAnnouncements] = useState([]);
-  const [currentAnnouncementIndex, setCurrentAnnouncementIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isAnnouncementEnabled, setIsAnnouncementEnabled] = useState(true);
-  const [dismissedAnnouncements, setDismissedAnnouncements] = useState(() => {
-    const saved = localStorage.getItem('dismissedAnnouncements');
-    return saved ? JSON.parse(saved) : [];
-  });
 
-  const activeAnnouncements = announcements.filter(
-    announcement => !dismissedAnnouncements.includes(announcement.id)
-  );
+  // Filter and sort active announcements
+  const activeAnnouncements = useMemo(() => {
+    return announcements
+      .filter(ann => ann.active)
+      .sort((a, b) => (b.priority || 0) - (a.priority || 0));
+  }, [announcements]);
 
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
+        // Fetch Settings doc to check if enabled
         const settingsCollection = collection(db, 'settings');
         const settingsSnapshot = await getDocs(settingsCollection);
         const settingsData = settingsSnapshot.docs.find(doc => doc.id === 'announcementSettings');
@@ -34,21 +44,11 @@ const AnnouncementStrip = () => {
           }
         }
         
-        try {
-          const announcementsQuery = query(
-            collection(db, 'announcements'),
-            where('active', '==', true),
-            orderBy('priority', 'desc')
-          );
-          const announcementsSnapshot = await getDocs(announcementsQuery);
-          setAnnouncements(announcementsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        } catch (indexError) {
-          const fallbackQuery = query(collection(db, 'announcements'), where('active', '==', true));
-          const fallbackSnapshot = await getDocs(fallbackQuery);
-          const sortedData = fallbackSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-            .sort((a, b) => (b.priority || 0) - (a.priority || 0));
-          setAnnouncements(sortedData);
-        }
+        // Fetch Announcements from Firestore
+        const announcementsCollection = collection(db, 'announcements');
+        const snapshot = await getDocs(announcementsCollection);
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setAnnouncements(data);
       } catch (error) {
         console.error('Error fetching announcements:', error);
       } finally {
@@ -58,80 +58,111 @@ const AnnouncementStrip = () => {
     fetchAnnouncements();
   }, []);
 
-  useEffect(() => {
-    if (activeAnnouncements.length > 1) {
-      const timer = setInterval(() => {
-        setCurrentAnnouncementIndex((prevIndex) => (prevIndex + 1) % activeAnnouncements.length);
-      }, 7000);
-      return () => clearInterval(timer);
-    }
-  }, [activeAnnouncements]);
+  // Only render on Home Page
+  if (location.pathname !== '/') return null;
 
-  const dismissAnnouncement = (id) => {
-    try {
-      const newDismissed = [...dismissedAnnouncements, id];
-      setDismissedAnnouncements(newDismissed);
-      localStorage.setItem('dismissedAnnouncements', JSON.stringify(newDismissed));
-      if (activeAnnouncements.length > 1 && id === activeAnnouncements[currentAnnouncementIndex]?.id) {
-        if (currentAnnouncementIndex >= activeAnnouncements.length - 1) {
-          setCurrentAnnouncementIndex(0);
-        }
-      }
-    } catch (error) {
-      console.error('Error dismissing announcement:', error);
-    }
-  };
-
+  // Don't render if disabled, loading, or empty
   if (loading || !isAnnouncementEnabled || activeAnnouncements.length === 0) return null;
 
-  const currentAnnouncement = activeAnnouncements[currentAnnouncementIndex % activeAnnouncements.length];
+  // Derive styling from highest priority announcement
+  const primaryAnn = activeAnnouncements[0];
+  const barBgColor = primaryAnn.backgroundColor || '#111827';
+  const barTextColor = primaryAnn.textColor || '#FFFFFF';
+
+  // Build the repeated list of announcements to ensure infinite continuous track
+  let repeatedItems = [];
+  const targetCount = 6;
+  const repeatFactor = Math.ceil(targetCount / activeAnnouncements.length);
+  for (let i = 0; i < repeatFactor; i++) {
+    repeatedItems = [...repeatedItems, ...activeAnnouncements];
+  }
+
+  // Pure hardware-accelerated marquee keyframes to prevent browser lags
+  const marqueeKeyframes = `
+    @keyframes marquee-scroll {
+      0% {
+        transform: translate3d(0, 0, 0);
+      }
+      100% {
+        transform: translate3d(-100%, 0, 0);
+      }
+    }
+    .animate-marquee-track {
+      display: flex;
+      white-space: nowrap;
+      animation: marquee-scroll 32s linear infinite;
+    }
+    .animate-marquee-track:hover {
+      animation-play-state: paused;
+    }
+  `;
 
   return (
-    <div
-      className="w-full h-10 border-b border-gray-100 flex items-center overflow-hidden bg-white"
-      data-testid="announcement-strip"
-    >
-      <div className="container mx-auto px-4 flex items-center justify-between relative h-full">
-        <div className="flex items-center gap-3 overflow-hidden flex-grow justify-center">
-          <Bell size={14} className="text-gray-400 shrink-0" />
-          
-          <div className="relative flex-grow h-full max-w-2xl overflow-hidden">
-            <AnimatePresence mode="wait">
-              <m.div
-                key={currentAnnouncement.id}
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -20, opacity: 0 }}
-                transition={{ duration: 0.4, ease: "easeInOut" }}
-                className="flex items-center justify-center gap-2 text-xs md:text-sm font-medium"
-                style={{ color: currentAnnouncement.textColor || '#111827' }}
+    <>
+      <style dangerouslySetInnerHTML={{ __html: marqueeKeyframes }} />
+      <div
+        className="w-full h-9 flex items-center overflow-hidden relative z-[60] border-b border-black/5 select-none"
+        style={{
+          backgroundColor: barBgColor,
+          color: barTextColor,
+        }}
+        data-testid="announcement-strip"
+      >
+        <div className="relative flex overflow-x-hidden w-full">
+          {/* Track 1 */}
+          <div className="animate-marquee-track flex shrink-0">
+            {repeatedItems.map((ann, idx) => (
+              <div
+                key={`t1-${idx}`}
+                className="inline-flex items-center px-12 text-[10px] sm:text-xs font-bold tracking-widest uppercase"
               >
-                <span className="truncate">{currentAnnouncement.text}</span>
-                {currentAnnouncement.link && currentAnnouncement.linkText && (
-                  <a 
-                    href={currentAnnouncement.link}
+                <span>{ann.text}</span>
+                {ann.link && (
+                  <a
+                    href={ann.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 underline underline-offset-4 hover:opacity-70 transition-opacity whitespace-nowrap"
+                    className="ml-2 font-black underline underline-offset-4 hover:opacity-75 transition-opacity inline-flex items-center gap-0.5"
+                    style={{ color: barTextColor }}
                   >
-                    {currentAnnouncement.linkText}
-                    <ArrowRight size={12} />
+                    {ann.linkText || 'View Details'}
+                    <ArrowRight size={10} className="inline-block flex-shrink-0" />
                   </a>
                 )}
-              </m.div>
-            </AnimatePresence>
+                {/* Custom Branded Separator Emblem */}
+                <span className="ml-12 text-red-500 font-black">✦</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Track 2 (for seamless looping wrapper) */}
+          <div className="animate-marquee-track flex shrink-0" aria-hidden="true">
+            {repeatedItems.map((ann, idx) => (
+              <div
+                key={`t2-${idx}`}
+                className="inline-flex items-center px-12 text-[10px] sm:text-xs font-bold tracking-widest uppercase"
+              >
+                <span>{ann.text}</span>
+                {ann.link && (
+                  <a
+                    href={ann.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-2 font-black underline underline-offset-4 hover:opacity-75 transition-opacity inline-flex items-center gap-0.5"
+                    style={{ color: barTextColor }}
+                  >
+                    {ann.linkText || 'View Details'}
+                    <ArrowRight size={10} className="inline-block flex-shrink-0" />
+                  </a>
+                )}
+                {/* Custom Branded Separator Emblem */}
+                <span className="ml-12 text-red-500 font-black">✦</span>
+              </div>
+            ))}
           </div>
         </div>
-
-        <button
-          onClick={() => dismissAnnouncement(currentAnnouncement.id)}
-          className="p-1 hover:bg-gray-100 rounded-full transition-colors ml-4"
-          aria-label="Dismiss announcement"
-        >
-          <X size={14} className="text-gray-400" />
-        </button>
       </div>
-    </div>
+    </>
   );
 };
 

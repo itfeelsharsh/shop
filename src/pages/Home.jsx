@@ -108,51 +108,16 @@ function Home() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="relative w-full h-[180px] sm:h-[260px] md:h-[320px] lg:h-[380px] rounded-[32px] overflow-hidden shadow-lg border border-gray-100"
+          className="relative w-full h-[110px] sm:h-[180px] md:h-[260px] lg:h-[380px] rounded-2xl md:rounded-[32px] overflow-hidden shadow-md border border-gray-100"
         >
           <DynamicBanner />
           {/* Elegant premium gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10 pointer-events-none z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-black/5 pointer-events-none z-10" />
         </m.div>
       </section>
 
-      {/* Features Grid (Bento Style) */}
-      <m.section 
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        className="container mx-auto px-4 py-24"
-      >
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <m.div variants={itemVariants} className="md:col-span-2 bg-gray-50 rounded-[32px] p-10 flex flex-col justify-between hover:bg-gray-100 transition-colors">
-            <Zap className="w-12 h-12 text-black mb-12" />
-            <div>
-              <h3 className="text-3xl font-bold text-gray-900 mb-4">Precision Engineering</h3>
-              <p className="text-gray-600">Every piece in our collection is selected for its mechanical excellence and tactile feedback.</p>
-            </div>
-          </m.div>
-          
-          <m.div variants={itemVariants} className="bg-black rounded-[32px] p-10 text-white flex flex-col justify-between hover:bg-gray-900 transition-colors">
-            <ShieldCheck className="w-10 h-10 mb-8 text-white" />
-            <div>
-              <h4 className="text-xl font-bold mb-2 text-white">Lifetime Quality</h4>
-              <p className="text-sm text-white font-medium">Built to last a lifetime of creative work.</p>
-            </div>
-          </m.div>
-          
-          <m.div variants={itemVariants} className="bg-blue-600 rounded-[32px] p-10 text-white flex flex-col justify-between hover:bg-blue-700 transition-colors">
-            <Globe className="w-10 h-10 mb-8 text-white" />
-            <div>
-              <h4 className="text-xl font-bold mb-2 text-white">Global Sourcing</h4>
-              <p className="text-sm text-white font-medium">Direct imports from Japan and Europe.</p>
-            </div>
-          </m.div>
-        </div>
-      </m.section>
-
       {/* Featured Products */}
-      <section className="container mx-auto px-4 py-12">
+      <section className="container mx-auto px-4 py-20">
         <m.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -160,27 +125,27 @@ function Home() {
           className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6"
         >
           <div>
-            <h2 className="text-5xl font-bold text-gray-900 tracking-tighter mb-4">The Essentials</h2>
-            <p className="text-xl text-gray-500 max-w-lg">Core pieces of the KamiKoto collection, refined over generations for the modern creator.</p>
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">Our Best Sellers</h2>
+            <p className="text-base sm:text-lg text-gray-500 max-w-lg">A curated selection of high-quality stationery tools, built for your daily creative work.</p>
           </div>
           <Button
             variant="ghost"
             onClick={() => navigate('/products')}
-            className="text-lg font-bold group"
-            icon={<ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />}
+            className="text-base font-bold group btn-shopify text-gray-900 hover:text-red-600"
+            icon={<ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />}
           >
-            Explore Everything
+            Shop All Products
           </Button>
         </m.div>
 
         {isLoadingFresh && products.length === 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="aspect-[3/4] bg-gray-100 rounded-[32px] animate-pulse" />
+              <div key={i} className="aspect-[3/4] bg-gray-50 rounded-[24px] animate-pulse border border-gray-100" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
             {products.map((product, index) => (
               <m.div
                 key={product.id}
@@ -197,30 +162,32 @@ function Home() {
         )}
       </section>
 
-      {/* Brand Ethos / Video Section */}
+      {/* Brand Ethos Section */}
       <m.section 
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
-        className="container mx-auto px-4 py-24"
+        className="container mx-auto px-4 py-16"
       >
-        <div className="bg-gray-900 rounded-[48px] overflow-hidden relative group">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10" />
+        <div className="bg-gray-900 rounded-[32px] md:rounded-[48px] overflow-hidden relative group shadow-lg">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent z-10" />
           <img 
             src="https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&q=80&w=2070" 
-            alt="Craftsmanship" 
-            className="w-full h-[600px] object-cover transition-transform duration-[3s] group-hover:scale-110"
+            alt="Premium craftsmanship background" 
+            className="w-full h-[350px] sm:h-[450px] md:h-[600px] object-cover transition-transform duration-[3s] group-hover:scale-105"
           />
-          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center p-12">
-            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tighter">Beyond Stationery.</h2>
-            <p className="text-xl text-white/70 max-w-2xl mb-10">We believe that the tools you use define the quality of your output. We provide the tools; you provide the vision.</p>
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center p-6 sm:p-12">
+            <h2 className="text-3xl md:text-5xl font-black text-white mb-4 sm:mb-6 tracking-tight">Quality Tools for Daily Work.</h2>
+            <p className="text-sm sm:text-lg text-white/80 max-w-2xl mb-8 sm:mb-10 leading-relaxed font-medium">
+              We select and deliver premium writing and notebook essentials to help you organize, write, and create every single day.
+            </p>
             <Button
               variant="secondary"
               size="large"
               onClick={() => navigate('/about')}
-              className="bg-white/10 backdrop-blur-xl border-white/20 !text-white hover:bg-white/20"
+              className="bg-white/10 backdrop-blur-xl border-white/20 !text-white hover:bg-white/20 btn-shopify"
             >
-              Watch the Film
+              Read Our Story
             </Button>
           </div>
         </div>

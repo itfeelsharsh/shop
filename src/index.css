@@ -4,18 +4,30 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
+/* 
+  KamiKoto Premium Stationery Theme Colors:
+  -----------------------------------------
+  1. Obsidian Black: #0A0A0A (Rich high-contrast primary for typography/borders)
+  2. Pure White: #FFFFFF (Clean primary background, no dark mode)
+  3. Japanese Vermilion: #B91C1C (Vibrant forged-steel crimson representing Japan/fire)
+  4. Craftsmanship Gold: #C5A880 (Luxurious warm brass/gold accent representing steelcraft)
+  5. Sage Green: #16A34A (Clean success/in-stock badge green)
+  6. Slate/Misty Grey: #F8FAFC / #F1F5F9 (Subtle structural panel colors)
+*/
+
 :root {
-  --primary: #111827;
-  --primary-light: #1f2937;
-  --accent: #3b82f6;
+  --primary: #0a0a0a;
+  --primary-light: #1e293b;
+  --accent: #b91c1c; /* Japanese Vermilion */
+  --accent-gold: #c5a880; /* Craftsmanship Gold */
   --background: #ffffff;
-  --surface: #f9fafb;
-  --text-main: #111827;
-  --text-muted: #6b7280;
-  --border-radius: 12px;
-  --shadow-premium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-premium-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-premium-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --surface: #f8fafc;
+  --text-main: #0a0a0a;
+  --text-muted: #64748b;
+  --border-radius: 16px;
+  --shadow-premium: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-premium-hover: 0 10px 20px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+  --shadow-premium-xl: 0 20px 30px -5px rgba(0, 0, 0, 0.1), 0 10px 15px -5px rgba(0, 0, 0, 0.05);
 }
 
 @layer base {
@@ -262,6 +274,56 @@
     left: 50% !important;
     transform: translateX(-50%) !important;
   }
+}
+
+/* World-Class Shopify heavy animated buttons & Shiny Ribbon sweeps */
+@keyframes shiny-sweep {
+  0% {
+    left: -120%;
+  }
+  30% {
+    left: 120%;
+  }
+  100% {
+    left: 120%;
+  }
+}
+
+.btn-shiny-ribbon {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.btn-shiny-ribbon::after {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: -120% !important;
+  width: 60% !important;
+  height: 100% !important;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0) 100%
+  ) !important;
+  transform: skewX(-25deg) !important;
+  animation: shiny-sweep 3.5s infinite ease-in-out !important;
+  pointer-events: none !important;
+}
+
+/* Shopify style premium animated outline/lift button */
+.btn-shopify {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.btn-shopify:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+}
+
+.btn-shopify:active {
+  transform: translateY(1px) !important;
 }
 
   

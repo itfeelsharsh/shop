@@ -110,6 +110,15 @@ const ProductCard = memo(function ProductCard({
     >
       {/* Product Image Section */}
       <div className="relative overflow-hidden aspect-[4/5] bg-gray-50">
+        {/* Shiny corner green ribbon if there is a discount */}
+        {product?.mrp && product.mrp > product.price && (
+          <div className="absolute top-0 left-0 overflow-hidden w-20 h-20 pointer-events-none z-20">
+            <div className="absolute top-0 left-0 bg-gradient-to-r from-emerald-600 via-green-500 to-emerald-500 text-white text-[9px] font-extrabold uppercase py-1.5 shadow-md w-[130px] text-center transform -rotate-45 -translate-x-[36px] translate-y-[16px] tracking-wider border border-white/20 select-none btn-shiny-ribbon">
+              {calculateDiscount(product.mrp, product.price)}% OFF
+            </div>
+          </div>
+        )}
+
         <m.img
           src={product?.image}
           alt={product?.name}
@@ -123,15 +132,6 @@ const ProductCard = memo(function ProductCard({
         {/* Badges */}
         <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-10">
           <div className="flex flex-col gap-2">
-            {product?.mrp && product.mrp > product.price && (
-              <m.div 
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-md bg-opacity-90"
-              >
-                {calculateDiscount(product.mrp, product.price)}% OFF
-              </m.div>
-            )}
             {product?.isNew && (
               <m.div 
                 initial={{ scale: 0.8, opacity: 0 }}
@@ -166,59 +166,59 @@ const ProductCard = memo(function ProductCard({
       </div>
 
       {/* Product Content */}
-      <div className="p-5 flex flex-col gap-3 flex-grow">
+      <div className="p-3.5 sm:p-5 flex flex-col gap-2 sm:gap-3 flex-grow">
         {/* Category/Brand & Stock */}
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">
+          <span className="text-[8px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em] truncate max-w-[65%]">
             {product.brand || 'Premium Collection'}
           </span>
-          <div className="flex items-center gap-1.5">
-            <div className={`w-1.5 h-1.5 rounded-full ${product?.stock > 0 ? 'bg-emerald-500' : 'bg-red-500'}`} />
-            <span className={`text-[10px] font-bold uppercase tracking-wider ${product?.stock > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+          <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+            <div className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${product?.stock > 0 ? 'bg-emerald-500' : 'bg-red-500'}`} />
+            <span className={`text-[8px] sm:text-[10px] font-bold uppercase tracking-wider ${product?.stock > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
               {product?.stock > 0 ? 'In Stock' : 'Sold Out'}
             </span>
           </div>
         </div>
 
         {/* Product Name */}
-        <h3 className="text-base font-bold text-gray-900 line-clamp-2 leading-tight min-h-[2.5rem] group-hover:text-blue-600 transition-colors">
+        <h3 className="text-xs sm:text-base font-bold text-gray-900 line-clamp-2 leading-tight min-h-[2rem] sm:min-h-[2.5rem] group-hover:text-blue-600 transition-colors">
           {product?.name}
         </h3>
 
         {/* Rating */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {productRating.total > 0 ? (
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1 sm:gap-1.5">
               <div className="flex">
                 {[...Array(5)].map((_, i) => (
                   <Star 
                     key={i} 
-                    className={`w-3 h-3 ${i < Math.round(productRating.average) ? 'fill-amber-400 stroke-amber-400' : 'fill-gray-100 stroke-gray-200'}`} 
+                    className={`w-2.5 h-2.5 sm:w-3 sm:h-3 ${i < Math.round(productRating.average) ? 'fill-amber-400 stroke-amber-400' : 'fill-gray-100 stroke-gray-200'}`} 
                   />
                 ))}
               </div>
-              <span className="text-xs font-bold text-gray-400">({productRating.total})</span>
+              <span className="text-[10px] sm:text-xs font-bold text-gray-400">({productRating.total})</span>
             </div>
           ) : (
-            <span className="text-[10px] font-medium text-gray-300">No reviews yet</span>
+            <span className="text-[8px] sm:text-[10px] font-medium text-gray-300">No reviews yet</span>
           )}
         </div>
 
         {/* Price section */}
-        <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-50">
-          <div className="flex flex-col">
-            <div className="flex items-baseline gap-2">
-              <span className="text-xl font-black text-gray-900">
+        <div className="flex items-end justify-between mt-auto pt-2.5 sm:pt-3 border-t border-gray-50 gap-1.5">
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-baseline gap-1 sm:gap-1.5 flex-wrap">
+              <span className="text-sm sm:text-lg font-black text-gray-900 leading-tight">
                 {formatPrice(product?.price)}
               </span>
               {product?.mrp && product.mrp > product.price && (
-                <span className="text-xs text-gray-400 line-through font-medium">
+                <span className="text-[10px] sm:text-xs text-gray-400 line-through font-medium leading-tight">
                   {formatPrice(product.mrp)}
                 </span>
               )}
             </div>
             {product?.mrp && product.mrp > product.price && (
-              <span className="text-[10px] font-bold text-emerald-600">
+              <span className="text-[8px] sm:text-[9px] font-extrabold text-emerald-600 uppercase tracking-wide mt-0.5 block truncate">
                 SAVE {formatPrice(product.mrp - product.price)}
               </span>
             )}
@@ -229,11 +229,11 @@ const ProductCard = memo(function ProductCard({
             variant="primary"
             size="small"
             isLoading={isAddingToCart}
-            loadingText="Adding..."
+            loadingText=""
             disabled={!product?.stock || product.stock <= 0}
             onClick={handleAddToCart}
-            className="!rounded-full w-10 h-10 !p-0 shadow-lg hover:shadow-gray-300"
-            icon={<ShoppingCart className="w-4 h-4" />}
+            className="!rounded-full w-8 h-8 sm:w-9 sm:h-9 !p-0 shadow-md hover:shadow-gray-200 flex-shrink-0 flex items-center justify-center bg-gray-900 hover:bg-red-600"
+            icon={<ShoppingCart className="w-3 h-3 sm:w-3.5 sm:h-3.5" />}
           />
         </div>
       </div>

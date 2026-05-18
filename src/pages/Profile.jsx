@@ -1,10 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { auth, db } from '../firebase/config';
-import { doc, getDoc, updateDoc, collection, getDocs, query, orderBy,
-// eslint-disable-next-line no-unused-vars
-limit, where,
-// eslint-disable-next-line no-unused-vars
-deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, getDocs, query, orderBy, where } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -20,50 +16,32 @@ import {
   AlertCircle,
   Trash2,
   FileDown,
-  Star
+  Star,
+  LogOut,
+  ChevronRight,
+  Copy
 } from 'lucide-react';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import { Link, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { useDispatch,
-// eslint-disable-next-line no-unused-vars
-useSelector } from 'react-redux';
-// eslint-disable-next-line no-unused-vars
-import { setWishlistItems } from '../redux/wishlistSlice';
 import logger from '../utils/logger';
 import useWishlist from '../utils/useWishlist';
 import { downloadOrderReceipt } from '../utils/pdfUtils';
 import UserReviews from '../components/UserReviews';
 import defaultPfp from '../assets/defaultpfp.png';
 
-/**
- * Order status constants with associated colors for UI display
- */
 const ORDER_STATUS = {
-  PLACED: { label: 'Placed', color: 'bg-yellow-100 text-yellow-800' },
-  APPROVED: { label: 'Approved', color: 'bg-blue-100 text-blue-800' },
-  PACKED: { label: 'Packed', color: 'bg-indigo-100 text-indigo-800' },
-  SHIPPED: { label: 'Shipped', color: 'bg-purple-100 text-purple-800' },
-  DELIVERED: { label: 'Delivered', color: 'bg-green-100 text-green-800' },
-  DECLINED: { label: 'Declined', color: 'bg-red-100 text-red-800' },
-  CANCELLED: { label: 'Cancelled', color: 'bg-gray-100 text-gray-800' }
+  PLACED: { label: 'Placed', color: 'bg-amber-50 text-amber-700 border-amber-100' },
+  APPROVED: { label: 'Approved', color: 'bg-cyan-50 text-cyan-700 border-cyan-100' },
+  PACKED: { label: 'Packed', color: 'bg-blue-50 text-blue-700 border-blue-100' },
+  SHIPPED: { label: 'Shipped', color: 'bg-indigo-50 text-indigo-700 border-indigo-100' },
+  DELIVERED: { label: 'Delivered', color: 'bg-green-50 text-green-700 border-green-100' },
+  DECLINED: { label: 'Declined', color: 'bg-rose-50 text-rose-700 border-rose-100' },
+  CANCELLED: { label: 'Cancelled', color: 'bg-gray-50 text-gray-600 border-gray-150' }
 };
 
-/**
- * My Account page with multiple sections for profile management,
- * orders, wishlist, shipment tracking, and reviews
- * 
- * Now with URL-based navigation for each section:
- * - /my-account/profile (default)
- * - /my-account/payment-methods
- * - /my-account/orders
- * - /my-account/track-shipment
- * - /my-account/wishlist
- * - /my-account/reviews
- */
 function MyAccount() {
-  // Get the current section from URL parameters
   const { section } = useParams();
   const currentSection = section || 'profile';
   
@@ -87,10 +65,6 @@ function MyAccount() {
   const [saveLoading, setSaveLoading] = useState(false);
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
-  // eslint-disable-next-line no-unused-vars
-  const [wishlistLoading, setWishlistLoading] = useState(false);
-  // eslint-disable-next-line no-unused-vars
-  const dispatch = useDispatch();
   const { 
     wishlistItems: hookWishlistItems, 
     loading: wishlistHookLoading,
@@ -98,9 +72,6 @@ function MyAccount() {
   } = useWishlist();
 
   useEffect(() => {
-    /**
-     * Fetch user profile data from Firestore
-     */
     const fetchProfile = async () => {
       if (user) {
         try {
@@ -123,9 +94,6 @@ function MyAccount() {
               },
               profilePic: userData.profilePic || ''
             });
-            
-
-            
             logger.firebase.read(`users/${user.uid}`, { 
               name: userData.name,
               email: userData.email
@@ -146,22 +114,13 @@ function MyAccount() {
     fetchProfile();
   }, [user]);
 
-  /**
-   * Fetch user orders from Firestore
-   * Memoized with useCallback to prevent repeated calls and console spam
-   */
   const fetchOrders = useCallback(async () => {
     if (!user) return;
-    
-    // Check if we've already fetched orders to prevent repeated calls
     if (orders.length > 0 && !ordersLoading) return;
-    
     logger.user.action("View Orders", { userId: user.uid });
 
     try {
       setOrdersLoading(true);
-      
-      // Get all orders for this user
       const ordersQuery = query(
         collection(db, "orders"),
         where("userId", "==", user.uid),
@@ -174,26 +133,14 @@ function MyAccount() {
       ordersSnapshot.forEach((doc) => {
         const data = doc.data();
         if (data.userId === user.uid) {
-          // Ensure totalAmount is calculated if missing
-          // This fixes potential issues with older orders in the database
           if (!data.totalAmount && !data.total) {
-            // Calculate total based on available fields
             const subtotal = data.subtotal || 0;
             const tax = data.tax || 0;
             const shipping = data.shipping?.cost || 0;
             const discount = data.discount || 0;
             const importDuty = data.importDuty || 0;
-            
-            // Set totalAmount using the same calculation used in checkout
             data.totalAmount = subtotal + tax + shipping + importDuty - discount;
-            
-            // Log the calculated total for debugging
-            console.log(`Calculated missing total for order ${data.orderId}:`, {
-              subtotal, tax, shipping, discount, importDuty,
-              calculatedTotal: data.totalAmount
-            });
           }
-          
           ordersData.push({
             id: doc.id,
             ...data
@@ -211,20 +158,11 @@ function MyAccount() {
     }
   }, [user, orders.length, ordersLoading]);
 
-  /**
-   * Fetch user wishlist items from Firebase
-   * This is now handled by the useWishlist hook 
-   * Memoized with useCallback to prevent repeated calls
-   */
   const fetchWishlist = useCallback(async () => {
     if (!user) return;
-    
-    // Only log once per section activation
     logger.user.action("View Wishlist", { userId: user.uid });
-    // The actual fetching is handled by the useWishlist hook
   }, [user]);
 
-  // Load data based on the current section
   useEffect(() => {
     if (currentSection === 'orders' || currentSection === 'track-shipment') {
       fetchOrders();
@@ -233,9 +171,6 @@ function MyAccount() {
     }
   }, [currentSection, fetchOrders, fetchWishlist]);
 
-  /**
-   * Handle input field changes
-   */
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name.startsWith('address.')) {
@@ -249,9 +184,6 @@ function MyAccount() {
     }
   };
 
-  /**
-   * Handle form submission to update profile
-   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (user) {
@@ -265,7 +197,6 @@ function MyAccount() {
           profilePic: profile.profilePic
         });
         
-        // Update the cached profile in sessionStorage
         sessionStorage.setItem(`profile_${user.uid}`, JSON.stringify({
           profilePic: profile.profilePic || defaultPfp,
           name: profile.name || 'User'
@@ -281,64 +212,25 @@ function MyAccount() {
     }
   };
 
-
-
-  /**
-   * Removes a product from the wishlist
-   * @param {string} productId - ID of the product to remove
-   */
   const handleRemoveFromWishlist = async (productId) => {
     await removeWishlistItem(productId);
   };
 
-  /**
-   * Format price as currency
-   * 
-   * @param {number} price - Price to format
-   * @returns {string} Formatted price
-   * 
-   * IMPORTANT: There's inconsistency in the database schema where some order records
-   * use 'totalAmount' field while others might use 'total' field for the order total.
-   * The email service uses 'totalAmount', so we prioritize that field but fall back to 'total' 
-   * if needed to ensure consistent display across all app sections.
-   * This prevents "₹0.00" or "NaN" issues in the UI and PDF generation.
-   */
   const formatPrice = (price) => {
     if (price === undefined || price === null) return '₹0.00';
-    
     const num = typeof price === 'string' ? parseFloat(price) : price;
-    
-    // Handle NaN, just in case
     if (isNaN(num)) return '₹0.00';
-    
-    // Extract integer and decimal parts
     const parts = num.toFixed(2).split('.');
     const integer = parts[0];
     const decimalPart = parts[1];
-    
-    // Add thousands separators to integer part
     const formattedInteger = integer.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    
-    // Return formatted string
     return `₹${decimalPart ? `${formattedInteger}.${decimalPart}` : formattedInteger}`;
   };
 
-  /**
-   * Format date in a more readable format
-   * 
-   * @param {string|number|Date} date - The date to format
-   * @returns {string} Formatted date
-   */
   const formatOrderDate = (date) => {
     if (!date) return 'N/A';
-    
     const orderDate = new Date(date);
-    
-    // Check if date is valid
     if (isNaN(orderDate.getTime())) return 'Invalid date';
-    
-    // If the date is in the future (except for a small tolerance of 1 day),
-    // it's likely a timestamp error. Use current date instead.
     const now = new Date();
     if (orderDate > new Date(now.getTime() + 24 * 60 * 60 * 1000)) {
       return new Date().toLocaleDateString('en-IN', { 
@@ -347,7 +239,6 @@ function MyAccount() {
         day: 'numeric' 
       });
     }
-    
     return orderDate.toLocaleDateString('en-IN', { 
       year: 'numeric', 
       month: 'long', 
@@ -355,34 +246,18 @@ function MyAccount() {
     });
   };
 
-  /**
-   * Handle downloading an order receipt
-   * @param {object} order - The order object
-   */
   const handleDownloadReceipt = async (order) => {
     try {
       toast.info('Preparing your receipt...');
-      
-      // Ensure the order has a valid total amount for the PDF generation
       const orderCopy = { ...order };
-      
-      // Check and calculate totalAmount if missing to avoid NaN in the PDF
       if (!orderCopy.totalAmount && !orderCopy.total) {
         const subtotal = orderCopy.subtotal || 0;
         const tax = orderCopy.tax || 0;
         const shipping = orderCopy.shipping?.cost || 0;
         const discount = orderCopy.discount || 0;
         const importDuty = orderCopy.importDuty || 0;
-        
-        // Calculate and set the total amount
         orderCopy.totalAmount = subtotal + tax + shipping + importDuty - discount;
-        
-        console.log('Calculated missing total for PDF receipt:', {
-          orderId: orderCopy.orderId,
-          calculatedTotal: orderCopy.totalAmount
-        });
       }
-      
       await downloadOrderReceipt(orderCopy);
       toast.success('Receipt downloaded successfully!');
     } catch (error) {
@@ -391,197 +266,419 @@ function MyAccount() {
     }
   };
 
+  const handleCopyTrackingCode = (code) => {
+    navigator.clipboard.writeText(code);
+    toast.success('Consignment ID copied to clipboard!');
+  };
+
   if (loading) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900 mb-4"></div>
-        <p className="text-gray-600 font-medium">Loading your account...</p>
+      <div className="flex flex-col justify-center items-center min-h-[60vh] bg-gray-50/50">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-cyan-600 mb-4"></div>
+        <p className="text-gray-500 font-bold text-sm tracking-widest uppercase">Loading Account...</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen py-12">
+    <div className="bg-gray-50/30 min-h-screen py-16">
       <Helmet>
         <title>My Account | KamiKoto</title>
         <meta name="description" content="Manage your KamiKoto account, view orders, and update your profile." />
       </Helmet>
       
-      <div className="container mx-auto px-4">
-        <div className="max-w-6xl mx-auto">
-          {/* Header Section */}
-          <div className="mb-8 px-2 sm:px-0">
-            <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">My Account</h1>
-            <p className="text-gray-500 text-lg mt-1">Manage your profile, orders, and more</p>
-          </div>
+      <div className="container mx-auto px-2 sm:px-4 max-w-7xl">
+        {/* Header Section */}
+        <div className="mb-10 text-center md:text-left max-w-2xl">
+          <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">Account Dashboard</h1>
+          <p className="text-gray-500 text-base mt-2">Manage your luxury stationery orders, deliveries, and profile information.</p>
+        </div>
+
+        {/* Mobile Navigation bar */}
+        <div className="lg:hidden mb-8 overflow-x-auto scrollbar-hide bg-white p-2 rounded-2xl border border-gray-100 shadow-sm flex gap-1.5">
+          {[
+            { id: 'profile', label: 'Profile Settings', icon: User },
+            { id: 'orders', label: 'Orders', icon: ShoppingBag },
+            { id: 'track-shipment', label: 'Tracking', icon: Truck },
+            { id: 'wishlist', label: 'Wishlist', icon: Heart },
+            { id: 'reviews', label: 'Reviews', icon: Star }
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = currentSection === tab.id;
+            return (
+              <Link
+                key={tab.id}
+                to={`/my-account/${tab.id}`}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 whitespace-nowrap ${
+                  isActive
+                    ? 'bg-cyan-600 text-white shadow-sm'
+                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+              >
+                <Icon size={14} />
+                {tab.label}
+              </Link>
+            );
+          })}
+        </div>
+        
+        {/* Dashboard Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* Navigation Tab Bar */}
-          <div className="relative z-20 mb-6">
-            <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-              <div className="flex overflow-x-auto scrollbar-hide border-b border-gray-100">
-                <div className="flex p-2 gap-1">
-                  {[
-                    { id: 'profile', label: 'Profile', icon: User },
-                    { id: 'orders', label: 'Orders', icon: ShoppingBag },
-                    { id: 'track-shipment', label: 'Track Shipment', icon: Truck },
-                    { id: 'wishlist', label: 'Wishlist', icon: Heart },
-                    { id: 'reviews', label: 'Reviews', icon: Star }
-                  ].map((tab) => (
+          {/* Sidebar Navigation - Desktop (col-span-3) */}
+          <div className="hidden lg:block lg:col-span-3">
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 space-y-8 sticky top-24">
+              {/* Profile Avatar Card */}
+              <div className="text-center pb-6 border-b border-gray-100">
+                <div className="relative w-24 h-24 mx-auto mb-4 group">
+                  <img
+                    src={profile.profilePic || defaultPfp}
+                    alt="Profile"
+                    className="w-24 h-24 rounded-2xl object-cover border border-gray-100 shadow-md group-hover:opacity-90 transition-opacity"
+                  />
+                  <div className="absolute -bottom-1 -right-1 p-2 bg-gray-900 text-white rounded-xl shadow-lg cursor-pointer hover:scale-105 transition-transform">
+                    <Camera size={14} />
+                  </div>
+                </div>
+                <h3 className="font-extrabold text-lg text-gray-900 leading-snug">{profile.name || 'User'}</h3>
+                <p className="text-xs text-gray-400 mt-1 truncate max-w-full">{profile.email}</p>
+                <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-cyan-50 border border-cyan-100 text-cyan-700 rounded-full text-[10px] font-bold">
+                  Premium Member
+                </div>
+              </div>
+
+              {/* Navigation list */}
+              <nav className="space-y-1">
+                {[
+                  { id: 'profile', label: 'Profile Settings', icon: User },
+                  { id: 'orders', label: 'Order History', icon: ShoppingBag },
+                  { id: 'track-shipment', label: 'Track Shipments', icon: Truck },
+                  { id: 'wishlist', label: 'My Wishlist', icon: Heart },
+                  { id: 'reviews', label: 'Product Reviews', icon: Star }
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = currentSection === tab.id;
+                  return (
                     <Link
                       key={tab.id}
                       to={`/my-account/${tab.id}`}
-                      className={`flex items-center px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 whitespace-nowrap flex-shrink-0 ${
-                        currentSection === tab.id
-                          ? 'bg-gray-900 text-white shadow-lg'
-                          : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+                      className={`flex items-center justify-between w-full px-4 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 ${
+                        isActive
+                          ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/10'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       }`}
                     >
-                      <tab.icon size={16} className={`mr-2.5 transition-colors ${currentSection === tab.id ? 'text-white' : 'text-gray-400'}`} />
-                      {tab.label}
+                      <span className="flex items-center gap-3">
+                        <Icon size={18} className={isActive ? 'text-white' : 'text-gray-400'} />
+                        {tab.label}
+                      </span>
+                      <ChevronRight size={14} className={isActive ? 'text-white' : 'text-gray-300'} />
                     </Link>
-                  ))}
-                </div>
+                  );
+                })}
+              </nav>
+
+              {/* Logout trigger */}
+              <div className="pt-6 border-t border-gray-100">
+                <button
+                  onClick={() => auth.signOut()}
+                  className="flex items-center gap-3 w-full px-4 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-2xl transition-all"
+                >
+                  <LogOut size={18} />
+                  Sign Out
+                </button>
               </div>
-              
-              {/* Contextual Loading Bar */}
-              <AnimatePresence>
-                {(loading || ordersLoading || wishlistHookLoading) && (
-                  <m.div 
-                    initial={{ scaleX: 0, opacity: 0 }}
-                    animate={{ scaleX: 1, opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="absolute bottom-0 left-0 right-0 h-1 bg-gray-900 origin-left z-30"
-                    transition={{ duration: 0.8, ease: "circOut" }}
-                  />
-                )}
-              </AnimatePresence>
             </div>
           </div>
-          
-          {/* Content Area */}
-          <div className="relative z-10">
-            <div className="bg-white rounded-[2rem] shadow-2xl shadow-gray-200/50 border border-gray-200 min-h-[600px] overflow-hidden">
+
+          {/* Main Content Area (col-span-9) */}
+          <div className="col-span-1 lg:col-span-9">
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm px-3 py-6 sm:p-6 md:p-10 min-h-[500px]">
               <AnimatePresence mode="wait">
                 <m.div
                   key={currentSection}
-                  initial={{ opacity: 0, x: 10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                  className="p-6 md:p-12"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
                 >
+                  {/* PROFILE SETTINGS */}
                   {currentSection === 'profile' && (
-                    <div className="space-y-12">
-                      <div className="flex flex-col md:flex-row md:items-center gap-8">
-                        <div className="relative group">
+                    <div className="space-y-10">
+                      {/* Section Title */}
+                      <div>
+                        <h2 className="text-2xl font-black text-gray-900">Profile Settings</h2>
+                        <p className="text-sm text-gray-400 mt-1">Manage your account information and default shipping addresses.</p>
+                      </div>
+
+                      {/* Header Section on Mobile (Displays avatar since sidebar is hidden) */}
+                      <div className="lg:hidden flex items-center gap-5 p-5 bg-gray-50/50 rounded-2xl border border-gray-100">
+                        <div className="relative w-16 h-16 group">
                           <img
                             src={profile.profilePic || defaultPfp}
                             alt="Profile"
-                            className="w-32 h-32 rounded-3xl object-cover border-4 border-white shadow-xl group-hover:opacity-90 transition-opacity"
+                            className="w-16 h-16 rounded-xl object-cover border border-gray-150 shadow-sm"
                           />
-                          <div className="absolute -bottom-2 -right-2 p-2 bg-gray-900 text-white rounded-xl shadow-lg cursor-pointer hover:scale-110 transition-transform">
-                            <Camera size={18} />
-                          </div>
                         </div>
-
-                        <div className="flex-grow">
-                          <h2 className="text-3xl font-black text-gray-900">{profile.name || 'Welcome back'}</h2>
-                          <p className="text-gray-500 font-medium">{profile.email}</p>
-                          <div className="mt-4 flex gap-2">
-                            <span className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-bold border border-green-100">Verified</span>
-                            <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold border border-blue-100">Member</span>
+                        <div>
+                          <h3 className="font-extrabold text-lg text-gray-900 leading-snug">{profile.name || 'User'}</h3>
+                          <p className="text-xs text-gray-400 mt-0.5">{profile.email}</p>
+                          <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 bg-cyan-50 border border-cyan-100 text-cyan-700 rounded-full text-[9px] font-bold">
+                            Premium Member
                           </div>
                         </div>
                       </div>
                       
-                      <form onSubmit={handleSubmit} className="space-y-10">
-                        <div className="bg-gray-50/50 rounded-3xl p-6 md:p-8 border border-gray-100">
-                          <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                            <User size={20} className="mr-3 text-gray-400" />
+                      <form onSubmit={handleSubmit} className="space-y-8">
+                        {/* Personal Info Card */}
+                        <div className="bg-gray-50/30 rounded-3xl p-4 sm:p-6 md:p-8 border border-gray-100/50 space-y-6">
+                          <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            <User size={18} className="text-cyan-600" />
                             Personal Information
                           </h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <Input label="Full Name" name="name" value={profile.name} onChange={handleChange} required icon={User} className="bg-white border-gray-200 rounded-2xl" />
-                            <Input label="Email Address" name="email" value={profile.email} disabled icon={AlertCircle} className="bg-gray-100 border-gray-200 rounded-2xl" />
+                            <Input label="Email Address" name="email" value={profile.email} disabled icon={AlertCircle} className="bg-gray-150 border-gray-200 rounded-2xl cursor-not-allowed" />
                             <Input label="Phone Number" name="phone" value={profile.phone} onChange={handleChange} icon={Truck} className="bg-white border-gray-200 rounded-2xl" />
                             <Input label="Profile Picture URL" name="profilePic" value={profile.profilePic} onChange={handleChange} icon={Camera} className="bg-white border-gray-200 rounded-2xl" />
                           </div>
                         </div>
                         
-                        <div className="bg-gray-50/50 rounded-3xl p-6 md:p-8 border border-gray-100">
-                          <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                            <MapPin size={20} className="mr-3 text-gray-400" />
-                            Shipping Address
+                        {/* Address Info Card */}
+                        <div className="bg-gray-50/30 rounded-3xl p-4 sm:p-6 md:p-8 border border-gray-100/50 space-y-6">
+                          <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            <MapPin size={18} className="text-cyan-600" />
+                            Default Shipping Address
                           </h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="md:col-span-1">
-                              <label className="block text-sm font-bold text-gray-600 mb-2">House / Plot No.</label>
-                              <input type="text" name="address.houseNo" value={profile.address.houseNo} onChange={handleChange} className="w-full p-4 border border-gray-200 rounded-2xl bg-white" />
+                            <div>
+                              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">House / Plot / Suite No.</label>
+                              <input type="text" name="address.houseNo" value={profile.address.houseNo} onChange={handleChange} placeholder="e.g. 402-A" className="w-full p-4 border border-gray-200 rounded-2xl bg-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all" />
                             </div>
-                            <div className="md:col-span-1">
-                              <label className="block text-sm font-bold text-gray-600 mb-2">PIN Code</label>
-                              <input type="text" name="address.pin" value={profile.address.pin} onChange={handleChange} className="w-full p-4 border border-gray-200 rounded-2xl bg-white" />
+                            <div>
+                              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ZIP / Postal PIN Code</label>
+                              <input type="text" name="address.pin" value={profile.address.pin} onChange={handleChange} placeholder="e.g. 400001" className="w-full p-4 border border-gray-200 rounded-2xl bg-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all" />
                             </div>
                             <div className="md:col-span-2">
-                              <label className="block text-sm font-bold text-gray-600 mb-2">Address Line 1</label>
-                              <input type="text" name="address.line1" value={profile.address.line1} onChange={handleChange} className="w-full p-4 border border-gray-200 rounded-2xl bg-white" />
+                              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Address Line 1 (Street name, locality)</label>
+                              <input type="text" name="address.line1" value={profile.address.line1} onChange={handleChange} placeholder="e.g. Nariman Point, MG Road" className="w-full p-4 border border-gray-200 rounded-2xl bg-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all" />
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 md:col-span-2 gap-6">
-                              <input type="text" name="address.city" value={profile.address.city} onChange={handleChange} placeholder="City" className="w-full p-4 border border-gray-200 rounded-2xl bg-white" />
-                              <select name="address.country" value={profile.address.country} onChange={handleChange} className="w-full p-4 border border-gray-200 rounded-2xl bg-white">
-                                {Object.keys(countriesStatesData.countries).map(c => <option key={c} value={c}>{c}</option>)}
-                              </select>
-                              <select name="address.state" value={profile.address.state} onChange={handleChange} className="w-full p-4 border border-gray-200 rounded-2xl bg-white">
-                                <option value="">State</option>
-                                {profile.address.country && countriesStatesData.countries[profile.address.country]?.map(s => <option key={s} value={s}>{s}</option>)}
-                              </select>
+                            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
+                              <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">City</label>
+                                <input type="text" name="address.city" value={profile.address.city} onChange={handleChange} placeholder="e.g. Mumbai" className="w-full p-4 border border-gray-200 rounded-2xl bg-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all" />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Country</label>
+                                <select name="address.country" value={profile.address.country} onChange={handleChange} className="w-full p-4 border border-gray-200 rounded-2xl bg-white text-sm focus:border-cyan-500 outline-none transition-all">
+                                  {Object.keys(countriesStatesData.countries).map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                              </div>
+                              <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">State</label>
+                                <select name="address.state" value={profile.address.state} onChange={handleChange} className="w-full p-4 border border-gray-200 rounded-2xl bg-white text-sm focus:border-cyan-500 outline-none transition-all">
+                                  <option value="">Select State</option>
+                                  {profile.address.country && countriesStatesData.countries[profile.address.country]?.map(s => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                              </div>
                             </div>
                           </div>
                         </div>
                         
                         <div className="flex justify-end">
-                          <Button type="submit" variant="primary" isLoading={saveLoading} loadingText="Updating..." className="bg-gray-900 text-white px-10 py-4 rounded-2xl font-bold">
-                            Save Changes
+                          <Button type="submit" variant="primary" isLoading={saveLoading} loadingText="Updating..." className="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-3.5 rounded-2xl font-bold border-none transition-all">
+                            Save Profile Changes
                           </Button>
                         </div>
                       </form>
                     </div>
                   )}
 
+                  {/* ORDER HISTORY */}
                   {currentSection === 'orders' && (
-                    <div className="space-y-10">
-                      <h2 className="text-3xl font-black text-gray-900">My Orders</h2>
+                    <div className="space-y-8">
+                      <div>
+                        <h2 className="text-2xl font-black text-gray-900">Order History</h2>
+                        <p className="text-sm text-gray-400 mt-1">Review all your past and pending KamiKoto collection orders.</p>
+                      </div>
+
                       {ordersLoading ? (
-                        <div className="flex justify-center py-24"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div></div>
+                        <div className="flex justify-center py-20">
+                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan-600"></div>
+                        </div>
                       ) : orders.length === 0 ? (
-                        <div className="bg-gray-50 rounded-[2.5rem] p-16 text-center border-2 border-dashed border-gray-200">
-                          <ShoppingBag size={48} className="mx-auto text-gray-300 mb-4" />
-                          <h3 className="text-2xl font-bold text-gray-900 mb-2">No orders yet</h3>
-                          <Link to="/products" className="inline-flex items-center px-10 py-4 bg-gray-900 text-white rounded-2xl font-bold mt-4">Explore Shop</Link>
+                        <div className="bg-gray-50/50 rounded-3xl p-12 text-center border border-dashed border-gray-200 space-y-4">
+                          <ShoppingBag size={40} className="mx-auto text-gray-300" />
+                          <div>
+                            <h3 className="font-extrabold text-lg text-gray-900">No orders placed yet</h3>
+                            <p className="text-gray-400 text-xs mt-1">Explore our premium curation of stationery essentials to start building your collective.</p>
+                          </div>
+                          <Link to="/products" className="inline-flex items-center px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all">
+                            Explore Catalog
+                          </Link>
+                        </div>
+                      ) : (
+                        <div className="space-y-6">
+                          {orders.map((order) => (
+                            <div key={order.id} className="border border-gray-100 rounded-3xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-all">
+                              {/* Order Card Header */}
+                              <div className="bg-gray-50/50 px-4 py-4 sm:px-6 sm:py-5 border-b border-gray-100 flex flex-wrap justify-between items-center gap-4">
+                                <div className="flex items-center gap-6 text-xs flex-wrap">
+                                  <div>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">DATE PLACED</p>
+                                    <p className="font-semibold text-gray-900">{formatOrderDate(order.orderDate)}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">ORDER ID</p>
+                                    <p className="font-mono font-semibold text-gray-900 flex items-center gap-1.5">
+                                      {order.orderId}
+                                      <button onClick={() => { navigator.clipboard.writeText(order.orderId); toast.success('Order ID copied!'); }} className="text-gray-400 hover:text-gray-900">
+                                        <Copy size={12} />
+                                      </button>
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">STATUS</p>
+                                    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${ORDER_STATUS[order.status?.toUpperCase()]?.color || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                                      {order.status}
+                                    </span>
+                                  </div>
+                                </div>
+                                <button onClick={() => handleDownloadReceipt(order)} title="Download Invoice Receipt PDF" className="p-2.5 bg-white text-gray-600 rounded-xl border border-gray-150 hover:bg-cyan-600 hover:text-white hover:border-transparent transition-all">
+                                  <FileDown size={16} />
+                                </button>
+                              </div>
+
+                              {/* Order Card Body */}
+                              <div className="p-4 sm:p-6 space-y-4 divide-y divide-gray-100">
+                                {order.items.map((item, idx) => (
+                                  <div key={idx} className="flex items-center gap-5 pt-4 first:pt-0">
+                                    <img src={item.image} alt={item.name} className="w-14 h-14 object-contain rounded-xl border border-gray-100 p-1 flex-shrink-0" />
+                                    <div className="flex-grow">
+                                      <h4 className="font-bold text-sm text-gray-900 line-clamp-1">{item.name}</h4>
+                                      <p className="text-xs text-gray-400 mt-0.5">Quantity: {item.quantity} · Price: {formatPrice(item.price)}</p>
+                                    </div>
+                                    <p className="font-extrabold text-sm text-gray-900">{formatPrice(item.price * item.quantity)}</p>
+                                  </div>
+                                ))}
+                                
+                                {/* Order Card Footer */}
+                                <div className="pt-5 border-t border-gray-100 flex flex-wrap justify-between items-end gap-4">
+                                  <div className="flex gap-8 text-xs text-gray-400">
+                                    {order.address && (
+                                      <div>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">DELIVER TO</p>
+                                        <p className="font-medium text-gray-700">{order.address.houseNo}, {order.address.line1}, {order.address.city}</p>
+                                      </div>
+                                    )}
+                                    {order.paymentDetails && (
+                                      <div>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">PAYMENT METHOD</p>
+                                        <p className="font-medium text-gray-700">{order.paymentDetails.method || 'Online Payment'}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">GRAND TOTAL</p>
+                                    <p className="text-2xl font-black text-cyan-600 tracking-tight">{formatPrice(order.totalAmount || order.total)}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* SHIPMENT TRACKING */}
+                  {currentSection === 'track-shipment' && (
+                    <div className="space-y-8">
+                      <div>
+                        <h2 className="text-2xl font-black text-gray-900">Consignment Tracking</h2>
+                        <p className="text-sm text-gray-400 mt-1">Real-time parcel delivery tracking directly with our courier partners.</p>
+                      </div>
+
+                      {ordersLoading ? (
+                        <div className="flex justify-center py-20">
+                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan-600"></div>
+                        </div>
+                      ) : orders.filter(o => o.status === 'Shipped' || o.status === 'Delivered').length === 0 ? (
+                        <div className="bg-gray-50/50 rounded-3xl p-12 text-center border border-gray-150 space-y-4">
+                          <Truck size={40} className="mx-auto text-gray-300 animate-pulse" />
+                          <div>
+                            <h3 className="font-extrabold text-lg text-gray-900">No active shipments</h3>
+                            <p className="text-gray-400 text-xs mt-1">You currently have no orders that are processed and shipped for delivery.</p>
+                          </div>
                         </div>
                       ) : (
                         <div className="space-y-8">
-                          {orders.map((order) => (
-                            <div key={order.id} className="group border border-gray-200 rounded-[2rem] overflow-hidden bg-white hover:shadow-xl transition-all">
-                              <div className="bg-gray-50/50 p-6 border-b border-gray-100 flex justify-between items-center">
-                                <div className="flex gap-8">
-                                  <div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">DATE</p><p className="text-sm font-bold text-gray-900">{formatOrderDate(order.orderDate)}</p></div>
-                                  <div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">ID</p><p className="text-sm font-bold text-gray-900">{order.orderId}</p></div>
-                                  <div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">STATUS</p><span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-black ${ORDER_STATUS[order.status?.toUpperCase()]?.color || 'bg-gray-100 text-gray-800'}`}>{order.status}</span></div>
+                          {orders.filter(o => o.status === 'Shipped' || o.status === 'Delivered').map((order) => (
+                            <div key={order.id} className="border border-gray-100 rounded-3xl p-4 sm:p-6 md:p-8 bg-white shadow-sm space-y-6">
+                              {/* Shipment Consignment info */}
+                              <div className="flex flex-wrap justify-between items-start gap-4 pb-6 border-b border-gray-100">
+                                <div>
+                                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">INDIAPOST CONSIGNMENT NO</p>
+                                  <h3 className="font-mono text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+                                    {order.tracking?.code || 'EM123456789IN'}
+                                    <button onClick={() => handleCopyTrackingCode(order.tracking?.code || 'EM123456789IN')} className="text-gray-400 hover:text-gray-900">
+                                      <Copy size={14} />
+                                    </button>
+                                  </h3>
                                 </div>
-                                <button onClick={() => handleDownloadReceipt(order)} className="p-3 bg-white rounded-xl border border-gray-200 hover:bg-gray-900 hover:text-white transition-all"><FileDown size={20} /></button>
+                                <a href="https://www.indiapost.gov.in" target="_blank" rel="noopener noreferrer" className="px-5 py-3 bg-gray-900 hover:bg-cyan-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all">
+                                  Go to Carrier Portal
+                                </a>
                               </div>
-                              <div className="p-6 md:p-8 space-y-6">
-                                {order.items.map((item, idx) => (
-                                  <div key={idx} className="flex items-center gap-6">
-                                    <img src={item.image} alt={item.name} className="w-16 h-16 object-contain rounded-xl border border-gray-100" />
-                                    <div className="flex-grow"><h4 className="text-lg font-bold text-gray-900">{item.name}</h4><p className="text-sm text-gray-500">Qty: {item.quantity}</p></div>
-                                    <p className="text-xl font-black text-gray-900">{formatPrice(item.price * item.quantity)}</p>
+
+                              {/* Shipment status timeline */}
+                              <div>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-6">DELIVERY STATUS TIMELINE</p>
+                                <div className="space-y-6 relative before:absolute before:left-[17px] before:top-2 before:bottom-2 before:w-[2px] before:bg-gray-100">
+                                  
+                                  {/* Step 1 */}
+                                  <div className="flex gap-4 items-start relative">
+                                    <div className="w-9 h-9 rounded-full bg-cyan-50 border-2 border-cyan-500 text-cyan-600 flex items-center justify-center font-bold z-10 flex-shrink-0">
+                                      ✓
+                                    </div>
+                                    <div>
+                                      <h5 className="font-bold text-sm text-gray-900">Order Placed & Confirmed</h5>
+                                      <p className="text-xs text-gray-400 mt-0.5">Your luxury collection request is recorded and processed.</p>
+                                    </div>
                                   </div>
-                                ))}
-                                <div className="pt-6 border-t border-gray-100 flex justify-between items-end">
-                                  <div><p className="text-sm font-bold text-gray-400 uppercase tracking-widest">TOTAL</p><p className="text-3xl font-black text-gray-900 tracking-tight">{formatPrice(order.totalAmount || order.total)}</p></div>
-                                  <Link to={`/my-account/track-shipment`} className="text-gray-900 font-black text-sm uppercase tracking-widest border-b-2 border-gray-900 pb-1">Track info</Link>
+
+                                  {/* Step 2 */}
+                                  <div className="flex gap-4 items-start relative">
+                                    <div className="w-9 h-9 rounded-full bg-cyan-50 border-2 border-cyan-500 text-cyan-600 flex items-center justify-center font-bold z-10 flex-shrink-0">
+                                      ✓
+                                    </div>
+                                    <div>
+                                      <h5 className="font-bold text-sm text-gray-900">Packed & Dispatched</h5>
+                                      <p className="text-xs text-gray-400 mt-0.5">Order securely boxed in protective, custom brand packaging.</p>
+                                    </div>
+                                  </div>
+
+                                  {/* Step 3 */}
+                                  <div className="flex gap-4 items-start relative">
+                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold z-10 flex-shrink-0 border-2 ${order.status === 'Shipped' || order.status === 'Delivered' ? 'bg-cyan-50 border-cyan-500 text-cyan-600' : 'bg-white border-gray-200 text-gray-400'}`}>
+                                      {order.status === 'Shipped' || order.status === 'Delivered' ? '✓' : '3'}
+                                    </div>
+                                    <div>
+                                      <h5 className="font-bold text-sm text-gray-900">In Transit (Shipped)</h5>
+                                      <p className="text-xs text-gray-400 mt-0.5">Handed over to India Post cargo hub for courier dispatch.</p>
+                                    </div>
+                                  </div>
+
+                                  {/* Step 4 */}
+                                  <div className="flex gap-4 items-start relative">
+                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold z-10 flex-shrink-0 border-2 ${order.status === 'Delivered' ? 'bg-cyan-50 border-cyan-500 text-cyan-600' : 'bg-white border-gray-200 text-gray-400'}`}>
+                                      {order.status === 'Delivered' ? '✓' : '4'}
+                                    </div>
+                                    <div>
+                                      <h5 className="font-bold text-sm text-gray-900">Delivered</h5>
+                                      <p className="text-xs text-gray-400 mt-0.5">Successfully signed for and delivered to default shipping address.</p>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -591,52 +688,50 @@ function MyAccount() {
                     </div>
                   )}
 
-                  {currentSection === 'track-shipment' && (
-                    <div className="space-y-10">
-                      <h2 className="text-3xl font-black text-gray-900">Track Shipment</h2>
-                      <div className="bg-gray-900 text-white rounded-[2.5rem] p-10 relative overflow-hidden">
-                        <div className="relative z-10"><h3 className="text-2xl font-black mb-2 flex items-center"><Truck className="mr-3 text-blue-400" /> India Post</h3><p className="text-gray-400 text-lg">Official partner for KamiKoto deliveries. Real-time tracking via consignment ID.</p></div>
-                        <Truck size={200} className="absolute -top-10 -right-10 opacity-10" />
-                      </div>
-                      <div className="grid gap-8">
-                        {orders.filter(o => o.status === 'Shipped' || o.status === 'Delivered').length === 0 ? (
-                          <div className="bg-gray-50 rounded-[2rem] p-12 text-center border border-gray-100"><p className="text-gray-500 font-bold">No active shipments to track.</p></div>
-                        ) : (
-                          orders.filter(o => o.status === 'Shipped' || o.status === 'Delivered').map(order => (
-                            <div key={order.id} className="border-2 border-gray-100 rounded-[2rem] p-8 bg-white shadow-sm hover:border-gray-900 transition-all">
-                              <div className="flex justify-between items-center gap-8">
-                                <div><p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">CONSIGNMENT ID</p><p className="font-mono text-3xl font-black text-gray-900 tracking-tighter">{order.tracking?.code || 'PENDING'}</p></div>
-                                <a href="https://www.indiapost.gov.in" target="_blank" rel="noopener noreferrer" className="px-8 py-4 bg-gray-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest">Open Tracker</a>
-                              </div>
-                              <p className="mt-6 text-sm text-gray-500">Order ID: <span className="font-bold text-gray-900">{order.orderId}</span></p>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  )}
-
+                  {/* WISHLIST SECTION */}
                   {currentSection === 'wishlist' && (
-                    <div className="space-y-10">
-                      <h2 className="text-3xl font-black text-gray-900">My Wishlist</h2>
+                    <div className="space-y-8">
+                      <div>
+                        <h2 className="text-2xl font-black text-gray-900">My Wishlist</h2>
+                        <p className="text-sm text-gray-400 mt-1">Review items you've bookmarked to add to your collection later.</p>
+                      </div>
+
                       {wishlistHookLoading ? (
-                        <div className="flex justify-center py-24"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div></div>
+                        <div className="flex justify-center py-20">
+                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan-600"></div>
+                        </div>
                       ) : hookWishlistItems.length === 0 ? (
-                        <div className="bg-gray-50 rounded-[2.5rem] p-16 text-center border-2 border-dashed border-gray-200">
-                          <Heart size={48} className="mx-auto text-gray-300 mb-4" /><h3 className="text-2xl font-bold text-gray-900">Wishlist empty</h3>
-                          <Link to="/products" className="inline-flex items-center px-10 py-4 bg-gray-900 text-white rounded-2xl font-bold mt-6 tracking-widest">Discover Items</Link>
+                        <div className="bg-gray-50/50 rounded-3xl p-12 text-center border border-dashed border-gray-200 space-y-4">
+                          <Heart size={40} className="mx-auto text-gray-300" />
+                          <div>
+                            <h3 className="font-extrabold text-lg text-gray-900">Your wishlist is empty</h3>
+                            <p className="text-gray-400 text-xs mt-1">Bookmark product listings to save premium stationery finds inside this page.</p>
+                          </div>
+                          <Link to="/products" className="inline-flex items-center px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all">
+                            Explore Catalog
+                          </Link>
                         </div>
                       ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                          {hookWishlistItems.map(item => (
-                            <div key={item.id} className="group bg-white rounded-3xl border border-gray-200 overflow-hidden hover:border-gray-900 transition-all hover:shadow-2xl">
-                              <div className="aspect-square relative overflow-hidden">
-                                <img src={item.image} alt={item.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                                <button onClick={() => handleRemoveFromWishlist(item.id)} className="absolute top-4 right-4 p-3 bg-white/90 rounded-2xl text-red-500 shadow-lg hover:bg-red-500 hover:text-white transition-all transform hover:rotate-12"><Trash2 size={20} /></button>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {hookWishlistItems.map((item) => (
+                            <div key={item.id} className="group bg-white rounded-2xl border border-gray-155 overflow-hidden hover:border-cyan-600 transition-all hover:shadow-md flex flex-col justify-between">
+                              <div className="aspect-square relative overflow-hidden bg-gray-50/50 flex items-center justify-center p-3 sm:p-4">
+                                <img src={item.image} alt={item.name} className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105" />
+                                <button onClick={() => handleRemoveFromWishlist(item.id)} title="Remove from Wishlist" className="absolute top-3 right-3 p-2 bg-white/95 rounded-xl text-gray-400 hover:text-red-600 shadow-sm border border-gray-100 hover:rotate-6 transition-all">
+                                  <Trash2 size={15} />
+                                </button>
                               </div>
-                              <div className="p-6">
-                                <h4 className="font-black text-gray-900 mb-2 line-clamp-1">{item.name}</h4><p className="text-2xl font-black text-gray-900 mb-6">{formatPrice(item.price)}</p>
-                                <Link to={`/product/${item.id}`} className="w-full inline-flex justify-center py-4 bg-gray-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest">View Details</Link>
+                              <div className="p-4 sm:p-5 flex-grow flex flex-col justify-between">
+                                <div className="mb-4">
+                                  <h4 className="font-extrabold text-sm text-gray-900 line-clamp-1">{item.name}</h4>
+                                  <p className="text-xs text-gray-400 mt-1 line-clamp-1">{item.category}</p>
+                                </div>
+                                <div className="space-y-4">
+                                  <p className="text-lg font-black text-gray-900">{formatPrice(item.price)}</p>
+                                  <Link to={`/product/${item.id}`} className="w-full inline-flex justify-center py-3 bg-gray-900 hover:bg-cyan-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all text-center">
+                                    View Details
+                                  </Link>
+                                </div>
                               </div>
                             </div>
                           ))}
@@ -645,10 +740,17 @@ function MyAccount() {
                     </div>
                   )}
 
+                  {/* USER REVIEWS SECTION */}
                   {currentSection === 'reviews' && (
-                    <div className="space-y-10">
-                      <h2 className="text-3xl font-black text-gray-900">Your Reviews</h2>
-                      <div className="bg-gray-50 rounded-[2.5rem] p-8"><UserReviews /></div>
+                    <div className="space-y-8">
+                      <div>
+                        <h2 className="text-2xl font-black text-gray-900">Your Reviews</h2>
+                        <p className="text-sm text-gray-400 mt-1">Review feedback and star ratings you have left for KamiKoto purchases.</p>
+                      </div>
+
+                      <div className="border border-gray-100 rounded-3xl overflow-hidden shadow-sm bg-white p-4 sm:p-6 md:p-8">
+                        <UserReviews />
+                      </div>
                     </div>
                   )}
                 </m.div>

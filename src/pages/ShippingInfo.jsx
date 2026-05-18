@@ -1,103 +1,79 @@
-
 import React from 'react';
 import { m } from "framer-motion";
 import { Helmet } from 'react-helmet-async';
-import { Truck, Zap, Globe, Shield } from 'lucide-react';
 
 function ShippingInfo() {
-  const features = [
-    {
-      icon: <Zap className="w-6 h-6" />,
-      title: "Instant Processing",
-      description: "Our systems process your test order at the speed of light. It's truly impressive for something that doesn't exist."
-    },
-    {
-      icon: <Globe className="w-6 h-6" />,
-      title: "Global Reach",
-      description: "We ship from Localhost to everywhere. As long as you have a WiFi connection, your order is technically already home."
-    },
-    {
-      icon: <Shield className="w-6 h-6" />,
-      title: "Encrypted Transit",
-      description: "Your imaginary parcel is protected by 256-bit AES encryption. Not even hackers can find your non-existent package."
-    }
-  ];
-
   return (
     <m.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className="min-h-screen bg-white py-16 px-4"
+      initial={{ opacity: 0, y: 50 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ duration: 0.6, ease: "easeInOut" }} 
+      className="container mx-auto px-4 py-12 max-w-4xl"
     >
       <Helmet>
         <title>Shipping Information | KamiKoto</title>
-        <meta name="description" content="Learn about our lightning-fast shipping to the edge of the internet." />
+        <meta name="description" content="Learn about our shipping rates, methods, and delivery times." />
       </Helmet>
 
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-16">
-          <h1 className="text-6xl font-black mb-6 text-gray-900 tracking-tighter uppercase italic">
-            Shipping Info<span className="text-gray-300">.</span>
-          </h1>
-          <p className="text-xl text-gray-500 max-w-2xl mx-auto">
-            Everything you need to know about how we (don't) move your premium stationery across the globe.
+      <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-8 md:p-12">
+        <h1 className="text-4xl md:text-5xl font-black mb-8 text-gray-900 text-center">Shipping Information</h1>
+        
+        <p className="text-lg text-gray-700 mb-8 leading-relaxed text-center">
+          At <strong className="font-extrabold text-cyan-600">KamiKoto</strong>, we strive to deliver your premium stationery items safely and efficiently. Below is everything you need to know about our shipping rates, delivery timelines, and methods.
+        </p>
+        
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">1. Processing Times</h2>
+        <p className="text-base text-gray-600 mb-6 leading-relaxed">
+          Orders are typically processed and prepared for shipping within <strong>1 to 2 business days</strong> (excluding weekends and public holidays). You will receive an email confirmation containing tracking information once your package has been handed over to our courier partner.
+        </p>
+        
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">2. Shipping Rates & Delivery Estimates</h2>
+        <p className="text-base text-gray-600 mb-6 leading-relaxed">
+          We offer free standard shipping across India on all premium orders above ₹500. For orders under ₹500, a flat-rate shipping fee will be calculated at checkout.
+        </p>
+        <div className="overflow-x-auto mb-6">
+          <table className="w-full text-left text-sm text-gray-600 border border-gray-100 rounded-xl overflow-hidden">
+            <thead className="bg-gray-50 text-gray-900 font-bold">
+              <tr>
+                <th className="p-4">Shipping Option</th>
+                <th className="p-4">Delivery Time</th>
+                <th className="p-4">Cost</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              <tr>
+                <td className="p-4 font-semibold">Standard Shipping</td>
+                <td className="p-4">3 - 5 Business Days</td>
+                <td className="p-4">Free (on orders &gt; ₹500) / ₹50 flat rate</td>
+              </tr>
+              <tr>
+                <td className="p-4 font-semibold">Express Shipping</td>
+                <td className="p-4">1 - 2 Business Days</td>
+                <td className="p-4">₹120 flat rate</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">3. Delivery Tracking</h2>
+        <p className="text-base text-gray-600 mb-6 leading-relaxed">
+          Once your package ships, we will email you a tracking link. You can use this link to check the status of your parcel directly on our shipping carrier's website. Please allow 24 hours for the tracking information to update after receiving your shipping confirmation.
+        </p>
+        
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">4. Damaged or Lost Shipments</h2>
+        <p className="text-base text-gray-600 mb-6 leading-relaxed">
+          If your package arrives damaged, or if it is lost in transit, please contact our support team immediately. We will initiate an inquiry with the courier and send you a replacement shipment as quickly as possible.
+        </p>
+        
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">5. Demo Store Disclaimer</h2>
+        <p className="text-base text-gray-600 mb-6 leading-relaxed font-medium italic">
+          Please note: KamiKoto is a student portfolio concept demonstration site. No actual products are sold, and no real transactions, shipments, or returns take place.
+        </p>
+
+        <div className="mt-12 pt-8 border-t border-gray-100 text-center">
+          <p className="text-gray-500">
+            Have questions about your order? Feel free to contact us on our <a href="/contact" className="text-cyan-600 hover:text-cyan-700 font-bold underline">Contact Page</a>.
           </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-          {features.map((feature, idx) => (
-            <m.div
-              key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              className="p-8 rounded-3xl bg-gray-50 border border-gray-100 hover:shadow-xl transition-all duration-300"
-            >
-              <div className="bg-gray-900 text-white w-12 h-12 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-                {feature.icon}
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">{feature.title}</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">{feature.description}</p>
-            </m.div>
-          ))}
-        </div>
-
-        <div className="space-y-12 bg-gray-950 text-white p-10 md:p-16 rounded-[3rem] shadow-2xl relative overflow-hidden">
-          {/* Background Highlight */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 blur-[100px] rounded-full -mr-32 -mt-32"></div>
-
-          <section>
-            <h2 className="text-3xl font-black mb-6 flex items-center text-white">
-              <Truck className="mr-4 text-white/50" /> Shipping Methods
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="border border-white/10 p-6 rounded-2xl bg-white/5">
-                <h4 className="font-bold text-xl mb-2 text-white">Standard Simulation</h4>
-                <p className="text-sm text-white/80">Arrives in 3-5 milliseconds. Free for everyone, forever.</p>
-              </div>
-              <div className="border border-white/10 p-6 rounded-2xl bg-white/5">
-                <h4 className="font-bold text-xl mb-2 text-white">Express Imagination</h4>
-                <p className="text-sm text-white/80">Arrives before you even click. Powered by advanced predictive heuristics.</p>
-              </div>
-            </div>
-          </section>
-
-          <section className="pt-8 border-t border-white/10">
-            <h2 className="text-3xl font-black mb-6 text-white">Tracking Your Order</h2>
-            <p className="text-gray-400 leading-relaxed mb-6">
-              Once you complete your test checkout, we provide a tracking number. This number is purely decorative. If you paste it into a search engine, you'll likely find a very confused Wikipedia page or a random string of hexadecimal code.
-            </p>
-            <div className="inline-flex items-center px-6 py-3 bg-white text-gray-950 rounded-full font-black uppercase text-sm tracking-widest">
-              Status: Always Delivered
-            </div>
-          </section>
-
-          <div className="pt-10 text-center">
-            <p className="text-xs text-white/40 uppercase font-bold tracking-[0.2em]">
-              Disclaimer: KamiKoto is a portfolio piece. No physical shipping occurs.
-            </p>
-          </div>
         </div>
       </div>
     </m.div>
