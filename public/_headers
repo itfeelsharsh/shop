@@ -33,4 +33,9 @@
   User-Agent=*discord*
     Access-Control-Allow-Origin: *
     X-Frame-Options: ALLOWALL
-    X-Discord-Allowed: true 
+    X-Discord-Allowed: true
+
+# Ensure service worker is always fresh and checked directly from origin
+/service-worker.js
+  Cache-Control: no-cache, no-store, must-revalidate
+  Expires: 0 

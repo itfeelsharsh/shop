@@ -60,13 +60,19 @@
       "name": "View Cart",
       "url": "/cart",
       "description": "View your shopping cart", 
-      "icons": [{ "src": "/icons/cart.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/icons/2.png", "sizes": "192x192" }]
     },
     {
       "name": "My Account", 
       "url": "/my-account",
       "description": "View your account details",
-      "icons": [{ "src": "/icons/account.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/icons/1.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Order History",
+      "url": "/my-account/orders",
+      "description": "View your order history",
+      "icons": [{ "src": "/icons/3.png", "sizes": "192x192" }]
     }
   ],
   "related_applications": [],

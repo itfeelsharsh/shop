@@ -61,6 +61,64 @@ function registerValidSW(swUrl, config) {
   navigator.serviceWorker
     .register(swUrl)
     .then((registration) => {
+      // 1. If there's already an updated service worker waiting in the background,
+      // trigger the update callback immediately to skip waiting and activate/reload.
+      if (registration.waiting && config && config.onUpdate) {
+        console.log('Service Worker: A waiting worker was found, triggering update...');
+        config.onUpdate(registration);
+      }
+
+      // 2. Set up background and event-based update checking logic
+      const checkUpdate = () => {
+        if (navigator.onLine) {
+          console.log('Service Worker: Checking for updates from server...');
+          registration.update().catch((err) => {
+            console.log('Service Worker: Update check failed:', err);
+          });
+        }
+      };
+
+      // Throttle rapid update checks (e.g. from fast route transitions) to at most once per 10 seconds
+      let lastCheckTime = 0;
+      const throttledCheckUpdate = () => {
+        const now = Date.now();
+        if (now - lastCheckTime >= 10000) {
+          lastCheckTime = now;
+          checkUpdate();
+        }
+      };
+
+      // Periodic check: Every 5 minutes
+      const updateInterval = setInterval(checkUpdate, 5 * 60 * 1000);
+
+      // Focus/Visibility check: When the user switches back to the tab/window
+      const onVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          checkUpdate();
+        }
+      };
+      document.addEventListener('visibilitychange', onVisibilityChange);
+      window.addEventListener('focus', checkUpdate);
+
+      // Single-Page Application (SPA) navigation checks:
+      // Listen to popstate and hashchange (back/forward and hash links)
+      window.addEventListener('popstate', throttledCheckUpdate);
+      window.addEventListener('hashchange', throttledCheckUpdate);
+
+      // Monkeypatch HTML5 History API to automatically detect programmatic client-side route changes
+      const originalPushState = window.history.pushState;
+      const originalReplaceState = window.history.replaceState;
+
+      window.history.pushState = function(...args) {
+        originalPushState.apply(this, args);
+        throttledCheckUpdate();
+      };
+
+      window.history.replaceState = function(...args) {
+        originalReplaceState.apply(this, args);
+        throttledCheckUpdate();
+      };
+
       // Successfully registered service worker
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;

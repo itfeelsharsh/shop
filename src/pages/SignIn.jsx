@@ -251,10 +251,7 @@ function SignIn() {
         {/* Technical Border Lines */}
         <div className="absolute inset-8 border border-zinc-200/80 pointer-events-none" />
         {/* Architectural Crop Marks [+] in 4 corners */}
-        <div className="absolute top-6 left-6 text-zinc-400 font-mono text-[10px]">[+] 34.0522° N, 118.2437° W</div>
-        <div className="absolute top-6 right-6 text-zinc-400 font-mono text-[10px]">[+] SYS_INIT_0x0A</div>
-        <div className="absolute bottom-6 left-6 text-zinc-400 font-mono text-[10px]">[+] KAMI_KOTO_STUDIO</div>
-        <div className="absolute bottom-6 right-6 text-zinc-400 font-mono text-[10px]">[+] SCALE_1:1_DRAFT</div>
+
 
         {/* Soft glowing ambient light points */}
         <m.div
@@ -434,7 +431,7 @@ function SignIn() {
         <p className="mt-8 text-center text-sm text-gray-500">
           Don't have an account?{" "}
           <Link to="/signup" className="font-bold text-[#D32F2F] hover:text-[#C62828] hover:underline transition-all">
-            Sign up
+            Create an account.
           </Link>
         </p>
       </div>
