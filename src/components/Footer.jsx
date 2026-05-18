@@ -3,9 +3,12 @@ import { Link } from 'react-router-dom';
 import { m } from "framer-motion";
 import { useInView } from 'react-intersection-observer';
 import { 
-  Send, 
   Instagram, 
-  Twitter 
+  Twitter,
+  Truck,
+  Sparkles,
+  ShieldCheck,
+  RefreshCw
 } from 'lucide-react';
 
 const Footer = () => {
@@ -27,65 +30,89 @@ const Footer = () => {
     }
   };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 15 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
-    }
-  };
-
   return (
     <m.footer
       ref={ref}
       variants={containerVariants}
       initial="hidden"
       animate={inView ? "visible" : "hidden"}
-      className="bg-gradient-to-b from-white via-red-50/10 to-white border-t border-gray-100 text-gray-900 pt-20 pb-12 mt-20 relative z-10 hidden md:block"
+      className="bg-[#0A0A0C] border-t border-zinc-900 text-zinc-300 pt-20 pb-12 mt-20 relative z-10 hidden md:block overflow-hidden"
     >
-      {/* Decorative top red gradient highlight strip */}
-      <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-red-500/30 to-transparent"></div>
+      {/* Decorative top red accent line */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-red-500/40 to-transparent"></div>
 
-      <div className="container mx-auto px-4 max-w-7xl">
-        {/* Top Alert Banner - Demo purposes disclaimer with subtle red/white bg theme inserts */}
-        <div className="mb-12 bg-gradient-to-r from-red-50/40 via-white to-red-50/40 border border-red-100/50 rounded-2xl p-4 sm:p-5 text-[11px] text-red-700/80 font-semibold leading-relaxed italic text-center max-w-4xl mx-auto shadow-sm">
+      {/* Subtle Dotted Sketchbook Grid Background (Maximalist Texture) */}
+      <div className="absolute inset-0 bg-[radial-gradient(#1c1c1f_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none opacity-50"></div>
+
+      {/* Architectural Crop Marks (Theme Visual Ornaments) */}
+      <div className="absolute top-6 left-6 text-[9px] font-mono text-zinc-700 select-none tracking-widest pointer-events-none">
+        [ 34.7398° N, 135.5023° E ]
+      </div>
+      <div className="absolute top-6 right-6 text-[9px] font-mono text-zinc-700 select-none tracking-widest pointer-events-none">
+        [ KOTO // EST. 2026 ]
+      </div>
+
+      {/* Crop Mark Corners */}
+      <div className="absolute top-0 left-0 w-4 h-[1px] bg-zinc-800/80"></div>
+      <div className="absolute top-0 left-0 w-[1px] h-4 bg-zinc-800/80"></div>
+      <div className="absolute top-0 right-0 w-4 h-[1px] bg-zinc-800/80"></div>
+      <div className="absolute top-0 right-0 w-[1px] h-4 bg-zinc-800/80"></div>
+
+      <div className="container mx-auto px-4 max-w-7xl relative z-10">
+        
+        {/* Sleek Ticker Capsule Notice */}
+        <div className="mb-16 bg-zinc-950/60 border border-zinc-900/80 rounded-full px-6 py-3 text-[10px] tracking-widest text-zinc-400 font-bold uppercase text-center max-w-3xl mx-auto flex items-center justify-center gap-2.5 shadow-inner select-none">
+          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping"></span>
+          <span className="text-zinc-650 font-semibold font-mono">[DEMO STORE]</span>
           This website is a demo store for portfolio purposes. No real orders or payments are processed.
         </div>
 
-        {/* Main Footer Links & Newsletter */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-16">
-          {/* Brand Info (4 cols) */}
-          <div className="lg:col-span-4 space-y-6">
+        {/* Main Footer Links & Brand info - Restructured to 12 cols total */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-8 mb-16">
+          
+          {/* Brand Info (5 cols) */}
+          <div className="md:col-span-12 lg:col-span-5 space-y-6">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-white shadow-md">
-                <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <div className="w-9 h-9 rounded-xl bg-red-500 flex items-center justify-center text-white shadow-lg shadow-red-500/10 ring-1 ring-white/10">
+                <svg className="w-4.5 h-4.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 20h9" />
                   <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
                 </svg>
               </div>
-              <Link to="/" className="text-3xl font-black tracking-tighter hover:opacity-80 transition-opacity inline-block">
-                KamiKoto<span className="text-red-600 font-extrabold">.</span>
+              <Link to="/" className="text-2xl font-black tracking-tight text-white hover:opacity-90 transition-opacity">
+                KamiKoto<span className="text-red-500 font-black">.</span>
               </Link>
             </div>
-            <p className="text-gray-500 leading-relaxed text-sm max-w-sm">
+            <p className="text-zinc-400 font-light leading-relaxed text-sm max-w-sm">
               Refining the modern creative workflow. We source, build, and deliver premium stationery tools for designers, architects, and writers globally.
             </p>
             {/* Social Icons */}
             <div className="flex items-center space-x-3 pt-2">
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-gray-50 hover:bg-red-50 border border-gray-100 flex items-center justify-center text-gray-500 hover:text-red-600 transition-all duration-300">
+              <a 
+                href="https://instagram.com" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="w-9 h-9 rounded-xl bg-zinc-950/80 hover:bg-red-500 border border-zinc-900 hover:border-red-500 flex items-center justify-center text-zinc-450 hover:text-white transition-all duration-300 shadow-sm hover:scale-105"
+                title="Follow on Instagram"
+              >
                 <Instagram className="w-4 h-4" />
               </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-gray-50 hover:bg-red-50 border border-gray-100 flex items-center justify-center text-gray-500 hover:text-red-600 transition-all duration-300">
+              <a 
+                href="https://twitter.com" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="w-9 h-9 rounded-xl bg-zinc-950/80 hover:bg-red-500 border border-zinc-900 hover:border-red-500 flex items-center justify-center text-zinc-450 hover:text-white transition-all duration-300 shadow-sm hover:scale-105"
+                title="Follow on Twitter"
+              >
                 <Twitter className="w-4 h-4" />
               </a>
             </div>
           </div>
 
-          {/* Quick Links (2 cols) */}
-          <div className="lg:col-span-2 space-y-6">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">Shop Collection</h4>
-            <ul className="space-y-3.5">
+          {/* Quick Links (3 cols) */}
+          <div className="md:col-span-6 lg:col-span-3 space-y-6">
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 font-mono">Shop Collection</h4>
+            <ul className="space-y-4">
               {[
                 { label: 'All Products', path: '/products' },
                 { label: 'Notebooks', path: '/products?category=notebooks' },
@@ -95,9 +122,9 @@ const Footer = () => {
                 <li key={item.label}>
                   <Link 
                     to={item.path}
-                    className="text-sm text-gray-600 hover:text-red-600 hover:font-medium transition-all flex items-center group"
+                    className="text-sm text-zinc-450 hover:text-white transition-colors duration-300 flex items-center group relative py-1.5 w-fit"
                   >
-                    <span className="w-0 group-hover:w-1.5 h-[1.5px] bg-red-600 mr-0 group-hover:mr-2 transition-all"></span>
+                    <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-red-500 group-hover:w-full transition-all duration-300"></span>
                     {item.label}
                   </Link>
                 </li>
@@ -105,10 +132,10 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Customer Care (2 cols) */}
-          <div className="lg:col-span-2 space-y-6">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">Customer Care</h4>
-            <ul className="space-y-3.5">
+          {/* Customer Care (4 cols) */}
+          <div className="md:col-span-6 lg:col-span-4 space-y-6">
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 font-mono">Customer Care</h4>
+            <ul className="space-y-4">
               {[
                 { label: 'Return Policy', path: '/return-policy' },
                 { label: 'Shipping Info', path: '/shipping-info' },
@@ -118,9 +145,9 @@ const Footer = () => {
                 <li key={item.label}>
                   <Link 
                     to={item.path}
-                    className="text-sm text-gray-600 hover:text-red-600 hover:font-medium transition-all flex items-center group"
+                    className="text-sm text-zinc-450 hover:text-white transition-colors duration-300 flex items-center group relative py-1.5 w-fit"
                   >
-                    <span className="w-0 group-hover:w-1.5 h-[1.5px] bg-red-600 mr-0 group-hover:mr-2 transition-all"></span>
+                    <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-red-500 group-hover:w-full transition-all duration-300"></span>
                     {item.label}
                   </Link>
                 </li>
@@ -128,75 +155,59 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Shopify-like Newsletter subscription box (4 cols) */}
-          <div className="lg:col-span-4 space-y-6">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">Join the Collective</h4>
-            <p className="text-sm text-gray-500 leading-normal">
-              Subscribe to receive updates, access to exclusive launches, and secret stationery drop alerts.
-            </p>
-            <form onSubmit={(e) => { e.preventDefault(); alert("Successfully subscribed!"); }} className="relative max-w-sm">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                required
-                className="w-full bg-gray-50 hover:bg-gray-100 text-sm px-4 py-3 pr-12 rounded-2xl border border-transparent focus:border-gray-200 focus:bg-white focus:ring-1 focus:ring-gray-900 transition-all duration-300"
-              />
-              <button
-                type="submit"
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-xl bg-gray-900 hover:bg-red-600 text-white flex items-center justify-center transition-all duration-300"
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </form>
-          </div>
         </div>
 
-        {/* Top Info Banner / Trust Badges - Moved inside the footer with subtle red-and-white card gradient inserts */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 py-12 border-y border-gray-100 mb-12">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-50 to-white flex items-center justify-center border border-red-100/50 flex-shrink-0 text-red-600 shadow-sm">
-              🇮🇳
+        {/* Premium Shopify-style Trust Badges Section */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 py-12 border-y border-zinc-900/80 mb-12">
+          
+          <div className="flex items-center gap-4 p-5 rounded-2xl bg-zinc-950/30 border border-zinc-900/60 hover:border-zinc-800 transition-all duration-300 group">
+            <div className="w-11 h-11 rounded-xl bg-zinc-900/60 border border-zinc-800/80 flex items-center justify-center text-red-500 shadow-inner group-hover:scale-105 transition-transform duration-300">
+              <Truck className="w-5 h-5" />
             </div>
             <div>
-              <h5 className="font-bold text-sm tracking-tight text-gray-900">Free India Delivery</h5>
-              <p className="text-xs text-gray-400 mt-0.5">On all premium orders above ₹500</p>
+              <h5 className="font-extrabold text-[11px] tracking-wider text-zinc-100 uppercase font-mono">Free India Delivery</h5>
+              <p className="text-[11px] text-zinc-500 font-light mt-0.5 leading-normal">On all premium orders above ₹500</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-50 to-white flex items-center justify-center border border-red-100/50 flex-shrink-0 text-red-600 shadow-sm">
-              ✦
+
+          <div className="flex items-center gap-4 p-5 rounded-2xl bg-zinc-950/30 border border-zinc-900/60 hover:border-zinc-800 transition-all duration-300 group">
+            <div className="w-11 h-11 rounded-xl bg-zinc-900/60 border border-zinc-800/80 flex items-center justify-center text-red-500 shadow-inner group-hover:scale-105 transition-transform duration-300">
+              <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h5 className="font-bold text-sm tracking-tight text-gray-900">Premium Materials</h5>
-              <p className="text-xs text-gray-400 mt-0.5">Curated authentic Japanese papers</p>
+              <h5 className="font-extrabold text-[11px] tracking-wider text-zinc-100 uppercase font-mono">Premium Materials</h5>
+              <p className="text-[11px] text-zinc-500 font-light mt-0.5 leading-normal">Curated authentic Japanese papers</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-50 to-white flex items-center justify-center border border-red-100/50 flex-shrink-0 text-red-600 shadow-sm">
-              ✓
+
+          <div className="flex items-center gap-4 p-5 rounded-2xl bg-zinc-950/30 border border-zinc-900/60 hover:border-zinc-800 transition-all duration-300 group">
+            <div className="w-11 h-11 rounded-xl bg-zinc-900/60 border border-zinc-800/80 flex items-center justify-center text-red-500 shadow-inner group-hover:scale-105 transition-transform duration-300">
+              <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h5 className="font-bold text-sm tracking-tight text-gray-900">Secure Checkouts</h5>
-              <p className="text-xs text-gray-400 mt-0.5">UPI, Cards & Netbanking options</p>
+              <h5 className="font-extrabold text-[11px] tracking-wider text-zinc-100 uppercase font-mono">Secure Checkouts</h5>
+              <p className="text-[11px] text-zinc-500 font-light mt-0.5 leading-normal">UPI, Cards & Netbanking options</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-50 to-white flex items-center justify-center border border-red-100/50 flex-shrink-0 text-red-600 shadow-sm">
-              ⇄
+
+          <div className="flex items-center gap-4 p-5 rounded-2xl bg-zinc-950/30 border border-zinc-900/60 hover:border-zinc-800 transition-all duration-300 group">
+            <div className="w-11 h-11 rounded-xl bg-zinc-900/60 border border-zinc-800/80 flex items-center justify-center text-red-500 shadow-inner group-hover:scale-105 transition-transform duration-300">
+              <RefreshCw className="w-5 h-5" />
             </div>
             <div>
-              <h5 className="font-bold text-sm tracking-tight text-gray-900">Easy Return Policy</h5>
-              <p className="text-xs text-gray-400 mt-0.5">Simple 7-day storefront returns</p>
+              <h5 className="font-extrabold text-[11px] tracking-wider text-zinc-100 uppercase font-mono">Easy Return Policy</h5>
+              <p className="text-[11px] text-zinc-500 font-light mt-0.5 leading-normal">Simple 7-day storefront returns</p>
             </div>
           </div>
+
         </div>
 
-        {/* Bottom Bar: Copyright */}
-        <div className="pt-8 mt-4 border-t border-gray-100 flex justify-center text-center">
-          <p className="text-xs text-gray-400 font-medium">
-            © {new Date().getFullYear()} KamiKoto. All rights reserved.
-          </p>
+        {/* Bottom Bar: Copyright & Ornamental Tag */}
+        <div className="pt-8 mt-4 border-t border-zinc-900 flex justify-between items-center text-zinc-500 text-[10px] font-mono">
+          <p>© {new Date().getFullYear()} KamiKoto. All rights reserved.</p>
+          <p className="tracking-[0.25em] opacity-40 select-none hidden sm:block">DESIGNED FOR CREATIVES</p>
         </div>
+
       </div>
     </m.footer>
   );

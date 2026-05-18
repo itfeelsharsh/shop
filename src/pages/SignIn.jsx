@@ -240,69 +240,56 @@ function SignIn() {
   }, [executeRecaptcha]);
 
   return (
-    <div className="min-h-screen relative bg-white flex items-center justify-center px-4 py-16 overflow-hidden">
+    <div className="min-h-screen relative bg-[#FCFCF9] bg-[linear-gradient(to_right,#f3f4f6_1px,transparent_1px),linear-gradient(to_bottom,#f3f4f6_1px,transparent_1px)] bg-[size:4rem_4rem] flex items-center justify-center px-4 py-16 overflow-hidden font-sans">
       <Helmet>
         <title>Sign In | KamiKoto</title>
         <meta name="description" content="Sign in to your KamiKoto account to access your profile and orders." />
       </Helmet>
 
-      {/* Decorative World-Class Background Blobs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+      {/* Premium Architectural Draft Board Details */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 select-none opacity-40">
+        {/* Technical Border Lines */}
+        <div className="absolute inset-8 border border-zinc-200/80 pointer-events-none" />
+        {/* Architectural Crop Marks [+] in 4 corners */}
+        <div className="absolute top-6 left-6 text-zinc-400 font-mono text-[10px]">[+] 34.0522° N, 118.2437° W</div>
+        <div className="absolute top-6 right-6 text-zinc-400 font-mono text-[10px]">[+] SYS_INIT_0x0A</div>
+        <div className="absolute bottom-6 left-6 text-zinc-400 font-mono text-[10px]">[+] KAMI_KOTO_STUDIO</div>
+        <div className="absolute bottom-6 right-6 text-zinc-400 font-mono text-[10px]">[+] SCALE_1:1_DRAFT</div>
+
+        {/* Soft glowing ambient light points */}
         <m.div
           animate={{
-            x: [0, 40, -20, 0],
-            y: [0, -40, 30, 0],
-            scale: [1, 1.1, 0.9, 1],
+            x: [0, 20, -10, 0],
+            y: [0, -30, 20, 0],
+            scale: [1, 1.05, 0.95, 1],
           }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute top-[-10%] left-[-10%] w-[350px] sm:w-[500px] h-[350px] sm:h-[500px] rounded-full bg-red-50/70 blur-[80px] sm:blur-[120px]"
+          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/4 left-1/4 w-[300px] h-[300px] rounded-full bg-red-100/30 blur-[100px]"
         />
         <m.div
           animate={{
-            x: [0, -30, 40, 0],
-            y: [0, 50, -30, 0],
-            scale: [1, 0.9, 1.1, 1],
+            x: [0, -20, 30, 0],
+            y: [0, 40, -20, 0],
+            scale: [1, 0.95, 1.05, 1],
           }}
-          transition={{
-            duration: 18,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute bottom-[-10%] right-[-10%] w-[400px] sm:w-[600px] h-[400px] sm:h-[600px] rounded-full bg-amber-50/60 blur-[100px] sm:blur-[145px]"
-        />
-        <m.div
-          animate={{
-            x: [0, 30, -30, 0],
-            y: [0, 20, 40, 0],
-          }}
-          transition={{
-            duration: 12,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute top-[30%] right-[15%] w-[250px] sm:w-[350px] h-[250px] sm:h-[350px] rounded-full bg-zinc-50/80 blur-[60px] sm:blur-[90px]"
+          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] rounded-full bg-amber-100/25 blur-[120px]"
         />
       </div>
 
       <div className="w-full max-w-md relative z-10">
         {/* Header with Brand Logo */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <m.div
-            initial={{ scale: 0.9, opacity: 0 }}
+            initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="mb-4 inline-block"
+            transition={{ duration: 0.5, type: "spring" }}
+            className="mb-4 inline-block relative"
           >
-            <Link to="/" className="text-3xl font-black tracking-tighter hover:opacity-80 transition-opacity">
-              KamiKoto<span className="text-red-600 font-extrabold">.</span>
-            </Link>
+           
           </m.div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Welcome Back</h1>
-          <p className="text-gray-500 mt-2 text-sm">Sign in to your premium creator dashboard</p>
+          <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight uppercase">Welcome Back, Sign Into your existing KamiKoto Account</h1>
+
         </div>
 
         {/* Frosted Glass Main Card */}
@@ -310,14 +297,20 @@ function SignIn() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.4 }}
-          className="bg-white/70 backdrop-blur-xl rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.03)] border border-white/50 p-6 sm:p-10"
+          className="bg-white/90 backdrop-blur-xl rounded-[32px] shadow-2xl shadow-zinc-200/30 border border-zinc-200/60 p-6 sm:p-10"
         >
+          {/* Architectural [+] detail markers inside card corners */}
+          <div className="absolute top-4 left-4 text-zinc-300 font-mono text-[9px] select-none">[+]</div>
+          <div className="absolute top-4 right-4 text-zinc-300 font-mono text-[9px] select-none">[+]</div>
+          <div className="absolute bottom-4 left-4 text-zinc-300 font-mono text-[9px] select-none">[+]</div>
+          <div className="absolute bottom-4 right-4 text-zinc-300 font-mono text-[9px] select-none">[+]</div>
+
           {!emailSent ? (
             <>
               {/* Email Sign In Form */}
               <form onSubmit={handleEmailSignIn} className="space-y-6">
                 <div>
-                  <label htmlFor="email" className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
+                  <label htmlFor="email" className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
                     Email Address
                   </label>
                   <div className="relative">
@@ -330,7 +323,7 @@ function SignIn() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="block w-full pl-11 pr-4 py-3 bg-white/80 border border-gray-200/80 rounded-2xl focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all duration-300 placeholder-gray-400 text-sm shadow-sm"
+                      className="block w-full pl-11 pr-4 py-3 bg-white border border-zinc-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#D32F2F] focus:border-[#D32F2F] transition-all duration-300 placeholder-gray-400 text-sm shadow-sm"
                       required
                       disabled={loading || recaptchaChecking}
                     />
@@ -343,7 +336,7 @@ function SignIn() {
                   loadingText="Sending link..."
                   disabled={!email}
                   fullWidth
-                  className="btn-shopify bg-gray-900 hover:bg-gray-800 text-white rounded-2xl py-3.5 text-sm font-semibold tracking-wide"
+                  className="btn-shopify bg-[#D32F2F] hover:bg-[#C62828] text-white rounded-2xl py-3.5 text-sm font-bold tracking-wider uppercase btn-shiny-ribbon"
                   icon={<ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />}
                 >
                   Continue with Email
@@ -353,10 +346,10 @@ function SignIn() {
               {/* Divider */}
               <div className="relative my-8">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-100"></div>
+                  <div className="w-full border-t border-zinc-100"></div>
                 </div>
-                <div className="relative flex justify-center text-xs uppercase tracking-wider">
-                  <span className="px-4 bg-transparent text-gray-400 font-medium">Or continue with</span>
+                <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
+                  <span className="px-4 bg-white/0 text-gray-400 font-semibold">Or continue with</span>
                 </div>
               </div>
 
@@ -369,7 +362,7 @@ function SignIn() {
                   isLoading={socialLoading.google}
                   loadingText="Connecting..."
                   disabled={recaptchaChecking}
-                  className="btn-shopify bg-white border border-gray-200/80 hover:bg-gray-50 rounded-2xl py-3 text-sm text-gray-700 font-medium"
+                  className="btn-shopify bg-white border border-zinc-200 hover:bg-gray-50 rounded-2xl py-3 text-sm text-gray-700 font-medium"
                   icon={
                     <svg className="w-4 h-4 mr-2 inline" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -383,13 +376,13 @@ function SignIn() {
                 </Button>
 
                 <Button
-                  variant="primary"
+                  variant="secondary"
                   fullWidth
                   onClick={(e) => handleSocialSignIn(e, 'github')}
                   isLoading={socialLoading.github}
                   loadingText="Connecting..."
                   disabled={recaptchaChecking}
-                  className="btn-shopify bg-gray-900 hover:bg-gray-800 text-white rounded-2xl py-3 text-sm font-medium"
+                  className="btn-shopify bg-white border border-zinc-200 hover:bg-gray-50 rounded-2xl py-3 text-sm text-gray-700 font-medium"
                   icon={
                     <svg className="w-4 h-4 mr-2 inline" fill="currentColor" viewBox="0 0 24 24">
                       <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd"/>
@@ -407,22 +400,22 @@ function SignIn() {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", duration: 0.5 }}
-                className="inline-flex items-center justify-center w-16 h-16 bg-red-50 rounded-full mb-4"
+                className="inline-flex items-center justify-center w-16 h-16 bg-red-50/80 border border-red-100 rounded-full mb-4"
               >
-                <CheckCircle2 className="w-8 h-8 text-red-600" />
+                <CheckCircle2 className="w-8 h-8 text-[#D32F2F]" />
               </m.div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Check your inbox</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Check your inbox</h3>
               <p className="text-gray-500 text-sm mb-6">
                 We have sent a magic link to <span className="font-semibold text-gray-900">{email}</span>
               </p>
-              <div className="bg-red-50/50 border border-red-100 rounded-2xl p-4 mb-6">
-                <p className="text-xs text-red-800 leading-relaxed font-medium">
+              <div className="bg-red-50/30 border border-red-100/40 rounded-2xl p-4 mb-6">
+                <p className="text-xs text-red-950 leading-relaxed font-semibold">
                   Click the confirmation link in the email to automatically sign in. The link is valid for 60 minutes.
                 </p>
               </div>
               <button
                 onClick={() => setEmailSent(false)}
-                className="text-xs text-gray-400 hover:text-gray-900 transition-colors uppercase tracking-wider font-semibold"
+                className="text-xs text-zinc-400 hover:text-[#D32F2F] transition-colors uppercase tracking-widest font-bold"
               >
                 Use a different email
               </button>
@@ -431,7 +424,7 @@ function SignIn() {
 
           {/* reCAPTCHA Notice */}
           {captchaUnavailable && (
-            <p className="mt-4 text-[10px] text-center text-gray-400 font-medium tracking-wide">
+            <p className="mt-4 text-[10px] text-center text-zinc-400 font-semibold tracking-wider uppercase">
               reCAPTCHA verification bypassed due to unavailability.
             </p>
           )}
@@ -440,7 +433,7 @@ function SignIn() {
         {/* Bottom Toggle Link */}
         <p className="mt-8 text-center text-sm text-gray-500">
           Don't have an account?{" "}
-          <Link to="/signup" className="font-bold text-gray-900 hover:text-red-700 hover:underline transition-all">
+          <Link to="/signup" className="font-bold text-[#D32F2F] hover:text-[#C62828] hover:underline transition-all">
             Sign up
           </Link>
         </p>

@@ -230,7 +230,7 @@ function ProductView() {
               {/* Price Section - Shopify-like Redesign */}
               <div className="space-y-4 py-4 border-y border-gray-100">
                 <div className="flex items-center gap-3 flex-wrap">
-                  <span className="text-4xl font-extrabold text-[#b91c1c] tracking-tight">
+                  <span className="text-4xl font-extrabold text-[#D32F2F] tracking-tight">
                     {formatPrice(product.price)}
                   </span>
                   {product.mrp && product.mrp > product.price && (
@@ -273,7 +273,7 @@ function ProductView() {
                   {product.description?.length > 180 && (
                     <button
                       onClick={() => setIsDescExpanded(!isDescExpanded)}
-                      className="ml-1.5 text-cyan-600 hover:text-cyan-700 font-extrabold text-xs uppercase tracking-wider focus:outline-none"
+                      className="ml-1.5 text-[#D32F2F] hover:text-[#C62828] font-extrabold text-xs uppercase tracking-wider focus:outline-none"
                     >
                       {isDescExpanded ? 'Read Less' : 'Read More'}
                     </button>
@@ -311,7 +311,7 @@ function ProductView() {
                       isLoading={isAdding}
                       loadingText="Adding to Cart..."
                       disabled={!product.stock || product.stock <= 0}
-                      className="h-16 text-lg font-black tracking-tight shadow-lg shadow-cyan-900/10 hover:shadow-xl hover:shadow-cyan-900/20 transition-all rounded-[20px] bg-cyan-600 hover:bg-cyan-700 text-white border-none flex-grow btn-shiny-ribbon"
+                      className="h-16 text-lg font-black tracking-tight shadow-lg shadow-red-900/10 hover:shadow-xl hover:shadow-red-900/20 transition-all rounded-[20px] bg-[#D32F2F] hover:bg-[#C62828] text-white border-none flex-grow btn-shiny-ribbon"
                     >
                       Add to Cart
                     </Button>

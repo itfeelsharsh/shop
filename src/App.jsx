@@ -183,7 +183,7 @@ function App() {
               <AnnouncementStrip />
               <Navbar />
 
-              <main className="flex-grow overflow-hidden">
+              <main className="flex-grow overflow-hidden pb-16 md:pb-0">
                 <AnimatedRoutes />
               </main>
               <Footer />

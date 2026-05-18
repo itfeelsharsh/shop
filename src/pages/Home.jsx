@@ -172,19 +172,19 @@ function Home() {
         <div className="bg-gray-900 rounded-[32px] md:rounded-[48px] overflow-hidden relative group shadow-lg">
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent z-10" />
           <img 
-            src="https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&q=80&w=2070" 
+            src="https://cdn.kamikoto.click/home-banner.jpeg" 
             alt="Premium craftsmanship background" 
             className="w-full h-[350px] sm:h-[450px] md:h-[600px] object-cover transition-transform duration-[3s] group-hover:scale-105"
           />
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center p-6 sm:p-12">
-            <h2 className="text-3xl md:text-5xl font-black text-white mb-4 sm:mb-6 tracking-tight">Quality Tools for Daily Work.</h2>
+            <h2 className="text-3xl md:text-5xl font-black text-white mb-4 sm:mb-6 tracking-tight">Scamming you since 2024, KamiKoto.</h2>
             <p className="text-sm sm:text-lg text-white/80 max-w-2xl mb-8 sm:mb-10 leading-relaxed font-medium">
-              We select and deliver premium writing and notebook essentials to help you organize, write, and create every single day.
+              We have been scamming you since the year 2024, we have scammed around 5lakhs ruppees so far, thank you for your support.
             </p>
             <Button
               variant="secondary"
               size="large"
-              onClick={() => navigate('/about')}
+              onClick={() => window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank')}
               className="bg-white/10 backdrop-blur-xl border-white/20 !text-white hover:bg-white/20 btn-shopify"
             >
               Read Our Story

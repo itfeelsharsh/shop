@@ -2,7 +2,7 @@ import React from 'react';
 import { m } from "framer-motion";
 
 const variants = {
-  primary: 'bg-gray-900 hover:bg-gray-800 text-white shadow-md active:bg-gray-950',
+  primary: 'bg-[#D32F2F] hover:bg-[#C62828] text-white shadow-md active:bg-[#B71C1C] btn-shiny-ribbon btn-shopify',
   secondary: 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 active:bg-gray-100 shadow-sm',
   outline: 'border-2 border-gray-900 text-gray-900 hover:bg-gray-50 active:bg-gray-100',
   ghost: 'text-gray-600 hover:bg-gray-100 active:bg-gray-200',

@@ -119,11 +119,12 @@ const ProductCard = memo(function ProductCard({
           </div>
         )}
 
-        <m.img
+        <img
           src={product?.image}
           alt={product?.name}
           className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
           loading="lazy"
+          decoding="async"
         />
 
         {/* Dynamic Overlay */}
@@ -181,7 +182,7 @@ const ProductCard = memo(function ProductCard({
         </div>
 
         {/* Product Name */}
-        <h3 className="text-xs sm:text-base font-bold text-gray-900 line-clamp-2 leading-tight min-h-[2rem] sm:min-h-[2.5rem] group-hover:text-blue-600 transition-colors">
+        <h3 className="text-xs sm:text-base font-bold text-gray-900 line-clamp-2 leading-tight min-h-[2rem] sm:min-h-[2.5rem] group-hover:text-[#D32F2F] transition-colors">
           {product?.name}
         </h3>
 
@@ -232,7 +233,7 @@ const ProductCard = memo(function ProductCard({
             loadingText=""
             disabled={!product?.stock || product.stock <= 0}
             onClick={handleAddToCart}
-            className="!rounded-full w-8 h-8 sm:w-9 sm:h-9 !p-0 shadow-md hover:shadow-gray-200 flex-shrink-0 flex items-center justify-center bg-gray-900 hover:bg-red-600"
+            className="!rounded-full w-8 h-8 sm:w-9 sm:h-9 !p-0 shadow-md hover:shadow-red-200 flex-shrink-0 flex items-center justify-center bg-[#D32F2F] hover:bg-[#C62828] text-white btn-shiny-ribbon"
             icon={<ShoppingCart className="w-3 h-3 sm:w-3.5 sm:h-3.5" />}
           />
         </div>

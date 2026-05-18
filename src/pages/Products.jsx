@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { db } from "../firebase/config";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, limit, startAfter, where } from "firebase/firestore";
 import ProductCard from "../components/ProductCard";
 import { Search, X, SlidersHorizontal } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
@@ -59,6 +59,12 @@ function Products() {
   const dispatch = useDispatch();
   const [user] = useAuthState(auth);
 
+  // Pagination cursor & control states
+  const lastVisibleRef = useRef(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [isFullyLoaded, setIsFullyLoaded] = useState(false);
+  const [isPaginating, setIsPaginating] = useState(false);
+
   // Search input debouncer effect (250ms)
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -69,9 +75,121 @@ function Products() {
     return () => clearTimeout(handler);
   }, [inputValue]);
 
-  // Fetch products with efficient sessionStorage cache
+  // Fetch paginated chunk from Firestore
+  const fetchProductsPage = useCallback(async (isInitial = false) => {
+    if (isFullyLoaded) return;
+    
+    if (isInitial) {
+      setLoading(true);
+      setProducts([]);
+      lastVisibleRef.current = null;
+      setHasMore(true);
+    } else {
+      setIsPaginating(true);
+    }
+
+    try {
+      let q = query(collection(db, "products"));
+      
+      if (activeCategory !== "All") {
+        q = query(q, where("type", "==", activeCategory));
+      }
+      
+      q = query(q, orderBy("name"), limit(12));
+      
+      if (!isInitial && lastVisibleRef.current) {
+        q = query(q, startAfter(lastVisibleRef.current));
+      }
+      
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot && querySnapshot.docs) {
+        const fetchedProducts = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        
+        if (isInitial) {
+          setProducts(fetchedProducts);
+        } else {
+          setProducts((prev) => {
+            const existingIds = new Set(prev.map(p => p.id));
+            const newProducts = fetchedProducts.filter(p => !existingIds.has(p.id));
+            return [...prev, ...newProducts];
+          });
+        }
+        
+        const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
+        lastVisibleRef.current = lastDoc || null;
+        
+        if (fetchedProducts.length < 12) {
+          setHasMore(false);
+        }
+      } else {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error("Error fetching paginated products:", error);
+    } finally {
+      setLoading(false);
+      setIsPaginating(false);
+    }
+  }, [activeCategory, isFullyLoaded]);
+
+  // Fetch all products for search or filters
+  const fetchAllProducts = useCallback(async () => {
+    if (isFullyLoaded || loading) return;
+    setLoading(true);
+    
+    try {
+      console.log("Searching or filtering triggered: Loading full product catalog...");
+      const querySnapshot = await getDocs(collection(db, "products"));
+      
+      if (querySnapshot && querySnapshot.docs) {
+        const productsArray = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        
+        setProducts(productsArray);
+        setIsFullyLoaded(true);
+        setHasMore(false);
+        
+        // Cache to sessionStorage so subsequent runs are read-free
+        const now = Date.now();
+        sessionStorage.setItem('products_cache', JSON.stringify(productsArray));
+        sessionStorage.setItem('products_fetch_time', now.toString());
+      }
+    } catch (error) {
+      console.error("Error loading full catalog:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [isFullyLoaded, loading]);
+
+  // Handle active filters count calculation
+  const activeFiltersCount = useMemo(() => {
+    return Object.entries(filters).reduce((count, [key, value]) => {
+      if (key === 'priceRange') {
+        return count + (value.min || value.max ? 1 : 0);
+      }
+      if (Array.isArray(value)) {
+        return count + value.length;
+      }
+      return count + (value !== "" && value !== false ? 1 : 0);
+    }, 0);
+  }, [filters]);
+
+  // Proactively fetch all products to perform full client-side search/filtering
   useEffect(() => {
-    const fetchProducts = async () => {
+    if ((searchTerm !== "" || activeFiltersCount > 0) && !isFullyLoaded && !loading && !isPaginating) {
+      fetchAllProducts();
+    }
+  }, [searchTerm, activeFiltersCount, isFullyLoaded, loading, isPaginating, fetchAllProducts]);
+
+  // Initialize and check cache or fetch page 1
+  useEffect(() => {
+    const checkCacheAndInit = () => {
       try {
         const cachedProducts = sessionStorage.getItem('products_cache');
         const lastFetchTime = sessionStorage.getItem('products_fetch_time');
@@ -87,36 +205,24 @@ function Products() {
             (now - parseInt(lastFetchTime)) < 5 * 60 * 1000 &&
             !authStateChanged) {
           setProducts(JSON.parse(cachedProducts));
+          setIsFullyLoaded(true);
+          setHasMore(false);
           setLoading(false);
-          return;
+          return true;
         }
-
-        console.log("Fetching fresh products data...");
-        const querySnapshot = await getDocs(collection(db, "products"));
-
-        if (querySnapshot && querySnapshot.docs) {
-          const productsArray = querySnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-
-          setProducts(productsArray);
-          sessionStorage.setItem('products_cache', JSON.stringify(productsArray));
-          sessionStorage.setItem('products_fetch_time', now.toString());
-        }
-      } catch (error) {
-        console.error("Error fetching products:", error);
-        const cachedProducts = sessionStorage.getItem('products_cache');
-        if (cachedProducts) {
-          setProducts(JSON.parse(cachedProducts));
-        }
-      } finally {
-        setLoading(false);
+      } catch (e) {
+        console.warn("sessionStorage access failed during init:", e);
       }
+      return false;
     };
 
-    fetchProducts();
-  }, [user]);
+    const hasCache = checkCacheAndInit();
+    if (!hasCache) {
+      setIsFullyLoaded(false);
+      fetchProductsPage(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, activeCategory]);
 
   // Derive unique brands from active collection
   useEffect(() => {
@@ -146,12 +252,15 @@ function Products() {
 
   // High-performance IntersectionObserver infinite scroll trigger
   useEffect(() => {
-    if (!observerRef.current || loading) return;
+    if (!observerRef.current || loading || isPaginating) return;
 
     const observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) {
-        // Automatically load 12 more products when scrolled to bottom
-        setVisibleCount((prev) => prev + 12);
+        if (isFullyLoaded) {
+          setVisibleCount((prev) => prev + 12);
+        } else if (hasMore) {
+          fetchProductsPage(false);
+        }
       }
     }, {
       rootMargin: "250px", // Trigger slightly before reaching the bottom
@@ -160,7 +269,7 @@ function Products() {
 
     observer.observe(observerRef.current);
     return () => observer.disconnect();
-  }, [loading]);
+  }, [loading, isPaginating, isFullyLoaded, hasMore, fetchProductsPage]);
 
   const categories = useMemo(() => [
     "All",
@@ -230,8 +339,11 @@ function Products() {
 
   // Paginated chunk currently visible on screen
   const visibleProducts = useMemo(() => {
-    return filteredProducts.slice(0, visibleCount);
-  }, [filteredProducts, visibleCount]);
+    if (isFullyLoaded) {
+      return filteredProducts.slice(0, visibleCount);
+    }
+    return filteredProducts;
+  }, [filteredProducts, visibleCount, isFullyLoaded]);
 
   const handleAddToCart = useCallback((product) => {
     dispatch(addToCart({
@@ -239,18 +351,6 @@ function Products() {
       quantity: 1
     }));
   }, [dispatch]);
-
-  const activeFiltersCount = useMemo(() => {
-    return Object.entries(filters).reduce((count, [key, value]) => {
-      if (key === 'priceRange') {
-        return count + (value.min || value.max ? 1 : 0);
-      }
-      if (Array.isArray(value)) {
-        return count + value.length;
-      }
-      return count + (value !== "" && value !== false ? 1 : 0);
-    }, 0);
-  }, [filters]);
 
   if (loading) {
     return (
@@ -399,7 +499,8 @@ function Products() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              style={{ transform: "translateZ(0)", willChange: "height, opacity" }}
               className="mb-8 bg-gray-50 border border-gray-100 rounded-[28px] p-6 overflow-hidden shadow-sm"
             >
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -500,7 +601,10 @@ function Products() {
 
         {/* Premium Shopify-style Category Pills Bar */}
         <div className="relative mb-10 pb-2 border-b border-gray-100">
-          <div className="flex overflow-x-auto gap-2.5 py-1 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div 
+            className="flex overflow-x-auto gap-2.5 py-1 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0 transform-gpu"
+            style={{ WebkitOverflowScrolling: 'touch', willChange: 'transform' }}
+          >
             {categories.map((category) => {
               const isSelected = activeCategory === category;
               return (
@@ -561,7 +665,7 @@ function Products() {
         )}
 
         {/* Infinite Scroll Trigger & loading status */}
-        {filteredProducts.length > visibleCount && (
+        {((isFullyLoaded && filteredProducts.length > visibleCount) || (!isFullyLoaded && hasMore)) && (
           <div 
             ref={observerRef} 
             className="h-24 flex items-center justify-center mt-12 border-t border-gray-100 pt-8"

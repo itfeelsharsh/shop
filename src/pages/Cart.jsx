@@ -257,7 +257,7 @@ function Cart() {
                     </span>
                   </div>
                   {shipping > 0 && (
-                    <div className="text-sm text-gray-500 bg-blue-50 p-3 rounded-lg">
+                    <div className="text-sm text-red-950 bg-red-50/40 border border-red-100/40 p-3 rounded-lg">
                       Add {formatPrice(500 - subtotal)} more for free shipping!
                     </div>
                   )}
@@ -298,7 +298,7 @@ function Cart() {
                     <span>Free returns within 30 days</span>
                   </div>
                   <div className="flex items-center gap-3 text-sm text-gray-600">
-                    <ShoppingBag className="w-5 h-5 text-blue-600" />
+                    <ShoppingBag className="w-5 h-5 text-[#D32F2F]" />
                     <span>Secure checkout guaranteed</span>
                   </div>
                 </div>
@@ -316,7 +316,7 @@ function Cart() {
             className="mt-16"
           >
             <h2 className="text-3xl font-bold text-gray-900 mb-6">You Might Also Like</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
               {popularProducts.slice(0, 4).map(product => (
                 <ProductCard
                   key={product.id}

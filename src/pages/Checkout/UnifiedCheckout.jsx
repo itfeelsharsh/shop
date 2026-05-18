@@ -724,29 +724,29 @@ function UnifiedCheckout() {
           <div className="flex items-center justify-between">
             <div className={`flex flex-col items-center ${currentStep >= 1 ? 'text-gray-900' : 'text-gray-400'}`}>
               <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all ${
-                currentStep >= 1 ? 'bg-gray-900 text-white shadow-lg' : 'bg-gray-200 text-gray-500'
+                currentStep >= 1 ? 'bg-[#D32F2F] text-white shadow-lg border border-[#D32F2F]' : 'bg-gray-200 text-gray-500'
               }`}>
                 <ShoppingBag size={20} />
               </div>
               <span className="text-sm font-semibold">Summary</span>
             </div>
 
-            <div className={`flex-1 h-1 mx-4 transition-all ${currentStep >= 2 ? 'bg-gray-900' : 'bg-gray-200'}`}></div>
+            <div className={`flex-1 h-1 mx-4 transition-all ${currentStep >= 2 ? 'bg-[#D32F2F]' : 'bg-gray-200'}`}></div>
 
             <div className={`flex flex-col items-center ${currentStep >= 2 ? 'text-gray-900' : 'text-gray-400'}`}>
               <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all ${
-                currentStep >= 2 ? 'bg-gray-900 text-white shadow-lg' : 'bg-gray-200 text-gray-500'
+                currentStep >= 2 ? 'bg-[#D32F2F] text-white shadow-lg border border-[#D32F2F]' : 'bg-gray-200 text-gray-500'
               }`}>
                 <Truck size={20} />
               </div>
               <span className="text-sm font-semibold">Shipping</span>
             </div>
 
-            <div className={`flex-1 h-1 mx-4 transition-all ${currentStep >= 3 ? 'bg-gray-900' : 'bg-gray-200'}`}></div>
+            <div className={`flex-1 h-1 mx-4 transition-all ${currentStep >= 3 ? 'bg-[#D32F2F]' : 'bg-gray-200'}`}></div>
 
             <div className={`flex flex-col items-center ${currentStep >= 3 ? 'text-gray-900' : 'text-gray-400'}`}>
               <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all ${
-                currentStep >= 3 ? 'bg-gray-900 text-white shadow-lg' : 'bg-gray-200 text-gray-500'
+                currentStep >= 3 ? 'bg-[#D32F2F] text-white shadow-lg border border-[#D32F2F]' : 'bg-gray-200 text-gray-500'
               }`}>
                 <CreditCard size={20} />
               </div>
@@ -1113,11 +1113,11 @@ function UnifiedCheckout() {
                           </div>
                         </div>
 
-                        <div className="hidden md:flex p-4 bg-blue-50 border border-blue-100 rounded-xl items-start gap-3">
-                          <div className="bg-blue-500 text-white rounded-full p-1 mt-0.5">
+                        <div className="hidden md:flex p-4 bg-red-50/50 border border-red-100/50 rounded-xl items-start gap-3">
+                          <div className="bg-[#D32F2F] text-white rounded-full p-1 mt-0.5">
                             <CheckCircle size={14} />
                           </div>
-                          <p className="text-xs text-blue-900 leading-relaxed">
+                          <p className="text-xs text-red-950 leading-relaxed">
                             Your payment is handled by Stripe, ensuring the highest level of security. We never store your credit card details.
                           </p>
                         </div>
@@ -1157,7 +1157,7 @@ function UnifiedCheckout() {
                           <Button
                             type="submit"
                             isLoading={validatingCoupon}
-                            loadingText="Checking out..."
+                            loadingText="Applying..."
                             className="!rounded-l-none"
                           >
                             Apply
