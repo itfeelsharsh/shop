@@ -206,12 +206,55 @@ function OrderSummary() {
   useEffect(() => {
     if (!orderId || emailSendAttempted.current) return;
 
+    // Check localStorage immediately to prevent even waiting/triggering if already sent
+    try {
+      if (window.localStorage.getItem(`order_email_sent_${orderId}`) === 'true') {
+        emailSendAttempted.current = true;
+        return;
+      }
+    } catch (e) {
+      console.warn('OrderSummary: Failed to check localStorage:', e);
+    }
+
     const triggerEmail = async () => {
+      // Check localStorage again right before delay
+      try {
+        if (window.localStorage.getItem(`order_email_sent_${orderId}`) === 'true') {
+          emailSendAttempted.current = true;
+          return;
+        }
+      } catch (e) {
+        console.warn('OrderSummary: Failed to check localStorage:', e);
+      }
+
       // Wait a tick for order data to settle from onSnapshot
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       const currentOrder = latestOrderRef.current;
-      if (!currentOrder || currentOrder.emailSent || emailSendAttempted.current) return;
+      
+      // If order is loaded and email is already marked as sent in DB,
+      // update our localStorage and do not send
+      if (currentOrder?.emailSent) {
+        try {
+          window.localStorage.setItem(`order_email_sent_${currentOrder.id}`, 'true');
+        } catch (e) {
+          console.warn('OrderSummary: Failed to set localStorage:', e);
+        }
+        emailSendAttempted.current = true;
+        return;
+      }
+
+      if (!currentOrder || emailSendAttempted.current) return;
+
+      // Double-check localStorage one more time after the 1.5s delay
+      try {
+        if (window.localStorage.getItem(`order_email_sent_${currentOrder.id}`) === 'true') {
+          emailSendAttempted.current = true;
+          return;
+        }
+      } catch (e) {
+        console.warn('OrderSummary: Failed to check localStorage:', e);
+      }
 
       // Mark as attempted BEFORE sending to prevent any re-entry
       emailSendAttempted.current = true;
@@ -227,6 +270,14 @@ function OrderSummary() {
         
         if (result.success) {
           console.log('✅ OrderSummary: Email sent successfully (single send)');
+          
+          // Store in localStorage immediately
+          try {
+            window.localStorage.setItem(`order_email_sent_${currentOrder.id}`, 'true');
+          } catch (e) {
+            console.warn('OrderSummary: Failed to set localStorage:', e);
+          }
+
           // Update Firestore so other clients know email was sent
           try {
             const orderRef = doc(db, "orders", currentOrder.id);
@@ -236,9 +287,13 @@ function OrderSummary() {
           }
         } else {
           console.error('❌ OrderSummary: Email service returned false:', result);
+          // If the send failed, we reset the ref so it can retry if the user refreshes
+          emailSendAttempted.current = false;
         }
       } catch (emailError) {
         console.error('❌ OrderSummary: Failed to send confirmation email:', emailError);
+        // Reset ref so it can retry
+        emailSendAttempted.current = false;
       }
     };
 

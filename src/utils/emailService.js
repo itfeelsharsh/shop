@@ -226,8 +226,9 @@ const generateBaseEmailTemplate = ({ title, previewText, content }) => {
 
     @media screen and (max-width: 600px) {
       .email-container { width: 100% !important; }
-      .mobile-padding { padding: 24px 16px !important; }
+      .mobile-padding { padding: 24px 0 !important; }
       .col-stack { display: block !important; width: 100% !important; padding-left: 0 !important; padding-right: 0 !important; margin-bottom: 16px !important; }
+      .email-container > div { padding-left: 0 !important; padding-right: 0 !important; }
     }
   </style>
 </head>
@@ -626,6 +627,17 @@ const sendOrderConfirmationEmail = async (order, user) => {
   
   const orderId = order.orderId || order.id || '';
   const dedupKey = `order-confirm-${orderId}`;
+  
+  // Persistent check across page refreshes
+  try {
+    if (typeof window !== 'undefined' && window.localStorage && window.localStorage.getItem(`order_email_sent_${orderId}`) === 'true') {
+      console.warn(`⚠️ emailService: BLOCKED duplicate email via localStorage for order ${orderId}`);
+      return { success: true, data: { deduplicated: true } };
+    }
+  } catch (storageError) {
+    console.warn('⚠️ emailService: Failed to access localStorage:', storageError);
+  }
+
   if (isDuplicateEmail(dedupKey)) {
     console.warn(`⚠️ emailService: BLOCKED duplicate email for ${dedupKey}`);
     return { success: true, data: { deduplicated: true } };
@@ -633,11 +645,22 @@ const sendOrderConfirmationEmail = async (order, user) => {
   
   try {
     const emailBody = generateOrderStatusHTML(order, 'Placed');
-    return await sendEmail({
+    const result = await sendEmail({
       to: user.email,
       subject: generateEmailSubject(order, 'confirmation'),
       body: emailBody,
     });
+    
+    if (result.success) {
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.setItem(`order_email_sent_${orderId}`, 'true');
+        }
+      } catch (storageError) {
+        console.warn('⚠️ emailService: Failed to write to localStorage:', storageError);
+      }
+    }
+    return result;
   } catch (error) {
     return { success: false, error: error.message };
   }

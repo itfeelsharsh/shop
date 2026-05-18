@@ -150,7 +150,14 @@ function SignIn() {
       toast.success("Check your email for the sign-in link!");
     } catch (error) {
       console.error("Error sending email link:", error);
-      toast.error(error.message || "Failed to send sign-in link");
+      if (error.code === 'auth/quota-exceeded' || error.message?.includes('quota-exceeded')) {
+        toast.error(
+          "Firebase daily email quota exceeded. Please sign in using Google or GitHub below, which do not consume the daily email quota!",
+          { autoClose: 10000 }
+        );
+      } else {
+        toast.error(error.message || "Failed to send sign-in link");
+      }
     } finally {
       setLoading(false);
     }
