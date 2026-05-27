@@ -28,7 +28,7 @@
   "display": "standalone",
   "display_override": ["standalone", "window-controls-overlay", "minimal-ui"],
   "orientation": "portrait-primary",
-  "theme_color": "#8B4513",
+  "theme_color": "#0a0a0a",
   "background_color": "#ffffff",
   "prefer_related_applications": false,
   "categories": ["shopping", "lifestyle"],

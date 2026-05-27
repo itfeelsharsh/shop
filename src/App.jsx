@@ -179,19 +179,29 @@ function App() {
               className="mt-16"
             />
 
-            <div className="flex flex-col min-h-screen">
-              <AnnouncementStrip />
-              <Navbar />
-
-              <main className="flex-grow overflow-hidden pb-16 md:pb-0">
-                <AnimatedRoutes />
-              </main>
-              <Footer />
-            </div>
+            <AppContent />
           </Router>
         </GoogleReCaptchaProvider>
       </HelmetProvider>
     </LazyMotion>
+  );
+}
+
+/**
+ * Main layout wrapper component that utilizes React Router hooks
+ */
+function AppContent() {
+  const location = useLocation();
+  return (
+    <div className="flex flex-col min-h-screen">
+      <AnnouncementStrip />
+      <Navbar />
+
+      <main className={`flex-grow overflow-hidden pwa-main-padding ${location.pathname !== '/' ? 'pwa-top-padding' : ''}`}>
+        <AnimatedRoutes />
+      </main>
+      <Footer />
+    </div>
   );
 }
 

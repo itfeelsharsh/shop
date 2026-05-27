@@ -101,7 +101,7 @@ const AnnouncementStrip = () => {
     <>
       <style dangerouslySetInnerHTML={{ __html: marqueeKeyframes }} />
       <div
-        className="w-full h-9 flex items-center overflow-hidden relative z-[60] border-b border-black/5 select-none"
+        className="w-full flex items-center overflow-hidden relative z-[60] border-b border-black/5 select-none pwa-announcement-padding"
         style={{
           backgroundColor: barBgColor,
           color: barTextColor,

@@ -150,7 +150,7 @@ const NotificationManager = () => {
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 50 }}
-          className="fixed bottom-6 right-6 z-[9999] max-w-sm w-full bg-white rounded-2xl shadow-2xl border border-gray-100 p-6"
+          className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 z-[9999] sm:max-w-sm w-auto sm:w-full bg-white rounded-2xl shadow-2xl border border-gray-100 p-6"
         >
           <div className="flex items-start gap-4">
             <div className="p-3 bg-blue-50 rounded-xl">
