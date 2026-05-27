@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
 import WishlistButton from '../components/WishlistButton';
+import ShareButton from '../components/ShareButton';
 import { Helmet } from 'react-helmet-async';
 import ProductReviews from '../components/ProductReviews';
 import ProductReviewForm from '../components/ProductReviewForm';
@@ -258,7 +259,7 @@ function ProductView() {
                 <div className="flex items-center gap-2 pt-1">
                   <span className={`w-2 h-2 rounded-full ${product.stock > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
                   <span className="text-xs font-bold uppercase tracking-wider text-gray-700">
-                    {product.stock > 0 ? `In Stock (Only ${product.stock} available)` : 'Sold Out'}
+                    {product.stock > 0 ? `In Stock` : 'Sold Out'}
                   </span>
                 </div>
               </div>
@@ -316,6 +317,7 @@ function ProductView() {
                       Add to Cart
                     </Button>
                     <WishlistButton product={product} size="lg" className="!bg-gray-50 hover:!bg-gray-100 border-none !rounded-[20px] shadow-sm w-16 h-16 flex items-center justify-center flex-shrink-0" />
+                    <ShareButton product={product} className="!ml-0" />
                   </div>
                 </div>
               )}

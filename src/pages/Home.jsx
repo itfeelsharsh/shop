@@ -103,21 +103,21 @@ function Home() {
         <meta name="description" content="Discover the pinnacle of premium Japanese stationery. Engineered for precision, designed for inspiration. Shop our collection of notebooks, pens, and more." />
       </Helmet>
       {/* Thin Premium Banner Section */}
-      <section className="container mx-auto px-4 pt-6">
+      <section className="container mx-auto px-4 pt-4">
         <m.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="relative w-full h-[110px] sm:h-[180px] md:h-[260px] lg:h-[380px] rounded-2xl md:rounded-[32px] overflow-hidden shadow-md border border-gray-100"
+          className="relative w-full h-[120px] sm:h-[200px] md:h-[280px] lg:h-[420px] rounded-2xl md:rounded-[32px] overflow-hidden shadow-md border border-gray-100"
         >
           <DynamicBanner />
           {/* Elegant premium gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-black/5 pointer-events-none z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/12 via-transparent to-black/6 pointer-events-none z-10" />
         </m.div>
       </section>
 
       {/* Featured Products */}
-      <section className="container mx-auto px-4 py-20">
+      <section className="container mx-auto px-4 py-12">
         <m.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -125,16 +125,17 @@ function Home() {
           className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6"
         >
           <div>
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">Our Best Sellers</h2>
-            <p className="text-base sm:text-lg text-gray-500 max-w-lg">A curated selection of high-quality stationery tools, built for your daily creative work.</p>
+            <h2 className="text-[32px] font-extrabold text-gray-900 tracking-tight mb-3">Our Best Sellers</h2>
+            <p className="text-base text-gray-700 max-w-md mb-2">A thoughtfully selected range of stationery crafted for daily use and lasting craftsmanship.</p>
           </div>
           <Button
-            variant="ghost"
+            variant="primary"
+            size="medium"
             onClick={() => navigate('/products')}
-            className="text-base font-bold group btn-shopify text-gray-900 hover:text-red-600"
-            icon={<ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />}
+            className="px-5 py-3 rounded-full bg-gray-900 text-white hover:bg-gray-800 shadow-soft flex items-center gap-3"
+            icon={<ArrowRight className="w-4 h-4 transform transition-transform group-hover:translate-x-1" />}
           >
-            Shop All Products
+            Browse Best Sellers
           </Button>
         </m.div>
 

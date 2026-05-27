@@ -104,12 +104,13 @@ const ProductCard = memo(function ProductCard({
       initial={{ opacity: 0, y: 20 }}
       animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      whileHover={{ y: -6 }}
-      className="bg-white rounded-[24px] overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-500 flex flex-col h-full cursor-pointer group border border-gray-100/80"
+      whileHover={{ y: -6, scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      className="bg-white rounded-[24px] overflow-hidden shadow-soft hover:shadow-hover transition-all duration-400 flex flex-col h-full cursor-pointer group border border-gray-100/80"
       onClick={handleViewDetails}
     >
       {/* Product Image Section */}
-      <div className="relative overflow-hidden aspect-[4/5] bg-gray-50">
+      <div className="relative overflow-hidden aspect-square bg-gray-50">
         {/* Shiny corner green ribbon if there is a discount */}
         {product?.mrp && product.mrp > product.price && (
           <div className="absolute top-0 left-0 overflow-hidden w-20 h-20 pointer-events-none z-20">
@@ -122,7 +123,7 @@ const ProductCard = memo(function ProductCard({
         <img
           src={product?.image}
           alt={product?.name}
-          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
           loading="lazy"
           decoding="async"
         />
@@ -167,7 +168,7 @@ const ProductCard = memo(function ProductCard({
       </div>
 
       {/* Product Content */}
-      <div className="p-3.5 sm:p-5 flex flex-col gap-2 sm:gap-3 flex-grow">
+      <div className="p-4 sm:p-6 flex flex-col gap-2 sm:gap-3 flex-grow">
         {/* Category/Brand & Stock */}
         <div className="flex items-center justify-between">
           <span className="text-[8px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em] truncate max-w-[65%]">
@@ -182,7 +183,7 @@ const ProductCard = memo(function ProductCard({
         </div>
 
         {/* Product Name */}
-        <h3 className="text-xs sm:text-base font-bold text-gray-900 line-clamp-2 leading-tight min-h-[2rem] sm:min-h-[2.5rem] group-hover:text-[#D32F2F] transition-colors">
+        <h3 className="text-[18px] font-semibold text-gray-900 line-clamp-1 leading-tight min-h-[1.6rem] group-hover:text-[#D32F2F] transition-colors">
           {product?.name}
         </h3>
 
@@ -206,10 +207,10 @@ const ProductCard = memo(function ProductCard({
         </div>
 
         {/* Price section */}
-        <div className="flex items-end justify-between mt-auto pt-2.5 sm:pt-3 border-t border-gray-50 gap-1.5">
+        <div className="flex items-end justify-between mt-auto pt-3 border-t border-gray-50 gap-1.5">
           <div className="flex flex-col min-w-0">
             <div className="flex items-baseline gap-1 sm:gap-1.5 flex-wrap">
-              <span className="text-sm sm:text-lg font-black text-gray-900 leading-tight">
+              <span className="text-lg font-extrabold text-gray-900 leading-tight">
                 {formatPrice(product?.price)}
               </span>
               {product?.mrp && product.mrp > product.price && (
