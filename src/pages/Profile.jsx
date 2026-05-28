@@ -74,14 +74,35 @@ function MyAccount() {
   useEffect(() => {
     const fetchProfile = async () => {
       if (user) {
+        // Pre-populate with auth user info and cache before network request completes
+        const cachedProfile = sessionStorage.getItem(`profile_${user.uid}`);
+        let initialName = user.displayName || '';
+        let initialPic = user.photoURL || '';
+        if (cachedProfile) {
+          try {
+            const parsed = JSON.parse(cachedProfile);
+            initialName = parsed.name || initialName;
+            initialPic = parsed.profilePic || initialPic;
+          } catch (e) {
+            logger.error("Failed to parse cached profile in Profile.jsx", e, "Profile");
+          }
+        }
+        
+        setProfile(prev => ({
+          ...prev,
+          email: user.email || '',
+          name: prev.name || initialName,
+          profilePic: prev.profilePic || initialPic
+        }));
+
         try {
           setLoading(true);
           const userDoc = await getDoc(doc(db, "users", user.uid));
           if (userDoc.exists()) {
             const userData = userDoc.data();
             setProfile({
-              email: userData.email || '',
-              name: userData.name || '',
+              email: userData.email || user.email || '',
+              name: userData.name || user.displayName || '',
               phone: userData.phone || '',
               address: {
                 houseNo: userData.address?.houseNo || '',
@@ -92,15 +113,15 @@ function MyAccount() {
                 country: userData.address?.country || 'India',
                 pin: userData.address?.pin || ''
               },
-              profilePic: userData.profilePic || ''
+              profilePic: userData.profilePic || user.photoURL || ''
             });
             logger.firebase.read(`users/${user.uid}`, { 
               name: userData.name,
               email: userData.email
             });
           } else {
-            toast.warn("No profile data found. Please update your profile.");
-            logger.warn("No user profile data found", null, "Profile");
+            // User doc doesn't exist yet, but we have their Auth credentials
+            logger.warn("No user profile document found in Firestore, using Auth fallback", null, "Profile");
           }
         } catch (error) {
           toast.error("Error loading profile: " + error.message);

@@ -329,6 +329,7 @@ function UnifiedCheckout() {
       // 1. Load Razorpay SDK
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) {
+        setProcessingPayment(false);
         throw new Error('Failed to load Razorpay SDK. Please check your internet connection.');
       }
 
@@ -345,11 +346,13 @@ function UnifiedCheckout() {
       });
 
       if (!response.headers.get('content-type')?.includes('application/json')) {
+        setProcessingPayment(false);
         throw new Error('API returned HTML instead of JSON. This usually means the Functions server is not running or the path is incorrect.');
       }
       const data = await response.json();
 
       if (!response.ok) {
+        setProcessingPayment(false);
         throw new Error(data.error || 'Failed to create Razorpay order');
       }
 
@@ -391,10 +394,12 @@ function UnifiedCheckout() {
                 navigate(`/summary?orderId=${orderId}&paymentId=${response.razorpay_payment_id}&clearCart=true`);
                 resolve({ success: true });
               } else {
+                setProcessingPayment(false);
                 toast.error('Payment verification failed. Please contact support.');
                 resolve({ success: false, error: 'Verification failed' });
               }
             } catch (verifyErr) {
+              setProcessingPayment(false);
               console.error('Razorpay verification error:', verifyErr);
               toast.error('Payment verification failed. Please contact support.');
               resolve({ success: false, error: verifyErr.message });
@@ -411,6 +416,7 @@ function UnifiedCheckout() {
 
         const rzp = new window.Razorpay(options);
         rzp.on('payment.failed', function (response) {
+          setProcessingPayment(false);
           console.error('Razorpay payment failed:', response.error);
           toast.error(response.error?.description || 'Payment failed. Please try again.');
           resolve({ success: false, error: response.error?.description });
@@ -418,10 +424,9 @@ function UnifiedCheckout() {
         rzp.open();
       });
     } catch (error) {
+      setProcessingPayment(false);
       console.error('Razorpay error:', error);
       return { success: false, error: error.message };
-    } finally {
-      setProcessingPayment(false);
     }
   };
 
@@ -610,18 +615,8 @@ function UnifiedCheckout() {
         throw new Error(paymentResult.error || "Payment failed");
       }
 
-      // Fallback if Razorpay is bypassed (should not happen usually)
-      if (orderResult.emailSent) {
-        toast.success('Order confirmed! Check your email for confirmation.');
-      } else {
-        toast.warning('Order confirmed! Email may be delayed.');
-      }
-
-      setTimeout(() => {
-        setOrderComplete(true);
-        navigate(`/summary?orderId=${orderResult.orderId}&paymentId=${orderResult.paymentId || 'direct'}&emailSent=${orderResult.emailSent || 'false'}`);
-        setProcessingPayment(false);
-      }, 1500);
+      // If payment was successful, the handler inside processPayment has already navigated to the summary page.
+      // We don't perform any further actions here.
     } catch (error) {
       console.error("Error processing order:", error);
       toast.error(error.message || "There was an error processing your order");
@@ -775,6 +770,38 @@ function UnifiedCheckout() {
       <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
         <Loader2 className="w-12 h-12 text-gray-900 animate-spin mb-4" />
         <p className="text-gray-600">Loading checkout...</p>
+      </div>
+    );
+  }
+
+  // Show processing payment loader
+  if (processingPayment) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-950 text-white p-6">
+        <Helmet>
+          <title>Processing Payment | KamiKoto</title>
+        </Helmet>
+        <m.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center max-w-md bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-2xl"
+        >
+          <div className="relative w-20 h-20 mx-auto mb-6">
+            <div className="absolute inset-0 rounded-full border-4 border-white/10"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-t-white border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
+            <CreditCard className="w-8 h-8 text-white absolute inset-0 m-auto animate-pulse" />
+          </div>
+          
+          <h2 className="text-2xl font-bold mb-3 tracking-tight">Processing Payment</h2>
+          <p className="text-gray-400 text-sm mb-6 leading-relaxed">
+            We are securely connecting to Razorpay to verify your transaction. Please do not refresh this page, close the browser, or click the back button.
+          </p>
+          
+          <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-gray-400">
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
+            <span>Securing connection...</span>
+          </div>
+        </m.div>
       </div>
     );
   }
