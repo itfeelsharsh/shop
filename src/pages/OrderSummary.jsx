@@ -753,17 +753,14 @@ function OrderSummary() {
                         <span className="text-gray-600 text-sm">Payment Method:</span>
                       </div>
                       <p className="font-medium mt-1">
-                        {order?.payment?.method === 'Card' || order?.payment?.method === 'Stripe'
-                          ? (order?.payment?.details?.cardType || order?.payment?.details?.selectedMethod === 'Card' 
-                              ? `${order?.payment?.details?.cardType || 'Stripe'} **** ${order?.payment?.details?.lastFour || '4242'}`
-                              : 'Stripe (Card)')
-                          : (order?.payment?.details?.upiId 
-                              ? `UPI (${order?.payment?.details?.upiId})` 
-                              : (order?.payment?.method || 'Stripe'))
-                        }
+                        {order?.payment?.method === 'Razorpay'
+                          ? 'Razorpay'
+                          : (order?.payment?.details?.upiId
+                              ? `UPI (${order?.payment?.details?.upiId})`
+                              : (order?.payment?.method || 'Razorpay'))}
                       </p>
                       <p className="text-green-600 text-sm font-medium">
-                        Payment ID: {paymentId ? paymentId.replace('cs_test_', 'txn_').substring(0, 10).toUpperCase() : 'Stripe'}
+                        Payment ID: {paymentId || order?.payment?.transactionId || 'Razorpay'}
                       </p>
                     </div>
                   </div>

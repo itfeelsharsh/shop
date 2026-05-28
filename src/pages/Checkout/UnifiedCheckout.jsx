@@ -237,7 +237,7 @@ function UnifiedCheckout() {
     }).format(price);
   };
 
-  // Card number formatting is no longer needed for Stripe Checkout redirect
+  // Card number formatting is not needed — Razorpay handles collection in its popup
 
 
   const saveShippingAddress = async () => {
@@ -303,26 +303,44 @@ function UnifiedCheckout() {
     return true;
   };
 
+  /**
+   * Load the Razorpay checkout script dynamically
+   */
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      if (document.getElementById('razorpay-checkout-script')) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.id = 'razorpay-checkout-script';
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   const processPayment = async (orderId, cartDetails, emailSent) => {
     try {
-      console.log('Creating Stripe Checkout session for order:', orderId);
+      console.log('Creating Razorpay order for:', orderId);
       setProcessingPayment(true);
-      
-      const response = await fetch('/api/create-checkout-session', {
+
+      // 1. Load Razorpay SDK
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        throw new Error('Failed to load Razorpay SDK. Please check your internet connection.');
+      }
+
+      // 2. Create Razorpay order on server
+      const orderTotal = total + importDuty;
+      const response = await fetch('/api/razorpay/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: cartDetails.map(item => ({
-            name: item.product.name,
-            price: item.product.price,
-            quantity: item.quantity,
-            image: item.product.image
-          })),
-          shippingCost,
-          tax,
+          amount: orderTotal,
+          currency: 'INR',
           orderId,
-          userId: user.uid,
-          customer_email: user.email,
         }),
       });
 
@@ -330,19 +348,77 @@ function UnifiedCheckout() {
         throw new Error('API returned HTML instead of JSON. This usually means the Functions server is not running or the path is incorrect.');
       }
       const data = await response.json();
-      
+
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create checkout session');
+        throw new Error(data.error || 'Failed to create Razorpay order');
       }
 
-      if (data.url) {
-        window.location.href = data.url;
-        return { success: true };
-      } else {
-        throw new Error('No checkout URL received from server');
-      }
+      // 3. Open Razorpay checkout popup
+      return new Promise((resolve) => {
+        const options = {
+          key: data.keyId,
+          amount: data.amount,
+          currency: data.currency,
+          name: 'KamiKoto',
+          description: `Order #${orderId.slice(-8)}`,
+          order_id: data.id,
+          prefill: {
+            name: customerName || user.displayName || '',
+            email: user.email || '',
+            contact: getFullPhoneNumber() || '',
+          },
+          theme: {
+            color: '#111827',
+          },
+          handler: async function (response) {
+            // 4. Verify payment signature on server
+            try {
+              const verifyRes = await fetch('/api/razorpay/verify-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  orderId,
+                }),
+              });
+
+              const verifyData = await verifyRes.json();
+
+              if (verifyData.verified) {
+                // Navigate to order summary
+                navigate(`/summary?orderId=${orderId}&paymentId=${response.razorpay_payment_id}&clearCart=true`);
+                resolve({ success: true });
+              } else {
+                toast.error('Payment verification failed. Please contact support.');
+                resolve({ success: false, error: 'Verification failed' });
+              }
+            } catch (verifyErr) {
+              console.error('Razorpay verification error:', verifyErr);
+              toast.error('Payment verification failed. Please contact support.');
+              resolve({ success: false, error: verifyErr.message });
+            }
+          },
+          modal: {
+            ondismiss: function () {
+              setProcessingPayment(false);
+              toast.info('Payment cancelled.');
+              resolve({ success: false, error: 'Payment cancelled by user' });
+            },
+          },
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', function (response) {
+          console.error('Razorpay payment failed:', response.error);
+          toast.error(response.error?.description || 'Payment failed. Please try again.');
+          resolve({ success: false, error: response.error?.description });
+        });
+        rzp.open();
+      });
     } catch (error) {
-      console.error('Stripe error:', error);
+      console.error('Razorpay error:', error);
       return { success: false, error: error.message };
     } finally {
       setProcessingPayment(false);
@@ -465,7 +541,7 @@ function UnifiedCheckout() {
           estimatedDelivery: shippingMethod === 'express' ? "2 days" : "7 days"
         },
         payment: {
-          method: 'Stripe',
+          method: 'Razorpay',
           status: 'Pending',
           details: {
             selectedMethod: paymentMethod
@@ -527,14 +603,14 @@ function UnifiedCheckout() {
         throw new Error(errorMessage);
       }
 
-      // Process payment with Stripe using the generated orderId
+      // Process payment with Razorpay using the generated orderId
       const paymentResult = await processPayment(orderResult.orderId, updatedCartDetails, orderResult.emailSent || false);
       
       if (!paymentResult.success) {
         throw new Error(paymentResult.error || "Payment failed");
       }
 
-      // Fallback if Stripe is bypassed (should not happen usually)
+      // Fallback if Razorpay is bypassed (should not happen usually)
       if (orderResult.emailSent) {
         toast.success('Order confirmed! Check your email for confirmation.');
       } else {
@@ -573,7 +649,7 @@ function UnifiedCheckout() {
   };
 
   const isShippingComplete = areAllRequiredFieldsFilled();
-  const isPaymentComplete = true; // Stripe handles payment collection on its own hosted page
+  const isPaymentComplete = true; // Razorpay handles payment collection in its popup
 
   const nextStep = () => {
     if (currentStep === 1) {
@@ -597,7 +673,7 @@ function UnifiedCheckout() {
     }
 
     if (currentStep === 3) {
-      // No manual validation needed for Stripe Checkout redirect
+      // No manual validation needed — Razorpay popup handles payment collection
       processOrder();
     }
   };
@@ -1082,29 +1158,9 @@ function UnifiedCheckout() {
                           </div>
                           <h3 className="text-xl font-bold text-gray-900 mb-2">Secure Checkout</h3>
                           <p className="text-gray-600 max-w-sm mx-auto mb-6">
-                            Finalize your purchase securely using Stripe. All transactions are encrypted and safe.
+                            Finalize your purchase securely using Razorpay. All transactions are encrypted and safe.
                           </p>
 
-                          <div className="hidden md:block bg-amber-50 border border-amber-200 rounded-xl p-4 text-left max-w-sm mx-auto">
-                            <div className="flex items-start gap-3">
-                              <div className="text-amber-600 mt-0.5">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-                                </svg>
-                              </div>
-                              <div className="space-y-2">
-                                <p className="text-xs font-bold text-amber-900 uppercase tracking-wider">Stripe Test Mode</p>
-                                <p className="text-xs text-amber-800 leading-relaxed">
-                                  You are currently in test mode. Please use the following test card to complete your transaction:
-                                </p>
-                                <div className="bg-white/50 p-2 rounded border border-amber-200">
-                                  <code className="text-sm font-bold text-gray-900">4000 0035 6000 0123</code>
-                                  <p className="text-[10px] text-amber-700 mt-1">Use any future expiry (MM/YY) and any 3-digit CVV.</p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          
                           <div className="mt-8 flex justify-center gap-4 opacity-50 grayscale">
                             <img src={VisaLogo} alt="Visa" className="h-6" />
                             <img src={MasterCardLogo} alt="MasterCard" className="h-6" />
@@ -1113,12 +1169,12 @@ function UnifiedCheckout() {
                           </div>
                         </div>
 
-                        <div className="hidden md:flex p-4 bg-red-50/50 border border-red-100/50 rounded-xl items-start gap-3">
-                          <div className="bg-[#D32F2F] text-white rounded-full p-1 mt-0.5">
+                        <div className="hidden md:flex p-4 bg-green-50/50 border border-green-100/50 rounded-xl items-start gap-3">
+                          <div className="bg-green-700 text-white rounded-full p-1 mt-0.5">
                             <CheckCircle size={14} />
                           </div>
-                          <p className="text-xs text-red-950 leading-relaxed">
-                            Your payment is handled by Stripe, ensuring the highest level of security. We never store your credit card details.
+                          <p className="text-xs text-green-950 leading-relaxed">
+                            Your payment is handled by Razorpay, ensuring the highest level of security. We never store your payment details.
                           </p>
                         </div>
                       </div>

@@ -445,7 +445,7 @@ const generateOrderStatusHTML = (order, status, shipmentInfo = {}) => {
               <p style="margin: 0; font-size: 12px; font-weight: 600; color: #0f172a; font-family: 'Inter', sans-serif; margin-bottom: 4px;">${order.userName || 'Customer'}</p>
               <p style="margin: 0; font-size: 11px; color: #475569; font-family: 'Inter', sans-serif; line-height: 1.5; margin-bottom: 8px;">Billing matches shipping address.</p>
               <div style="font-size: 11px; color: #475569; font-family: 'Inter', sans-serif;">
-                <strong>Method:</strong> ${(order.payment?.method === 'Stripe' || order.payment?.method === 'Card') ? 'Stripe Card (Visa •••• 4242)' : (order.payment?.method || 'Stripe')}<br>
+                <strong>Method:</strong> ${(order.payment?.method === 'Razorpay' || order.payment?.method === 'Card') ? 'Razorpay' : (order.payment?.method || 'Razorpay')}<br>
                 <strong>Transaction ID:</strong> <span style="font-family: monospace;">${standardizedTransactionID}</span>
               </div>
             </div>

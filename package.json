@@ -6,8 +6,6 @@
     "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.1.5",
     "@reduxjs/toolkit": "^2.2.7",
-    "@stripe/react-stripe-js": "^6.3.0",
-    "@stripe/stripe-js": "^9.5.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -36,16 +34,17 @@
     "react-toastify": "^10.0.5",
     "recharts": "^2.15.3",
     "resend": "^4.5.1",
-    "stripe": "^22.1.1",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "npm run dev",
+    "dev": "concurrently \"npx wrangler pages dev public --compatibility-date=2026-05-03 --port 8788\" \"PORT=3000 BROWSER=none react-scripts start\"",
     "build": "CI=false react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
+  "proxy": "http://localhost:8788",
   "eslintConfig": {
     "extends": [
       "react-app",
@@ -67,6 +66,7 @@
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "autoprefixer": "^10.4.20",
+    "concurrently": "^9.0.0",
     "postcss": "^8.4.47",
     "puppeteer": "^10.4.0",
     "react-snap": "^1.23.0",

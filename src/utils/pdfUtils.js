@@ -464,9 +464,9 @@ export const createReceiptTemplate = (order, containerId) => {
                </div>
                 <div style="margin-bottom: 8px;">
                   <strong style="color: #1d1d1f;">Method:</strong>
-                  <span style="margin-left: 8px;">${(order.payment?.method === 'Stripe' || order.payment?.method === 'Card') ? 'Stripe (Card)' : (order.payment?.method || 'Stripe')}</span>
+                  <span style="margin-left: 8px;">${(order.payment?.method === 'Razorpay' || order.payment?.method === 'Card') ? 'Razorpay' : (order.payment?.method || 'Razorpay')}</span>
                 </div>
-                ${(order.payment?.method === 'Card' || order.payment?.method === 'Stripe') ? `
+                ${(order.payment?.method === 'Razorpay' || order.payment?.method === 'Card') ? `
                   <div style="margin-bottom: 8px;">
                     <strong style="color: #1d1d1f;">Card:</strong>
                     <span style="margin-left: 8px;">•••• •••• •••• ${order.payment.details?.lastFour || '••••'}</span>

@@ -11,7 +11,7 @@ KamiKoto operates on a decoupled, serverless e-commerce architecture split acros
 
 ### Third-Party Integrations
 - Database & Auth: Google Firebase (Firestore and Firebase Authentication) handles user accounts, orders, and products.
-- Payments: Stripe Checkout handles secure card payments. A Cloudflare Pages serverless function processes secure checkout sessions and webhook verification.
+- Payments: Razorpay handles secure card/UPI/Wallet payments through a Cloudflare Pages serverless function that creates orders and verifies signatures.
 - Emails: Resend API powers high-fidelity transactional notifications (order confirmation, packed, shipped, and delivered updates) routed via Cloudflare serverless proxy endpoints.
 
 ---
@@ -84,21 +84,21 @@ To ensure complete privacy and security of your API keys and client credentials,
 Configure the following in your Cloudflare Pages dashboard under Settings > Environment Variables:
 - FIREBASE_API_KEY: Firebase key used in webhook verification
 - FIREBASE_PROJECT_ID: Firebase Project ID
-- STRIPE_SECRET_KEY: Stripe private API key (sk_test_... or sk_live_...)
-- STRIPE_WEBHOOK_SECRET: Stripe webhook signature secret (whsec_...)
+- RAZORPAY_KEY_ID: Razorpay key ID used by the create-order serverless endpoint
+- RAZORPAY_KEY_SECRET: Razorpay secret used to verify payment signatures
+- REACT_APP_RAZORPAY_KEY_ID: Public Razorpay key exposed to the storefront
 - RESEND_API_KEY: Resend private API key (re_...)
 
 ---
 
 ## Setup Integrations
 
-### 1. Stripe Payment Integration
-Stripe processes all payments securely via hosted Stripe Checkout pages.
-- Create a Stripe Account at https://stripe.com.
-- Get your Secret API key from your dashboard and configure it as `STRIPE_SECRET_KEY` in your Cloudflare environment variables.
-- Set up a webhook in Stripe Dashboard pointing to: `https://your-domain.com/api/stripe-webhook`.
-- Subscribe to the `checkout.session.completed` event.
-- Get the webhook secret and add it as `STRIPE_WEBHOOK_SECRET`.
+### 1. Razorpay Payment Integration
+Razorpay processes secure card, UPI, and wallet payments via a hosted checkout popup.
+- Create a Razorpay account at https://razorpay.com.
+- Generate a Key ID and Key Secret from the Razorpay dashboard and configure them as `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` in your Cloudflare environment variables.
+- Add the public key as `REACT_APP_RAZORPAY_KEY_ID` for the storefront.
+- The app uses the serverless endpoints under `/functions/api/razorpay/` to create orders and verify signatures after checkout completes.
 
 ### 2. Resend Transactional Emails
 Emails are automatically sent upon checkout success (Payment Successful) and on order status updates from the admin panel (Packed, Shipped, Delivered).
