@@ -82,6 +82,7 @@ function UnifiedCheckout() {
   const [card, setCard] = useState({ number: '', cvv: '', expiry: '', type: 'RuPay' });
   const [upi, setUpi] = useState('');
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [createdOrderId, setCreatedOrderId] = useState(null);
   const [orderComplete, setOrderComplete] = useState(false);
   const [savePaymentInfo] = useState(true);
   const [completedOrder] = useState(null);
@@ -525,91 +526,100 @@ function UnifiedCheckout() {
 
       await saveShippingAddress();
 
-      const orderData = {
-        userId: user.uid,
-        userEmail: user.email,
-        userName: customerName || user.displayName || '',
-        userPhone: getFullPhoneNumber() || '',
-        orderDate: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        items: updatedCartDetails.map(item => ({
-          productId: item.productId,
-          name: item.product.name,
-          price: item.product.price,
-          quantity: item.quantity,
-          image: item.product.image,
-        })),
-        shipping: {
-          address: address,
-          method: shippingMethod === 'express' ? "Express Shipping" : "Standard Shipping",
-          cost: shippingCost,
-          estimatedDelivery: shippingMethod === 'express' ? "2 days" : "7 days"
-        },
-        payment: {
-          method: 'Razorpay',
-          status: 'Pending',
-          details: {
-            selectedMethod: paymentMethod
-          }
-        },
-        subtotal,
-        tax,
-        importDuty,
-        discount: discountAmount,
-        totalAmount: total + importDuty,
-        status: "Placed",
-        statusHistory: [{
+      let currentOrderId = createdOrderId;
+      let emailAlreadySent = false;
+
+      if (!currentOrderId) {
+        const orderData = {
+          userId: user.uid,
+          userEmail: user.email,
+          userName: customerName || user.displayName || '',
+          userPhone: getFullPhoneNumber() || '',
+          orderDate: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          items: updatedCartDetails.map(item => ({
+            productId: item.productId,
+            name: item.product.name,
+            price: item.product.price,
+            quantity: item.quantity,
+            image: item.product.image,
+          })),
+          shipping: {
+            address: address,
+            method: shippingMethod === 'express' ? "Express Shipping" : "Standard Shipping",
+            cost: shippingCost,
+            estimatedDelivery: shippingMethod === 'express' ? "2 days" : "7 days"
+          },
+          payment: {
+            method: 'Razorpay',
+            status: 'Pending',
+            details: {
+              selectedMethod: paymentMethod
+            }
+          },
+          subtotal,
+          tax,
+          importDuty,
+          discount: discountAmount,
+          totalAmount: total + importDuty,
           status: "Placed",
-          timestamp: new Date().toISOString(),
-          note: "Order placed successfully"
-        }],
-        tracking: {
-          code: null,
-          carrier: address.country === 'India' ? "IndiaPost" : "DHL",
-          url: null
-        },
-        shippingAddress: {
-          name: customerName,
-          street: `${address.houseNo}, ${address.line1}${address.line2 ? ', ' + address.line2 : ''}`,
-          city: address.city,
-          state: address.state,
-          zip: address.pin,
-          country: address.country
-        }
-      };
-
-      if (appliedCoupon && appliedCoupon.code) {
-        orderData.coupon = {
-          code: appliedCoupon.code,
-          discountAmount: appliedCoupon.discountAmount,
-          discountType: appliedCoupon.discountType,
-          discountValue: appliedCoupon.discountValue
+          statusHistory: [{
+            status: "Placed",
+            timestamp: new Date().toISOString(),
+            note: "Order placed successfully"
+          }],
+          tracking: {
+            code: null,
+            carrier: address.country === 'India' ? "IndiaPost" : "DHL",
+            url: null
+          },
+          shippingAddress: {
+            name: customerName,
+            street: `${address.houseNo}, ${address.line1}${address.line2 ? ', ' + address.line2 : ''}`,
+            city: address.city,
+            state: address.state,
+            zip: address.pin,
+            country: address.country
+          }
         };
-      }
 
-      if (appliedCoupon && appliedCoupon.couponId) {
-        try {
-          await CouponService.recordCouponUsage(appliedCoupon.couponId);
-        } catch (couponError) {
-          console.warn('Failed to record coupon usage:', couponError);
+        if (appliedCoupon && appliedCoupon.code) {
+          orderData.coupon = {
+            code: appliedCoupon.code,
+            discountAmount: appliedCoupon.discountAmount,
+            discountType: appliedCoupon.discountType,
+            discountValue: appliedCoupon.discountValue
+          };
         }
+
+        if (appliedCoupon && appliedCoupon.couponId) {
+          try {
+            await CouponService.recordCouponUsage(appliedCoupon.couponId);
+          } catch (couponError) {
+            console.warn('Failed to record coupon usage:', couponError);
+          }
+        }
+
+        const userData = {
+          uid: user.uid,
+          email: user.email,
+          displayName: customerName || user.displayName || user.email
+        };
+
+        const orderResult = await processNewOrder(orderData, userData, { skipEmail: true });
+
+        if (!orderResult.success) {
+          const errorMessage = orderResult.error || orderResult.technicalError || 'Failed to process order';
+          throw new Error(errorMessage);
+        }
+
+        currentOrderId = orderResult.orderId;
+        setCreatedOrderId(currentOrderId);
+        emailAlreadySent = orderResult.emailSent || false;
       }
 
-      const userData = {
-        uid: user.uid,
-        email: user.email,
-        displayName: customerName || user.displayName || user.email
-      };
-
-      const orderResult = await processNewOrder(orderData, userData, { skipEmail: true });
-
-      if (!orderResult.success) {
-        const errorMessage = orderResult.error || orderResult.technicalError || 'Failed to process order';
-        throw new Error(errorMessage);
-      }
-
-      // Process payment with Razorpay using the generated orderId
-      const paymentResult = await processPayment(orderResult.orderId, updatedCartDetails, orderResult.emailSent || false);
+      // Process payment with Razorpay using the generated/reused orderId
+      const paymentResult = await processPayment(currentOrderId, updatedCartDetails, emailAlreadySent);
       
       if (!paymentResult.success) {
         throw new Error(paymentResult.error || "Payment failed");
@@ -675,6 +685,7 @@ function UnifiedCheckout() {
 
   const prevStep = () => {
     setCurrentStep(currentStep > 1 ? currentStep - 1 : 1);
+    setCreatedOrderId(null);
   };
 
 

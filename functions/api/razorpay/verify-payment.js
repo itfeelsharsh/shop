@@ -40,6 +40,7 @@ async function updateOrderInFirestore(env, orderId, paymentId) {
       return false;
     }
 
+    // 1. Update Global Order document
     const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/orders/${orderId}?updateMask.fieldPaths=payment.status&updateMask.fieldPaths=payment.transactionId&key=${apiKey}`;
 
     const response = await fetch(firestoreUrl, {
@@ -61,11 +62,78 @@ async function updateOrderInFirestore(env, orderId, paymentId) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`[Razorpay Verify] Firestore API error: ${response.status}`, errorText);
-      return false;
+      console.error(`[Razorpay Verify] Firestore API error (global order): ${response.status}`, errorText);
+    } else {
+      console.log(`[Razorpay Verify] ✅ Global order ${orderId} payment status updated to Paid`);
     }
 
-    console.log(`[Razorpay Verify] ✅ Order ${orderId} payment verified and updated`);
+    // 2. Fetch global order to find userId and update user-specific order document
+    try {
+      const getUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/orders/${orderId}?key=${apiKey}`;
+      const getRes = await fetch(getUrl);
+      if (getRes.ok) {
+        const orderData = await getRes.json();
+        const userId = orderData.fields?.userId?.stringValue;
+
+        if (userId) {
+          // Query users/{userId}/orders to find the document with matching globalOrderId
+          const queryUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/users/${userId}:runQuery?key=${apiKey}`;
+          const queryRes = await fetch(queryUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              structuredQuery: {
+                from: [{ collectionId: 'orders' }],
+                where: {
+                  fieldFilter: {
+                    field: { fieldPath: 'globalOrderId' },
+                    op: 'EQUAL',
+                    value: { stringValue: orderId }
+                  }
+                }
+              }
+            })
+          });
+
+          if (queryRes.ok) {
+            const queryResults = await queryRes.json();
+            // runQuery returns an array of search results
+            for (const result of queryResults) {
+              if (result.document && result.document.name) {
+                const userOrderDocPath = result.document.name;
+                const updateUrl = `https://firestore.googleapis.com/${userOrderDocPath}?updateMask.fieldPaths=payment.status&updateMask.fieldPaths=payment.transactionId&key=${apiKey}`;
+                
+                const patchRes = await fetch(updateUrl, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    fields: {
+                      payment: {
+                        mapValue: {
+                          fields: {
+                            status: { stringValue: 'Paid' },
+                            transactionId: { stringValue: paymentId },
+                          },
+                        },
+                      },
+                    },
+                  })
+                });
+
+                if (patchRes.ok) {
+                  console.log(`[Razorpay Verify] ✅ User order document updated for user ${userId}`);
+                } else {
+                  console.error(`[Razorpay Verify] Failed to update user order document: ${patchRes.status}`);
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (innerErr) {
+      console.error('[Razorpay Verify] Error updating user subcollection order:', innerErr);
+    }
+
     return true;
   } catch (error) {
     console.error('[Razorpay Verify] Error updating Firestore:', error);

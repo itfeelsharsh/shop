@@ -104,10 +104,69 @@ async function updateOrderInFirestore(env, orderId, paymentId) {
     });
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`[Razorpay Verify] Firestore API error: ${response.status}`, errorText);
-      return false;
+      console.error(`[Razorpay Verify] Firestore API error (global order): ${response.status}`, errorText);
+    } else {
+      console.log(`[Razorpay Verify] \u2705 Global order ${orderId} payment status updated to Paid`);
     }
-    console.log(`[Razorpay Verify] \u2705 Order ${orderId} payment verified and updated`);
+    try {
+      const getUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/orders/${orderId}?key=${apiKey}`;
+      const getRes = await fetch(getUrl);
+      if (getRes.ok) {
+        const orderData = await getRes.json();
+        const userId = orderData.fields?.userId?.stringValue;
+        if (userId) {
+          const queryUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/users/${userId}:runQuery?key=${apiKey}`;
+          const queryRes = await fetch(queryUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              structuredQuery: {
+                from: [{ collectionId: "orders" }],
+                where: {
+                  fieldFilter: {
+                    field: { fieldPath: "globalOrderId" },
+                    op: "EQUAL",
+                    value: { stringValue: orderId }
+                  }
+                }
+              }
+            })
+          });
+          if (queryRes.ok) {
+            const queryResults = await queryRes.json();
+            for (const result of queryResults) {
+              if (result.document && result.document.name) {
+                const userOrderDocPath = result.document.name;
+                const updateUrl = `https://firestore.googleapis.com/${userOrderDocPath}?updateMask.fieldPaths=payment.status&updateMask.fieldPaths=payment.transactionId&key=${apiKey}`;
+                const patchRes = await fetch(updateUrl, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    fields: {
+                      payment: {
+                        mapValue: {
+                          fields: {
+                            status: { stringValue: "Paid" },
+                            transactionId: { stringValue: paymentId }
+                          }
+                        }
+                      }
+                    }
+                  })
+                });
+                if (patchRes.ok) {
+                  console.log(`[Razorpay Verify] \u2705 User order document updated for user ${userId}`);
+                } else {
+                  console.error(`[Razorpay Verify] Failed to update user order document: ${patchRes.status}`);
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (innerErr) {
+      console.error("[Razorpay Verify] Error updating user subcollection order:", innerErr);
+    }
     return true;
   } catch (error) {
     console.error("[Razorpay Verify] Error updating Firestore:", error);
@@ -1329,7 +1388,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// ../.wrangler/tmp/bundle-ikzF1d/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-iQYIYE/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -1361,7 +1420,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// ../.wrangler/tmp/bundle-ikzF1d/middleware-loader.entry.ts
+// ../.wrangler/tmp/bundle-iQYIYE/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
