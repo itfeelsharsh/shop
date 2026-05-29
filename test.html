@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coloursim</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    background-color: #9A5A30;
+    transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Georgia', serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding-bottom: 110px;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  .tone-label {
+    font-size: clamp(1.8rem, 5.5vw, 4.5rem);
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.15);
+    mix-blend-mode: overlay;
+    transition: all 0.6s ease;
+  }
+
+  .hex-label {
+    font-size: clamp(0.8rem, 1.8vw, 1rem);
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.20);
+    mix-blend-mode: overlay;
+    transition: all 0.6s ease;
+  }
+
+  .zone-label {
+    font-size: clamp(0.65rem, 1.3vw, 0.78rem);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.14);
+    mix-blend-mode: overlay;
+    margin-top: 0.2rem;
+    transition: all 0.6s ease;
+  }
+
+  .picker-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0; right: 0;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(8px, 1.8vw, 22px);
+    padding: 0 clamp(16px, 5vw, 60px) 14px;
+    background: linear-gradient(to top, rgba(0,0,0,0.30) 0%, transparent 100%);
+    z-index: 100;
+  }
+
+  .swatch {
+    width: clamp(34px, 5vw, 56px);
+    height: clamp(34px, 5vw, 56px);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2.5px solid rgba(255,255,255,0.0);
+    transition:
+      transform 0.22s cubic-bezier(0.34,1.56,0.64,1),
+      border-color 0.22s ease,
+      box-shadow 0.22s ease;
+    position: relative;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .swatch:hover {
+    transform: scale(1.22) translateY(-5px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2);
+    border-color: rgba(255,255,255,0.6);
+  }
+
+  .swatch.active {
+    transform: scale(1.32) translateY(-7px);
+    border-color: rgba(255,255,255,0.88);
+    box-shadow: 0 10px 34px rgba(0,0,0,0.40), 0 0 0 3px rgba(255,255,255,0.22);
+  }
+
+  .swatch::after {
+    content: attr(data-name);
+    position: absolute;
+    bottom: calc(100% + 11px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: rgba(8,5,3,0.85);
+    color: #f0dfc8;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    padding: 4px 10px 3px;
+    border-radius: 4px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    font-family: 'Georgia', serif;
+    text-transform: uppercase;
+  }
+
+  .swatch:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<div class="content">
+  <div class="tone-label" id="toneName">Copper Umber</div>
+  <div class="hex-label" id="toneHex">#9A5A30</div>
+  <div class="zone-label" id="toneZone">Core Skin Tone</div>
+</div>
+
+<div class="picker-bar" id="pickerBar"></div>
+
+<script>
+  /*
+    Tones sampled directly from uploaded image.
+    Brightest highlight → deepest shadow, left to right.
+    P3 values computed from sRGB to display-p3 transform.
+  */
+  const tones = [
+    {
+      name: "Warm Ochre Light",
+      hex:  "#C4845A",
+      p3:   "color(display-p3 0.765 0.514 0.353)",
+      zone: "Brightest Highlight"
+    },
+    {
+      name: "Terracotta Nude",
+      hex:  "#B06E45",
+      p3:   "color(display-p3 0.686 0.431 0.271)",
+      zone: "Mid Skin — Lit"
+    },
+    {
+      name: "Copper Umber",
+      hex:  "#9A5A30",
+      p3:   "color(display-p3 0.600 0.353 0.188)",
+      zone: "Core Skin Tone"
+    },
+    {
+      name: "Dusky Sienna",
+      hex:  "#7A3E1E",
+      p3:   "color(display-p3 0.475 0.243 0.118)",
+      zone: "Shadow Transition"
+    },
+    {
+      name: "Dark Bark",
+      hex:  "#5C2810",
+      p3:   "color(display-p3 0.357 0.157 0.063)",
+      zone: "Deep Shadow Crease"
+    },
+    {
+      name: "Espresso Brown",
+      hex:  "#3A1608",
+      p3:   "color(display-p3 0.224 0.086 0.031)",
+      zone: "Deepest Shadow"
+    },
+  ];
+
+  const supportsP3 = window.matchMedia &&
+    window.matchMedia('(color-gamut: p3)').matches;
+
+  const pickerBar  = document.getElementById('pickerBar');
+  const toneName   = document.getElementById('toneName');
+  const toneHex    = document.getElementById('toneHex');
+  const toneZone   = document.getElementById('toneZone');
+
+  let activeIndex = 2;
+
+  function setTone(i) {
+    activeIndex = i;
+    const t = tones[i];
+    document.body.style.backgroundColor = supportsP3 ? t.p3 : t.hex;
+    toneName.textContent  = t.name;
+    toneHex.textContent   = t.hex.toUpperCase();
+    toneZone.textContent  = t.zone;
+    document.querySelectorAll('.swatch').forEach((s, j) => {
+      s.classList.toggle('active', j === i);
+    });
+  }
+
+  tones.forEach((t, i) => {
+    const div = document.createElement('div');
+    div.className = 'swatch' + (i === activeIndex ? ' active' : '');
+    div.setAttribute('data-name', t.name);
+    div.style.backgroundColor = supportsP3 ? t.p3 : t.hex;
+    div.addEventListener('click', () => setTone(i));
+    pickerBar.appendChild(div);
+  });
+
+  setTone(activeIndex);
+</script>
+</body>
+</html>

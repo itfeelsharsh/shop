@@ -1,5 +1,10 @@
 # KamiKoto - React+Firebase+Cloudflare full stack e-com
 
+admin site features and working showcase video>
+[![admin site features and working showcase video](https://img.youtube.com/vi/TbbCTfXJl9E/0.jpg)](https://youtu.be/TbbCTfXJl9E)
+
+https://youtu.be/TbbCTfXJl9E
+
 Welcome to KamiKoto, a beautifully crafted, high-fidelity e-commerce platform offering a seamless shopping experience for premium stationery. This codebase is built with React.js and Firebase, optimized for fluid UI/UX, premium aesthetics, and responsive performance.
 
 ## Architecture Overview
