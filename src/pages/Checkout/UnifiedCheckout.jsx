@@ -1293,12 +1293,7 @@ function UnifiedCheckout() {
                           </div>
                         </div>
 
-                        <div className="hidden md:flex p-4 bg-green-50/50 border border-green-100/50 rounded-xl items-start gap-3">
-                          <div className="bg-green-700 text-white rounded-full p-1 mt-0.5">
-                            <CheckCircle size={14} />
-                          </div>
-                    
-                        </div>
+              
                       </div>
                     )}
                   </m.div>
