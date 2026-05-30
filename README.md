@@ -116,6 +116,14 @@ Emails are automatically sent upon checkout success (Payment Successful) and on 
 - **Cloudflare Pages:** We recommend hosting both repositories on Cloudflare Pages. Cloudflare Pages offers free hosting, automatic builds from GitHub, and serverless Functions support (located in `/functions` directory).
 - **Custom Domains:** You can use your default Cloudflare `pages.dev` subdomain, or bind a free custom domain. Custom domains can be acquired for free via Digiplat or similar registrars, and added directly to your Cloudflare Pages dashboard.
 
+### 4. Firebase App Check (reCAPTCHA v3)
+App Check protects your Firestore database and Authentication services from unauthorized bots and abuse.
+- **Register reCAPTCHA v3:** Go to the [Google reCAPTCHA Admin Console](https://www.google.com/recaptcha/admin) and create a reCAPTCHA v3 site key for your domains (e.g., `kamikoto.click`).
+- **Configure Site Key:** Copy the **Site Key** and add it as `REACT_APP_RECAPTCHA_SITE_KEY` in your `.env.local` or environment configuration.
+- **Configure Secret Key:** Copy the **Secret Key** from the reCAPTCHA console, go to **Firebase Console > App Check > Apps**, select your Web App, click **reCAPTCHA v3**, paste the Secret Key, and save.
+- **Enforcement:** In the **APIs** tab under App Check, click **Enforce** for Cloud Firestore and Identity Platform (Authentication).
+- **Local Development:** When running locally, App Check will print a debug token in your browser's Developer Tools Console. Copy that token and add it under the Web App's **Manage debug tokens** settings in the Firebase Console to bypass verification while developing.
+
 ---
 
 ## Firebase Configuration & Role Escalation
