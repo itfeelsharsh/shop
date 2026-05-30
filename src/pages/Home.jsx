@@ -8,7 +8,7 @@ import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
 import DynamicBanner from "../components/DynamicBanner";
 import { useContentLoader } from "../hooks/useContentLoader";
-import { ArrowRight, Zap, ShieldCheck, Globe } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Button from "../components/Button";
 import { Helmet } from "react-helmet-async";
 
@@ -76,16 +76,6 @@ function Home() {
       quantity: 1
     }));
   }, [dispatch]);
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },

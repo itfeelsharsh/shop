@@ -11,6 +11,9 @@ import { getWishlistItems, addToWishlist, removeFromWishlist, isProductInWishlis
 import { toast } from 'react-toastify';
 import logger from './logger';
 
+// Cache TTL (time to live) - 5 minutes
+const CACHE_TTL = 5 * 60 * 1000;
+
 /**
  * Custom hook for interacting with the wishlist
  * 
@@ -36,9 +39,6 @@ const useWishlist = () => {
   const error = useSelector((state) => state.wishlist.error);
   const lastFetch = useSelector((state) => state.wishlist.lastFetch);
   const initialized = useSelector((state) => state.wishlist.initialized);
-
-  // Cache TTL (time to live) - 5 minutes
-  const CACHE_TTL = 5 * 60 * 1000;
   
   /**
    * Checks if wishlist data is stale and needs refresh
@@ -46,7 +46,7 @@ const useWishlist = () => {
    */
   const isDataStale = useCallback(() => {
     return Date.now() - lastFetch > CACHE_TTL;
-  }, [lastFetch, CACHE_TTL]);
+  }, [lastFetch]);
 
   /**
    * Loads the user's wishlist when the component mounts
@@ -88,6 +88,7 @@ const useWishlist = () => {
     };
     
     loadWishlist();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, dispatch, initialized, lastFetch, loading]);
 
   /**

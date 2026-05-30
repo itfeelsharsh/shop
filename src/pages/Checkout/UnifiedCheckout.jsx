@@ -27,21 +27,62 @@ import AMEXLogo from '../../assets/amex.png';
 
 const COUNTRY_CODES = {
   "India": "+91",
-  "United States": "+1",
+  "Australia": "+61",
+  "Bhutan": "+975",
   "Canada": "+1",
-  "United Kingdom": "+44",
+  "Ethiopia": "+251",
   "France": "+33",
   "Germany": "+49",
+  "Indonesia": "+62",
   "Italy": "+39",
   "Japan": "+81",
-  "Thailand": "+66",
-  "Vietnam": "+84",
-  "Indonesia": "+62",
+  "Kenya": "+254",
+  "Madagascar": "+261",
+  "Malaysia": "+60",
+  "Maldives": "+960",
+  "Nepal": "+977",
+  "New Zealand": "+64",
+  "Nigeria": "+234",
   "Philippines": "+63",
+  "Singapore": "+65",
+  "South Africa": "+27",
   "Spain": "+34",
   "Sri Lanka": "+94",
-  "Nepal": "+977",
-  "Bhutan": "+975"
+  "Taiwan": "+886",
+  "Thailand": "+66",
+  "United Kingdom": "+44",
+  "United States": "+1",
+  "Vietnam": "+84"
+};
+
+const COUNTRY_FLAGS = {
+  "India": "🇮🇳",
+  "Australia": "🇦🇺",
+  "Bhutan": "🇧🇹",
+  "Canada": "🇨🇦",
+  "Ethiopia": "🇪🇹",
+  "France": "🇫🇷",
+  "Germany": "🇩🇪",
+  "Indonesia": "🇮🇩",
+  "Italy": "🇮🇹",
+  "Japan": "🇯🇵",
+  "Kenya": "🇰🇪",
+  "Madagascar": "🇲🇬",
+  "Malaysia": "🇲🇾",
+  "Maldives": "🇲🇻",
+  "Nepal": "🇳🇵",
+  "New Zealand": "🇳🇿",
+  "Nigeria": "🇳🇬",
+  "Philippines": "🇵🇭",
+  "Singapore": "🇸🇬",
+  "South Africa": "🇿🇦",
+  "Spain": "🇪🇸",
+  "Sri Lanka": "🇱🇰",
+  "Taiwan": "🇹🇼",
+  "Thailand": "🇹🇭",
+  "United Kingdom": "🇬🇧",
+  "United States": "🇺🇸",
+  "Vietnam": "🇻🇳"
 };
 
 function UnifiedCheckout() {
@@ -184,7 +225,7 @@ function UnifiedCheckout() {
 
   // Calculate total
   const subtotal = cartDetails.reduce((acc, item) => acc + (item.product.price * item.quantity), 0);
-  const tax = subtotal * 0.18; // 18% GST
+  const tax = subtotal * (18 / 118); // 18% GST (inclusive)
 
   // Calculate shipping cost
   useEffect(() => {
@@ -192,13 +233,13 @@ function UnifiedCheckout() {
       let newShippingCost = 0;
       let newImportDuty = 0;
 
-      const qualifiesForFreeShipping = subtotal > 1000;
+      const qualifiesForFreeShipping = subtotal > 500;
 
       if (address.country === 'India') {
         if (shippingMethod === 'express') {
           newShippingCost = 150;
         } else if (!qualifiesForFreeShipping) {
-          newShippingCost = 100;
+          newShippingCost = 50;
         }
       } else {
         newShippingCost = shippingMethod === 'express' ? 600 : 500;
@@ -215,7 +256,7 @@ function UnifiedCheckout() {
   }, [address.country, shippingMethod, subtotal]);
 
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
-  const total = subtotal + tax + shippingCost - discountAmount;
+  const total = subtotal + shippingCost - discountAmount;
 
   const isValidPhoneNumber = (phone) => /^[0-9]{7,12}$/.test(phone);
 
@@ -970,11 +1011,20 @@ function UnifiedCheckout() {
                             <select
                               value={selectedCountryCode}
                               onChange={handleCountryCodeChange}
-                              className="w-20 sm:w-28 p-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-gray-900 bg-gray-50 text-sm sm:text-base"
+                              className="w-24 sm:w-36 p-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-gray-900 bg-gray-50 text-sm sm:text-base"
                             >
-                              {Object.keys(COUNTRY_CODES).map((country) => (
-                                <option key={country} value={COUNTRY_CODES[country]}>
-                                  {COUNTRY_CODES[country]}
+                              {(() => {
+                                const countries = Object.keys(countriesStatesData.countries);
+                                const otherCountries = countries.filter(c => c !== "India");
+                                const getCodeNumber = (country) => {
+                                  const code = COUNTRY_CODES[country] || "";
+                                  return parseInt(code.replace(/[^0-9]/g, ""), 10) || 0;
+                                };
+                                otherCountries.sort((a, b) => getCodeNumber(a) - getCodeNumber(b));
+                                return ["India", ...otherCountries];
+                              })().map((country) => (
+                                <option key={country} value={COUNTRY_CODES[country] || '+1'}>
+                                  {COUNTRY_FLAGS[country] || '🏳️'} {COUNTRY_CODES[country] || '+1'}
                                 </option>
                               ))}
                             </select>
@@ -1116,7 +1166,7 @@ function UnifiedCheckout() {
                     <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 p-5">
                       <h3 className="text-lg font-semibold text-gray-900 mb-4">Shipping Method</h3>
 
-                      {subtotal > 1000 && (
+                      {address.country === 'India' && subtotal > 500 && (
                         <div className="p-3 rounded-lg mb-4 bg-green-50 text-green-800 text-sm">
                           You qualify for free standard shipping!
                         </div>
@@ -1142,8 +1192,8 @@ function UnifiedCheckout() {
                               <span className="block text-sm text-gray-600 mt-1">Delivery within 7 days</span>
                               <span className="block text-sm font-semibold mt-1">
                                 {address.country === 'India'
-                                  ? (subtotal > 1000 ? 'Free' : '₹100')
-                                  : '₹500'}
+                                  ? (subtotal > 500 ? 'Free' : '₹50')
+                                        : '₹500'}
                               </span>
                             </div>
                           </div>
@@ -1316,7 +1366,7 @@ function UnifiedCheckout() {
                     <span className="font-medium">{formatPrice(subtotal)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Tax (18%)</span>
+                    <span className="text-gray-600">GST (18% Inclusive)</span>
                     <span className="font-medium">{formatPrice(tax)}</span>
                   </div>
                   <div className="flex justify-between">

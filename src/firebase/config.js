@@ -2,6 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, FacebookAuthProvider } from "firebase/auth";
 import { initializeFirestore } from "firebase/firestore";
 import { getMessaging } from "firebase/messaging";
+import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 
 const firebaseConfig = {
     apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -11,9 +12,6 @@ const firebaseConfig = {
     messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
     appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
-
-// Read ReadMe.MD on GitHub to setup this project properly
-// https://github.com/itfeelsharsh/shop/blob/main/README.md
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -30,3 +28,23 @@ export const db = initializeFirestore(app, {
 
 // Initialize Messaging
 export const messaging = getMessaging(app);
+
+// Initialize App Check
+if (typeof window !== "undefined") {
+    // Enable App Check debug token in local development environments
+    if (
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1" ||
+        process.env.NODE_ENV === "development"
+    ) {
+        window.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    }
+
+    initializeAppCheck(app, {
+        provider: new ReCaptchaV3Provider(
+            process.env.REACT_APP_RECAPTCHA_SITE_KEY || "6LdQtjcrAAAAAB-gw9QaVLt8zIUTcvWAjCmlVwDs"
+        ),
+        isTokenAutoRefreshEnabled: true,
+    });
+}
+

@@ -481,7 +481,7 @@ const generateOrderStatusHTML = (order, status, shipmentInfo = {}) => {
           
           <!-- GST Tax Row -->
           <tr>
-            <td style="padding-bottom: 8px; font-size: 12px; color: #64748b; font-family: 'Inter', sans-serif;">GST (18%)</td>
+            <td style="padding-bottom: 8px; font-size: 12px; color: #64748b; font-family: 'Inter', sans-serif;">GST (18% Inclusive)</td>
             <td align="right" style="padding-bottom: 8px; font-size: 12px; color: #0f172a; font-weight: 600; font-family: 'Inter', sans-serif;">${formatCurrency(order.tax)}</td>
           </tr>
 

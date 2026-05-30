@@ -77,9 +77,9 @@ function Cart() {
   }).filter(Boolean);
 
   const subtotal = cartDetails.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
-  const tax = subtotal * 0.18; // 18% GST
+  const tax = subtotal * (18 / 118); // 18% GST (inclusive)
   const shipping = subtotal > 500 ? 0 : 50;
-  const total = subtotal + tax + shipping;
+  const total = subtotal + shipping;
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat("en-IN", {
@@ -243,7 +243,7 @@ function Cart() {
                     <span className="font-semibold">{formatPrice(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
-                    <span>Tax (GST 18%)</span>
+                    <span>GST (18% Inclusive)</span>
                     <span className="font-semibold">{formatPrice(tax)}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">

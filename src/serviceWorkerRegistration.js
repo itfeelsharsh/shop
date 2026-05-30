@@ -89,7 +89,7 @@ function registerValidSW(swUrl, config) {
       };
 
       // Periodic check: Every 5 minutes
-      const updateInterval = setInterval(checkUpdate, 5 * 60 * 1000);
+      setInterval(checkUpdate, 5 * 60 * 1000);
 
       // Focus/Visibility check: When the user switches back to the tab/window
       const onVisibilityChange = () => {
