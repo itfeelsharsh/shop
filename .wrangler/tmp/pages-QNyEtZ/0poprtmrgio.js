@@ -8,7 +8,14 @@ var define_ROUTES_default = {
     "/static/*",
     "/manifest.json",
     "/robots.txt",
-    "/favicon.ico"
+    "/favicon.ico",
+    "/service-worker.js",
+    "/firebase-messaging-sw.js",
+    "/logo192.png",
+    "/logo512.png",
+    "/splash.png",
+    "/banner.png",
+    "/html-banner.png"
   ],
   enablePrerenderFlag: true
 };
