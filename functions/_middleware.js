@@ -50,6 +50,75 @@ function isBot(userAgent) {
 }
 
 /**
+ * Generates a Google OAuth2 access token for Datastore/Firestore
+ */
+async function getGoogleAuthToken(serviceAccount, scope = 'https://www.googleapis.com/auth/datastore') {
+  const { client_email, private_key } = serviceAccount;
+  
+  // JWT Header
+  const header = b64(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+  
+  // JWT Claim Set
+  const now = Math.floor(Date.now() / 1000);
+  const claimSet = b64(JSON.stringify({
+    iss: client_email,
+    scope: scope,
+    aud: 'https://oauth2.googleapis.com/token',
+    exp: now + 3600,
+    iat: now
+  }));
+  
+  // Sign JWT
+  const signature = await sign(header + '.' + claimSet, private_key);
+  const jwt = header + '.' + claimSet + '.' + signature;
+  
+  // Exchange JWT for access token
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`
+  });
+  
+  const data = await response.json();
+  if (data.error) throw new Error(`OAuth error: ${data.error_description || data.error}`);
+  return data.access_token;
+}
+
+// Helper: Base64 URL Encode
+function b64(str) {
+  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+// Helper: Sign JWT using RS256
+async function sign(data, privateKey) {
+  // Convert PEM to ArrayBuffer
+  const pemHeader = "-----BEGIN PRIVATE KEY-----";
+  const pemFooter = "-----END PRIVATE KEY-----";
+  const pemContents = privateKey.replace(pemHeader, "").replace(pemFooter, "").replace(/\s/g, "");
+  const binaryDerString = atob(pemContents);
+  const binaryDer = new Uint8Array(binaryDerString.length);
+  for (let i = 0; i < binaryDerString.length; i++) {
+    binaryDer[i] = binaryDerString.charCodeAt(i);
+  }
+
+  const key = await crypto.subtle.importKey(
+    "pkcs8",
+    binaryDer.buffer,
+    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const signature = await crypto.subtle.sign(
+    "RSASSA-PKCS1-v1_5",
+    key,
+    new TextEncoder().encode(data)
+  );
+
+  return b64(String.fromCharCode(...new Uint8Array(signature)));
+}
+
+/**
  * Fetches product data from Firestore using REST API
  */
 async function fetchProductData(productId, env) {
@@ -57,19 +126,38 @@ async function fetchProductData(productId, env) {
     const projectId = env.FIREBASE_PROJECT_ID || env.REACT_APP_FIREBASE_PROJECT_ID;
     const apiKey = env.FIREBASE_API_KEY || env.REACT_APP_FIREBASE_API_KEY;
 
-    if (!projectId || !apiKey) {
-      console.error('[SEO Middleware] Missing Firebase configuration');
+    if (!projectId) {
+      console.error('[SEO Middleware] Missing Firebase configuration: Project ID');
       return null;
     }
 
     const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/products/${productId}`;
+    let url = firestoreUrl;
+    const headers = { 'Content-Type': 'application/json' };
 
-    const response = await fetch(`${firestoreUrl}?key=${apiKey}`, {
+    if (env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+      try {
+        const serviceAccount = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT_KEY);
+        const accessToken = await getGoogleAuthToken(serviceAccount, 'https://www.googleapis.com/auth/datastore');
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      } catch (authError) {
+        console.error('[SEO Middleware] Error generating access token from service account, falling back to API key:', authError);
+        url = `${firestoreUrl}?key=${apiKey}`;
+      }
+    } else {
+      url = `${firestoreUrl}?key=${apiKey}`;
+    }
+
+    const response = await fetch(url, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+      headers: headers,
     });
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error(`[SEO Middleware] Firestore responded with ${response.status}:`, errText);
+      return null;
+    }
 
     const data = await response.json();
 
@@ -98,8 +186,27 @@ async function fetchRatingStats(productId, env) {
     const projectId = env.FIREBASE_PROJECT_ID || env.REACT_APP_FIREBASE_PROJECT_ID;
     const apiKey = env.FIREBASE_API_KEY || env.REACT_APP_FIREBASE_API_KEY;
 
-    const firestoreQueryUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery?key=${apiKey}`;
-    
+    if (!projectId) {
+      return { average: 0, total: 0 };
+    }
+
+    const firestoreQueryUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery`;
+    let url = firestoreQueryUrl;
+    const headers = { 'Content-Type': 'application/json' };
+
+    if (env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+      try {
+        const serviceAccount = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT_KEY);
+        const accessToken = await getGoogleAuthToken(serviceAccount, 'https://www.googleapis.com/auth/datastore');
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      } catch (authError) {
+        console.error('[SEO Middleware] Error generating access token for ratings, falling back to API key:', authError);
+        url = `${firestoreQueryUrl}?key=${apiKey}`;
+      }
+    } else {
+      url = `${firestoreQueryUrl}?key=${apiKey}`;
+    }
+
     const queryBody = {
       structuredQuery: {
         from: [{ collectionId: 'reviews' }],
@@ -113,13 +220,17 @@ async function fetchRatingStats(productId, env) {
       }
     };
 
-    const response = await fetch(firestoreQueryUrl, {
+    const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: headers,
       body: JSON.stringify(queryBody)
     });
 
-    if (!response.ok) return { average: 0, total: 0 };
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error(`[SEO Middleware] Firestore query responded with ${response.status}:`, errText);
+      return { average: 0, total: 0 };
+    }
 
     const results = await response.json();
     
