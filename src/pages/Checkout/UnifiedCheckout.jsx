@@ -810,7 +810,7 @@ function UnifiedCheckout() {
           
           <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-gray-50 border border-gray-100 text-xs text-gray-500">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
-            <span>Securing connection...</span>
+            <span>Secure Connection</span>
           </div>
         </m.div>
       </div>

@@ -560,7 +560,7 @@ function OrderSummary() {
           
           {/* Order Success Banner */}
           <motion.div 
-            className="bg-gray-900 text-white rounded-t-2xl p-10 shadow-2xl relative overflow-hidden"
+            className="bg-gradient-to-br from-[#D32F2F] to-[#B71C1C] text-white rounded-t-2xl p-10 shadow-2xl relative overflow-hidden"
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -594,7 +594,7 @@ function OrderSummary() {
               {/* Order Info & Actions */}
               <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800">Order #{order?.id?.slice(-6)}</h2>
+                  <h2 className="text-2xl font-bold text-gray-800">{order?.orderId || `ORDER-${order?.id?.slice(-6)}`}</h2>
                   <p className="text-gray-600">Placed on {formatDate(order?.orderDate)}</p>
                 </div>
                 <div className="flex flex-wrap gap-4 mt-4 md:mt-0">
