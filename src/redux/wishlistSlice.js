@@ -10,6 +10,8 @@ const wishlistSlice = createSlice({
     items: [],
     loading: false,
     error: null,
+    lastFetch: 0,
+    initialized: false,
   },
   reducers: {
     /**
@@ -41,6 +43,8 @@ const wishlistSlice = createSlice({
       state.items = action.payload;
       state.loading = false;
       state.error = null;
+      state.lastFetch = Date.now();
+      state.initialized = true;
     },
     
     /**
@@ -71,6 +75,8 @@ const wishlistSlice = createSlice({
      */
     clearWishlist: (state) => {
       state.items = [];
+      state.lastFetch = 0;
+      state.initialized = false;
     },
   },
 });

@@ -1,6 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setWishlistItems, addToWishlist as addToWishlistAction, removeFromWishlist as removeFromWishlistAction } from '../redux/wishlistSlice';
+import { 
+  setWishlistItems, 
+  addToWishlist as addToWishlistAction, 
+  removeFromWishlist as removeFromWishlistAction,
+  setLoading,
+  setError
+} from '../redux/wishlistSlice';
 import { getWishlistItems, addToWishlist, removeFromWishlist, isProductInWishlist } from './wishlistUtils';
 import { toast } from 'react-toastify';
 import logger from './logger';
@@ -23,13 +29,13 @@ import logger from './logger';
  * @returns {Object} Wishlist methods and state
  */
 const useWishlist = () => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [lastFetch, setLastFetch] = useState(0);
-  
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.currentUser);
   const wishlistItems = useSelector((state) => state.wishlist.items);
+  const loading = useSelector((state) => state.wishlist.loading);
+  const error = useSelector((state) => state.wishlist.error);
+  const lastFetch = useSelector((state) => state.wishlist.lastFetch);
+  const initialized = useSelector((state) => state.wishlist.initialized);
 
   // Cache TTL (time to live) - 5 minutes
   const CACHE_TTL = 5 * 60 * 1000;
@@ -50,22 +56,26 @@ const useWishlist = () => {
     const loadWishlist = async () => {
       if (!user) return;
       
+      const stale = Date.now() - lastFetch > CACHE_TTL;
+      
       // Skip if we have recent data
-      if (wishlistItems.length > 0 && !isDataStale()) {
+      if (initialized && !stale) {
         logger.debug("Using cached wishlist data", { count: wishlistItems.length }, "Wishlist");
         return;
       }
       
+      // Prevent concurrent identical requests
+      if (loading) return;
+      
       try {
-        setLoading(true);
-        setError(null);
+        dispatch(setLoading(true));
+        dispatch(setError(null));
         
         const startTime = Date.now();
         const items = await getWishlistItems(user.uid);
         const endTime = Date.now();
         
         dispatch(setWishlistItems(items));
-        setLastFetch(Date.now());
         
         logger.info("Wishlist loaded", { 
           count: items.length,
@@ -73,14 +83,12 @@ const useWishlist = () => {
         }, "Wishlist");
       } catch (err) {
         logger.error("Failed to load wishlist", err, "Wishlist");
-        setError('Failed to load wishlist');
-      } finally {
-        setLoading(false);
+        dispatch(setError('Failed to load wishlist'));
       }
     };
     
     loadWishlist();
-  }, [user, dispatch, wishlistItems.length, isDataStale]);
+  }, [user, dispatch, initialized, lastFetch, loading]);
 
   /**
    * Adds a product to the user's wishlist
@@ -101,8 +109,8 @@ const useWishlist = () => {
     }
     
     try {
-      setLoading(true);
-      setError(null);
+      dispatch(setLoading(true));
+      dispatch(setError(null));
       
       logger.user.action("Add to wishlist", { 
         productId: product.id, 
@@ -131,10 +139,8 @@ const useWishlist = () => {
         productId: product.id
       }, "Wishlist");
       
-      setError('Failed to add to wishlist');
+      dispatch(setError('Failed to add to wishlist'));
       toast.error('Failed to add product to wishlist');
-    } finally {
-      setLoading(false);
     }
   }, [user, dispatch, wishlistItems]);
 
@@ -148,8 +154,8 @@ const useWishlist = () => {
     if (!user) return;
     
     try {
-      setLoading(true);
-      setError(null);
+      dispatch(setLoading(true));
+      dispatch(setError(null));
       
       logger.user.action("Remove from wishlist", { productId });
       
@@ -171,10 +177,8 @@ const useWishlist = () => {
         productId
       }, "Wishlist");
       
-      setError('Failed to remove from wishlist');
+      dispatch(setError('Failed to remove from wishlist'));
       toast.error('Failed to remove product from wishlist');
-    } finally {
-      setLoading(false);
     }
   }, [user, dispatch]);
 

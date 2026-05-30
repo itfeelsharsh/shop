@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '../firebase/config';
 import { 
@@ -41,6 +41,7 @@ function UserReviews() {
   });
   const [isSubmittingNewReview, setIsSubmittingNewReview] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const reviewableHasBeenFetched = useRef(false);
   
   /**
    * Fetch all reviews by the current user
@@ -61,32 +62,41 @@ function UserReviews() {
         
         const reviewsSnapshot = await getDocs(reviewsQuery);
         
-        // Prepare an array to hold reviews with product details
-        const reviewsWithProducts = [];
+        // Extract unique product IDs to fetch in parallel
+        const productIds = Array.from(new Set(reviewsSnapshot.docs.map(doc => doc.data().productId)));
         
-        // For each review, fetch the associated product details
-        for (const reviewDoc of reviewsSnapshot.docs) {
-          const reviewData = reviewDoc.data();
-          
-          // Fetch product details
-          const productDoc = await getDoc(doc(db, "products", reviewData.productId));
-          
-          if (productDoc.exists()) {
-            const productData = productDoc.data();
+        // Fetch all product details in parallel
+        const productDocs = await Promise.all(
+          productIds.map(id => getDoc(doc(db, "products", id)))
+        );
+        
+        const productMap = {};
+        productDocs.forEach(pDoc => {
+          if (pDoc.exists()) {
+            productMap[pDoc.id] = pDoc.data();
+          }
+        });
+        
+        // Prepare an array to hold reviews with product details
+        const reviewsWithProducts = reviewsSnapshot.docs
+          .map(reviewDoc => {
+            const reviewData = reviewDoc.data();
+            const productData = productMap[reviewData.productId];
+            if (!productData) return null;
             
-            reviewsWithProducts.push({
+            return {
               id: reviewDoc.id,
               ...reviewData,
               product: {
-                id: productDoc.id,
+                id: reviewData.productId,
                 name: productData.name,
                 image: productData.image
               },
               // Convert Firestore timestamp to Date object if it exists
               createdAt: reviewData.createdAt ? reviewData.createdAt.toDate() : new Date()
-            });
-          }
-        }
+            };
+          })
+          .filter(Boolean);
         
         setReviews(reviewsWithProducts);
       } catch (error) {
@@ -107,6 +117,7 @@ function UserReviews() {
   useEffect(() => {
     const fetchDeliveredOrders = async () => {
       if (!user) return;
+      if (reviewableHasBeenFetched.current) return; // Prevent repeated fetches
       
       try {
         setLoadingReviewable(true);
@@ -148,23 +159,22 @@ function UserReviews() {
         );
         
         // Get details for products that can be reviewed (delivered but not yet reviewed)
-        const reviewableProductsData = [];
+        const eligibleProductIds = Array.from(productIds).filter(id => !alreadyReviewedProductIds.has(id));
         
-        for (const productId of productIds) {
-          // Skip if already reviewed
-          if (alreadyReviewedProductIds.has(productId)) continue;
-          
-          const productDoc = await getDoc(doc(db, "products", productId));
-          
-          if (productDoc.exists()) {
-            reviewableProductsData.push({
-              id: productDoc.id,
-              ...productDoc.data()
-            });
-          }
-        }
+        // Fetch all product details in parallel
+        const productDocs = await Promise.all(
+          eligibleProductIds.map(id => getDoc(doc(db, "products", id)))
+        );
+        
+        const reviewableProductsData = productDocs
+          .filter(doc => doc.exists())
+          .map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
         
         setReviewableProducts(reviewableProductsData);
+        reviewableHasBeenFetched.current = true; // Mark as fetched successfully
       } catch (error) {
         console.error("Error fetching delivered orders:", error);
       } finally {
@@ -365,6 +375,9 @@ function UserReviews() {
       // Add to reviews list and remove from reviewable products
       setReviews([newReviewWithProduct, ...reviews]);
       setReviewableProducts(reviewableProducts.filter(product => product.id !== selectedProduct.id));
+      
+      // Allow re-fetch of delivered/reviewable items if reviews change
+      reviewableHasBeenFetched.current = false;
       
       // Reset form
       setSelectedProduct(null);

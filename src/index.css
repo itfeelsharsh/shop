@@ -48,12 +48,15 @@
   }
   
   .premium-shadow-hover {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, box-shadow;
   }
   
-  .premium-shadow-hover:hover {
-    box-shadow: var(--shadow-premium-xl);
-    transform: translateY(-2px);
+  @media (hover: hover) {
+    .premium-shadow-hover:hover {
+      box-shadow: var(--shadow-premium-xl);
+      transform: translateY(-2px);
+    }
   }
 
   .premium-card {
@@ -363,6 +366,39 @@
 .pwa-bottom-nav {
   padding-bottom: env(safe-area-inset-bottom, 0px);
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); /* Add clean breathing room */
+}
+
+/* Mobile PWA Performance Optimization System */
+@media (max-width: 768px) {
+  /* Optimize text rendering and touch target highlights */
+  * {
+    text-rendering: optimizeSpeed;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Hardware accelerate pages, tab panels, and motion transitions */
+  main, 
+  section, 
+  [role="tabpanel"],
+  .framer-motion-wrapper {
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+    will-change: transform, opacity;
+  }
+
+  /* Force native touch scrolling momentum and minimize pull-to-refresh jitters */
+  body, html {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
+  }
+
+  /* Disable sticky hover states on touch screens to prevent tab change / scroll lag */
+  .btn-shopify:hover,
+  .premium-shadow-hover:hover {
+    transform: none !important;
+    box-shadow: inherit !important;
+  }
 }
 
 

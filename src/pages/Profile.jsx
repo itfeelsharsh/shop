@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { auth, db } from '../firebase/config';
 import { doc, getDoc, updateDoc, collection, getDocs, query, orderBy, where } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -70,10 +70,14 @@ function MyAccount() {
     loading: wishlistHookLoading,
     removeFromWishlist: removeWishlistItem
   } = useWishlist();
+  const ordersHasBeenFetched = useRef(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
       if (user) {
+        // Reset orders fetch flag when user changes
+        ordersHasBeenFetched.current = false;
+        
         // Pre-populate with auth user info and cache before network request completes
         const cachedProfile = sessionStorage.getItem(`profile_${user.uid}`);
         let initialName = user.displayName || '';
@@ -137,7 +141,8 @@ function MyAccount() {
 
   const fetchOrders = useCallback(async () => {
     if (!user) return;
-    if (orders.length > 0 && !ordersLoading) return;
+    if (ordersHasBeenFetched.current) return; // Prevent repeated fetches
+    
     logger.user.action("View Orders", { userId: user.uid });
 
     try {
@@ -170,6 +175,7 @@ function MyAccount() {
       });
       
       setOrders(ordersData);
+      ordersHasBeenFetched.current = true; // Mark as fetched
       logger.firebase.read("orders", { count: ordersData.length });
     } catch (error) {
       logger.firebase.error("orders", "getDocs", error);
@@ -177,7 +183,7 @@ function MyAccount() {
     } finally {
       setOrdersLoading(false);
     }
-  }, [user, orders.length, ordersLoading]);
+  }, [user]);
 
   const fetchWishlist = useCallback(async () => {
     if (!user) return;
@@ -312,7 +318,7 @@ function MyAccount() {
         {/* Header Section */}
         <div className="mb-10 text-center md:text-left max-w-2xl">
           <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">Account Dashboard</h1>
-          <p className="text-gray-500 text-base mt-2">Manage your luxury stationery orders, deliveries, and profile information.</p>
+          <p className="text-gray-500 text-base mt-2">Manage your profile.</p>
         </div>
 
         {/* Mobile Navigation bar */}
@@ -363,9 +369,7 @@ function MyAccount() {
                 </div>
                 <h3 className="font-extrabold text-lg text-gray-900 leading-snug">{profile.name || 'User'}</h3>
                 <p className="text-xs text-gray-400 mt-1 truncate max-w-full">{profile.email}</p>
-                <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-cyan-50 border border-cyan-100 text-cyan-700 rounded-full text-[10px] font-bold">
-                  Premium Member
-                </div>
+           
               </div>
 
               {/* Navigation list */}
@@ -444,9 +448,7 @@ function MyAccount() {
                         <div>
                           <h3 className="font-extrabold text-lg text-gray-900 leading-snug">{profile.name || 'User'}</h3>
                           <p className="text-xs text-gray-400 mt-0.5">{profile.email}</p>
-                          <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 bg-cyan-50 border border-cyan-100 text-cyan-700 rounded-full text-[9px] font-bold">
-                            Premium Member
-                          </div>
+                     
                         </div>
                       </div>
                       

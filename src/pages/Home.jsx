@@ -178,7 +178,7 @@ function Home() {
             className="w-full h-[350px] sm:h-[450px] md:h-[600px] object-cover transition-transform duration-[3s] group-hover:scale-105"
           />
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center p-6 sm:p-12">
-            <h2 className="text-3xl md:text-5xl font-black text-white mb-4 sm:mb-6 tracking-tight">Scamming you since 2024, KamiKoto.</h2>
+            <h2 className="text-3xl md:text-5xl font-black text-white mb-4 sm:mb-6 tracking-tight">Providing you since 2024, KamiKoto.</h2>
             <p className="text-sm sm:text-lg text-white/80 max-w-2xl mb-8 sm:mb-10 leading-relaxed font-medium">
               We have been scamming you since the year 2024, we have scammed around 5lakhs ruppees so far, thank you for your support.
             </p>

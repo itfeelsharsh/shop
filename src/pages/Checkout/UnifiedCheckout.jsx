@@ -788,27 +788,27 @@ function UnifiedCheckout() {
   // Show processing payment loader
   if (processingPayment) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-950 text-white p-6">
+      <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-6">
         <Helmet>
           <title>Processing Payment | KamiKoto</title>
         </Helmet>
         <m.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="text-center max-w-md bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-2xl"
+          className="text-center max-w-md bg-white border border-gray-100 p-8 rounded-2xl shadow-xl"
         >
           <div className="relative w-20 h-20 mx-auto mb-6">
-            <div className="absolute inset-0 rounded-full border-4 border-white/10"></div>
-            <div className="absolute inset-0 rounded-full border-4 border-t-white border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
-            <CreditCard className="w-8 h-8 text-white absolute inset-0 m-auto animate-pulse" />
+            <div className="absolute inset-0 rounded-full border-4 border-gray-100"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-t-[#D32F2F] border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
+            <CreditCard className="w-8 h-8 text-[#D32F2F] absolute inset-0 m-auto animate-pulse" />
           </div>
           
-          <h2 className="text-2xl font-bold mb-3 tracking-tight">Processing Payment</h2>
-          <p className="text-gray-400 text-sm mb-6 leading-relaxed">
+          <h2 className="text-2xl font-bold mb-3 tracking-tight text-gray-900">Processing Payment</h2>
+          <p className="text-gray-600 text-sm mb-6 leading-relaxed">
             We are securely connecting to Razorpay to verify your transaction. Please do not refresh this page, close the browser, or click the back button.
           </p>
           
-          <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-gray-400">
+          <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-gray-50 border border-gray-100 text-xs text-gray-500">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
             <span>Securing connection...</span>
           </div>
