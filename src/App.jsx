@@ -4,7 +4,6 @@ import Navbar from "./components/Navbar";
 import { ToastContainer } from "react-toastify";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
-import AboutUs from "./pages/AboutUs";
 import ContactUs from "./pages/ContactUs";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -19,6 +18,7 @@ import UnifiedCheckout from "./pages/Checkout/UnifiedCheckout";
 import Products from "./pages/Products";
 import Wishlist from "./pages/Wishlist";
 import NotFound from "./pages/NotFound";
+import AboutProject from "./pages/AboutProject";
 import LoadingScreen from "./components/LoadingScreen";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -234,7 +234,7 @@ function AnimatedRoutes() {
       {/* Post-checkout order summary page - displays order confirmation */}
       <Route path="/summary" element={<OrderSummary />} />
       
-      <Route path="/about" element={<AboutUs />} />
+      <Route path="/about-project" element={<AboutProject />} />
       <Route path="/contact" element={<ContactUs />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/terms-of-service" element={<TermsOfService />} />

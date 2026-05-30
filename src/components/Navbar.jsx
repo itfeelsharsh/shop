@@ -7,7 +7,8 @@ import {
   UserCircleIcon,
   ShoppingBagIcon,
   HeartIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  InformationCircleIcon
 } from '@heroicons/react/24/outline';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '../firebase/config';
@@ -58,6 +59,7 @@ export default function Navbar() {
   const mainNavItems = [
     { name: 'Home', href: '/', icon: HomeIcon, exact: true },
     { name: 'Products', href: '/products', icon: TagIcon },
+    { name: 'About Project', href: '/about-project', icon: InformationCircleIcon },
   ];
 
   const bottomNavItems = [

@@ -39,3 +39,31 @@ messaging.onBackgroundMessage((payload) => {
   }
 });
 
+// Handle notification clicks to open or focus the app window
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  
+  // Get destination URL from notification data, fallback to root
+  const urlToOpen = event.notification.data?.url || '/';
+  
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      // Check if there is already a window/tab open with the same origin
+      for (let i = 0; i < windowClients.length; i++) {
+        const client = windowClients[i];
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          return client.focus().then((focusedClient) => {
+            if (focusedClient && 'navigate' in focusedClient) {
+              return focusedClient.navigate(urlToOpen);
+            }
+          });
+        }
+      }
+      // If no window/tab is open, open a new one
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(urlToOpen);
+      }
+    })
+  );
+});
+

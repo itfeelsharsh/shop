@@ -21,8 +21,14 @@ env.local
 .env
 .dev.vars
 
+# Cloudflare Wrangler
+.wrangler/
 
+# Caches
+.cache/
+.eslintcache
 
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+

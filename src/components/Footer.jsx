@@ -115,8 +115,7 @@ Scamming you since 1871, <br></br> PROUDLY.
             <ul className="space-y-3">
               {[
                 { label: 'Privacy Policy', path: '/privacy-policy' },
-                { label: 'Terms of Service', path: '/terms-of-service' },
-                { label: 'About Us', path: '/about' }
+                { label: 'Terms of Service', path: '/terms-of-service' }
               ].map((item) => (
                 <li key={item.label}>
                   <Link 

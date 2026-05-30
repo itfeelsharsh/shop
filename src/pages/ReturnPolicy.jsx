@@ -12,24 +12,24 @@ function ReturnPolicy() {
     >
       <Helmet>
         <title>Return Policy | KamiKoto</title>
-        <meta name="description" content="Our transparent return and refund policy." />
+        <meta name="description" content="My transparent return and refund policy." />
       </Helmet>
 
       <div className="bg-white border border-gray-100 rounded-3xl shadow-sm p-8 md:p-12">
         <h1 className="text-4xl md:text-5xl font-black mb-8 text-gray-900 text-center">Return Policy</h1>
         
         <p className="text-lg text-gray-700 mb-8 leading-relaxed text-center">
-          At <strong className="font-extrabold text-cyan-600">KamiKoto</strong>, we stand behind the quality of our premium stationery. If you are not completely satisfied with your purchase, we are here to help.
+          At <strong className="font-extrabold text-cyan-600">KamiKoto</strong>, I stand behind the quality of my premium stationery. If you are not completely satisfied with your purchase, I am here to help.
         </p>
         
         <h2 className="text-2xl font-bold mb-4 text-gray-800">1. Returns & Exchanges</h2>
         <p className="text-base text-gray-600 mb-6 leading-relaxed">
-          You have <strong>7 days</strong> from the date of delivery to request a return or exchange for any product purchased from our store. To be eligible for a return, your item must be unused, in the same condition that you received it, and in its original packaging.
+          You have <strong>7 days</strong> from the date of delivery to request a return or exchange for any product purchased from my store. To be eligible for a return, your item must be unused, in the same condition that you received it, and in its original packaging.
         </p>
         
         <h2 className="text-2xl font-bold mb-4 text-gray-800">2. Refunds</h2>
         <p className="text-base text-gray-600 mb-6 leading-relaxed">
-          Once we receive and inspect your returned item, we will send you an email notification confirming receipt. If approved, your refund will be processed and automatically applied to your original method of payment within 5-7 business days.
+          Once I receive and inspect your returned item, I will send you an email notification confirming receipt. If approved, your refund will be processed and automatically applied to your original method of payment within 5-7 business days.
         </p>
         
         <h2 className="text-2xl font-bold mb-4 text-gray-800">3. Non-Returnable Items</h2>
@@ -54,7 +54,7 @@ function ReturnPolicy() {
 
         <div className="mt-12 pt-8 border-t border-gray-100 text-center">
           <p className="text-gray-500">
-            Have questions about your order? Feel free to contact us on our <a href="/contact" className="text-cyan-600 hover:text-cyan-700 font-bold underline">Contact Page</a>.
+            Have questions about your order? Feel free to contact me on my <a href="/contact" className="text-cyan-600 hover:text-cyan-700 font-bold underline">Contact Page</a>.
           </p>
         </div>
       </div>
