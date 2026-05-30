@@ -144,8 +144,8 @@ async function updateOrderInFirestore(env, orderId, paymentId) {
 export async function onRequestPost(context) {
   const { request, env } = context;
 
-  const keyId = env.RAZORPAY_KEY_ID;
-  const keySecret = env.RAZORPAY_KEY_SECRET;
+  const keyId = env.RAZORPAY_KEY_ID?.trim();
+  const keySecret = env.RAZORPAY_KEY_SECRET?.trim();
 
   if (!keySecret) {
     return Response.json(

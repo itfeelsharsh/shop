@@ -400,7 +400,12 @@ function UnifiedCheckout() {
 
       if (!response.ok) {
         setProcessingPayment(false);
-        throw new Error(data.error || 'Failed to create Razorpay order');
+        const errMsg = data && data.error
+          ? (typeof data.error === 'object'
+              ? (data.error.description || data.error.message || JSON.stringify(data.error))
+              : data.error)
+          : 'Failed to create Razorpay order';
+        throw new Error(errMsg);
       }
 
       // 3. Open Razorpay checkout popup

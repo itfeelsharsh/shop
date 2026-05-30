@@ -7,8 +7,8 @@
 export async function onRequestPost(context) {
   const { request, env } = context;
 
-  const keyId = env.RAZORPAY_KEY_ID;
-  const keySecret = env.RAZORPAY_KEY_SECRET;
+  const keyId = env.RAZORPAY_KEY_ID?.trim();
+  const keySecret = env.RAZORPAY_KEY_SECRET?.trim();
 
   if (!keyId || !keySecret) {
     return Response.json(
@@ -49,8 +49,21 @@ export async function onRequestPost(context) {
     if (!razorpayResponse.ok) {
       const errorText = await razorpayResponse.text();
       console.error('[Razorpay] API error:', errorText);
+
+      let errorMessage = `Razorpay API error: ${errorText}`;
+      try {
+        const errorObj = JSON.parse(errorText);
+        if (errorObj && errorObj.error && errorObj.error.description) {
+          errorMessage = errorObj.error.description;
+        } else if (errorObj && errorObj.description) {
+          errorMessage = errorObj.description;
+        }
+      } catch (e) {
+        // Fall back to original error text if not valid JSON
+      }
+
       return Response.json(
-        { error: `Razorpay API error: ${errorText}`, code: 'RAZORPAY_ERROR' },
+        { error: errorMessage, code: 'RAZORPAY_ERROR' },
         { status: razorpayResponse.status }
       );
     }
