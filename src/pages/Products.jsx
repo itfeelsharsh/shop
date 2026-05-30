@@ -76,15 +76,15 @@ function Products() {
   }, [inputValue]);
 
   // Fetch paginated chunk from Firestore
-  const fetchProductsPage = useCallback(async (isInitial = false) => {
+  const fetchProductsPage = useCallback(async (isInitial = false, retries = 3, delay = 500) => {
     if (isFullyLoaded) return;
     
-    if (isInitial) {
+    if (isInitial && retries === 3) {
       setLoading(true);
       setProducts([]);
       lastVisibleRef.current = null;
       setHasMore(true);
-    } else {
+    } else if (!isInitial && retries === 3) {
       setIsPaginating(true);
     }
 
@@ -128,18 +128,25 @@ function Products() {
       } else {
         setHasMore(false);
       }
-    } catch (error) {
-      console.error("Error fetching paginated products:", error);
-    } finally {
       setLoading(false);
       setIsPaginating(false);
+    } catch (error) {
+      console.error(`Error fetching paginated products (retries left: ${retries}):`, error);
+      if (retries > 0) {
+        setTimeout(() => {
+          fetchProductsPage(isInitial, retries - 1, delay * 2);
+        }, delay);
+      } else {
+        setLoading(false);
+        setIsPaginating(false);
+      }
     }
   }, [activeCategory, isFullyLoaded]);
 
   // Fetch all products for search or filters
-  const fetchAllProducts = useCallback(async () => {
-    if (isFullyLoaded || loading) return;
-    setLoading(true);
+  const fetchAllProducts = useCallback(async (retries = 3, delay = 500) => {
+    if (isFullyLoaded) return;
+    if (retries === 3) setLoading(true);
     
     try {
       console.log("Searching or filtering triggered: Loading full product catalog...");
@@ -160,12 +167,18 @@ function Products() {
         sessionStorage.setItem('products_cache', JSON.stringify(productsArray));
         sessionStorage.setItem('products_fetch_time', now.toString());
       }
-    } catch (error) {
-      console.error("Error loading full catalog:", error);
-    } finally {
       setLoading(false);
+    } catch (error) {
+      console.error(`Error loading full catalog (retries left: ${retries}):`, error);
+      if (retries > 0) {
+        setTimeout(() => {
+          fetchAllProducts(retries - 1, delay * 2);
+        }, delay);
+      } else {
+        setLoading(false);
+      }
     }
-  }, [isFullyLoaded, loading]);
+  }, [isFullyLoaded]);
 
   // Handle active filters count calculation
   const activeFiltersCount = useMemo(() => {

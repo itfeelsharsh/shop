@@ -57,36 +57,57 @@ function ProductView() {
   }, [id]);
 
   useEffect(() => {
-    const fetchProduct = async () => {
+    let active = true;
+    const fetchProduct = async (retries = 3, delay = 500) => {
       try {
         const docRef = doc(db, "products", id);
         const docSnap = await getDoc(docRef);
+
+        if (!active) return;
 
         if (docSnap.exists()) {
           const productData = { id: docSnap.id, ...docSnap.data() };
           setProduct(productData);
 
           // Fetch similar products
-          const productsRef = collection(db, "products");
-          const typeQuery = query(productsRef, where("type", "==", productData.type), limit(5));
-          const querySnapshot = await getDocs(typeQuery);
-          const similar = querySnapshot.docs
-            .map(doc => ({ id: doc.id, ...doc.data() }))
-            .filter(prod => prod.id !== productData.id);
-          setSimilarProducts(similar);
+          try {
+            const productsRef = collection(db, "products");
+            const typeQuery = query(productsRef, where("type", "==", productData.type), limit(5));
+            const querySnapshot = await getDocs(typeQuery);
+            if (active) {
+              const similar = querySnapshot.docs
+                .map(doc => ({ id: doc.id, ...doc.data() }))
+                .filter(prod => prod.id !== productData.id);
+              setSimilarProducts(similar);
+            }
+          } catch (e) {
+            console.error("Error fetching similar products:", e);
+          }
+          if (active) setLoading(false);
         } else {
           toast.error("Product not found!");
           navigate('/products');
         }
       } catch (error) {
-        console.error("Error fetching product:", error);
-        toast.error("An error occurred while fetching the product.");
-      } finally {
-        setLoading(false);
+        console.error(`Error fetching product (retries left: ${retries}):`, error);
+        if (retries > 0 && active) {
+          setTimeout(() => {
+            if (active) fetchProduct(retries - 1, delay * 2);
+          }, delay);
+        } else {
+          if (active) {
+            toast.error("An error occurred while fetching the product.");
+            setLoading(false);
+          }
+        }
       }
     };
 
+    if (active) setLoading(true);
     fetchProduct();
+    return () => {
+      active = false;
+    };
   }, [id, navigate]);
 
   const formatPrice = (price) => {

@@ -27,16 +27,17 @@ function Home() {
   const { getCachedData, preloadedData } = useContentLoader();
 
   useEffect(() => {
-    const initializeProducts = async () => {
+    let active = true;
+    const initializeProducts = async (retries = 3, delay = 500) => {
       try {
         const cachedProducts = getCachedData('products');
 
         if (cachedProducts && cachedProducts.length > 0) {
-          setProducts(cachedProducts);
+          if (active) setProducts(cachedProducts);
           return;
         }
 
-        setIsLoadingFresh(true);
+        if (active) setIsLoadingFresh(true);
         const productsCol = collection(db, "products");
         const productSnapshot = await getDocs(productsCol);
         const productList = productSnapshot.docs.map((doc) => {
@@ -51,16 +52,29 @@ function Home() {
         });
 
         const filteredProducts = productList.filter(product => product.showOnHome);
-        setProducts(filteredProducts);
+        if (active) {
+          setProducts(filteredProducts);
+          setIsLoadingFresh(false);
+        }
       } catch (error) {
-        console.error("Error initializing products:", error);
-        setProducts([]);
-      } finally {
-        setIsLoadingFresh(false);
+        console.error(`Error initializing products (retries left: ${retries}):`, error);
+        if (retries > 0 && active) {
+          setTimeout(() => {
+            if (active) initializeProducts(retries - 1, delay * 2);
+          }, delay);
+        } else {
+          if (active) {
+            setProducts([]);
+            setIsLoadingFresh(false);
+          }
+        }
       }
     };
 
     initializeProducts();
+    return () => {
+      active = false;
+    };
   }, [getCachedData]);
 
   useEffect(() => {
