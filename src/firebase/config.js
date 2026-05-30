@@ -2,7 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, FacebookAuthProvider } from "firebase/auth";
 import { initializeFirestore } from "firebase/firestore";
 import { getMessaging } from "firebase/messaging";
-import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
+import { initializeAppCheck, ReCaptchaV3Provider, getToken } from "firebase/app-check";
 
 const firebaseConfig = {
     apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -30,6 +30,7 @@ export const db = initializeFirestore(app, {
 export const messaging = getMessaging(app);
 
 // Initialize App Check
+let appCheckInstance = null;
 if (typeof window !== "undefined") {
     // Enable App Check debug token in local development environments
     if (
@@ -40,11 +41,23 @@ if (typeof window !== "undefined") {
         window.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
     }
 
-    initializeAppCheck(app, {
+    appCheckInstance = initializeAppCheck(app, {
         provider: new ReCaptchaV3Provider(
             process.env.REACT_APP_RECAPTCHA_SITE_KEY || "6LdQtjcrAAAAAB-gw9QaVLt8zIUTcvWAjCmlVwDs"
         ),
         isTokenAutoRefreshEnabled: true,
     });
 }
+
+export const getAppCheckToken = async () => {
+    if (!appCheckInstance) return null;
+    try {
+        const tokenResult = await getToken(appCheckInstance, false);
+        return tokenResult.token;
+    } catch (error) {
+        console.warn("Failed to retrieve App Check token:", error);
+        return null;
+    }
+};
+
 

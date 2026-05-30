@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { m, AnimatePresence } from 'framer-motion';
-import { auth, db } from '../../firebase/config';
+import { auth, db, getAppCheckToken } from '../../firebase/config';
 import { doc, getDoc, updateDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { applyCoupon, removeCoupon, removePurchasedFromCart, updateQuantity, removeFromCart } from '../../redux/cartSlice';
@@ -377,9 +377,14 @@ function UnifiedCheckout() {
 
       // 2. Create Razorpay order on server
       const orderTotal = total + importDuty;
+      const appCheckToken = await getAppCheckToken();
+      const createOrderHeaders = { 'Content-Type': 'application/json' };
+      if (appCheckToken) {
+        createOrderHeaders['X-Firebase-AppCheck'] = appCheckToken;
+      }
       const response = await fetch('/api/razorpay/create-order', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: createOrderHeaders,
         body: JSON.stringify({
           amount: orderTotal,
           currency: 'INR',
@@ -436,9 +441,13 @@ function UnifiedCheckout() {
           handler: async function (response) {
             // 4. Verify payment signature on server
             try {
+              const verifyHeaders = { 'Content-Type': 'application/json' };
+              if (appCheckToken) {
+                verifyHeaders['X-Firebase-AppCheck'] = appCheckToken;
+              }
               const verifyRes = await fetch('/api/razorpay/verify-payment', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: verifyHeaders,
                 body: JSON.stringify({
                   razorpay_order_id: response.razorpay_order_id,
                   razorpay_payment_id: response.razorpay_payment_id,
