@@ -19,7 +19,7 @@ export async function onRequestPost(context) {
 
   try {
     const payload = await request.json();
-    const { amount, currency = 'INR', orderId } = payload;
+    const { amount, currency = 'INR', orderId, notes } = payload;
 
     if (!amount || amount <= 0) {
       return Response.json(
@@ -43,6 +43,7 @@ export async function onRequestPost(context) {
         amount: Math.round(Number(amount) * 100), // Convert to paise
         currency,
         receipt,
+        notes,
       }),
     });
 

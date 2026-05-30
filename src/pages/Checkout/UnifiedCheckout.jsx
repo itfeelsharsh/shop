@@ -389,6 +389,10 @@ function UnifiedCheckout() {
           amount: orderTotal,
           currency: 'INR',
           orderId,
+          notes: {
+            products: cartDetails.map(item => `${item.product.name} (x${item.quantity})`).join(', ').substring(0, 100),
+            orderId: orderId
+          }
         }),
       });
 
@@ -415,7 +419,7 @@ function UnifiedCheckout() {
           amount: data.amount,
           currency: data.currency,
           name: 'KamiKoto',
-          description: `Order #${orderId.slice(-8)}`,
+          description: cartDetails.map(item => `${item.product.name} (x${item.quantity})`).join(', ').substring(0, 255) || `Order #${orderId.slice(-8)}`,
           order_id: data.id,
           prefill: {
             name: customerName || user.displayName || '',
