@@ -241,7 +241,7 @@ function getCORSHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',  // In production, replace with your domain
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Firebase-AppCheck',
     'Access-Control-Max-Age': '86400',
     'Content-Type': 'application/json',
     'Cache-Control': 'no-cache'
