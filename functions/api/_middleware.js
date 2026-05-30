@@ -143,14 +143,15 @@ export async function onRequest(context) {
   
   // Detect local development
   const isDev = url.hostname === 'localhost' || url.hostname === '127.0.0.1' || env.NODE_ENV === 'development';
+  const disableAppCheck = env.DISABLE_APP_CHECK === 'true' || env.DISABLE_APP_CHECK === true;
 
   const { isValid, reason } = await verifyAppCheckToken(token, projectId, projectNumber);
 
   if (!isValid) {
     console.warn(`[App Check Middleware] Validation failed: ${reason}`);
     
-    if (isDev) {
-      console.warn('[App Check Middleware] Local development mode detected. Allowing request despite validation failure.');
+    if (isDev || disableAppCheck) {
+      console.warn('[App Check Middleware] App Check verification bypassed (isDev or DISABLE_APP_CHECK enabled).');
       return next();
     }
 

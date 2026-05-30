@@ -1297,9 +1297,7 @@ function UnifiedCheckout() {
                           <div className="bg-green-700 text-white rounded-full p-1 mt-0.5">
                             <CheckCircle size={14} />
                           </div>
-                          <p className="text-xs text-green-950 leading-relaxed">
-                            Your payment is handled by Razorpay, ensuring the highest level of security. We never store your payment details.
-                          </p>
+                    
                         </div>
                       </div>
                     )}
