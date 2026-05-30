@@ -1,5 +1,5 @@
 /**
- * Razorpay Data Proxy — Cloudflare Pages Function
+ * Payment Gateway Data Proxy — Cloudflare Pages Function
  * 
  * Securely proxies request to Razorpay REST API endpoints:
  * - Payments: GET /v1/payments
