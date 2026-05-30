@@ -262,8 +262,8 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   const userAgent = request.headers.get('User-Agent') || '';
 
-  // Only run for product detail pages
-  const productMatch = url.pathname.match(/^\/product\/([^\/]+)$/);
+  // Only run for product detail pages (with optional trailing slash)
+  const productMatch = url.pathname.match(/^\/product\/([^\/]+)\/?$/);
 
   if (productMatch && isBot(userAgent)) {
     const productId = productMatch[1];
