@@ -368,37 +368,91 @@
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); /* Add clean breathing room */
 }
 
-/* Mobile PWA Performance Optimization System */
-@media (max-width: 768px) {
-  /* Optimize text rendering and touch target highlights */
-  * {
-    text-rendering: optimizeSpeed;
-    -webkit-tap-highlight-color: transparent;
-  }
+/* ==========================================================================
+   Deep GPU-Accelerated & PWA Rendering System
+   Ensures 120Hz native scrolling, zero layout shifts, and absolute smoothness.
+   ========================================================================== */
 
-  /* Hardware accelerate pages, tab panels, and motion transitions */
-  main, 
-  section, 
-  [role="tabpanel"],
-  .framer-motion-wrapper {
-    transform: translate3d(0, 0, 0);
-    backface-visibility: hidden;
-    perspective: 1000px;
-    will-change: transform, opacity;
-  }
+/* 1. Global Rendering and Scroll Smoothing System */
+html, body {
+  /* Lock standard browser bouncing to avoid elastic stutter on body scroll */
+  overscroll-behavior-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
 
-  /* Force native touch scrolling momentum and minimize pull-to-refresh jitters */
-  body, html {
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: none;
-  }
-
-  /* Disable sticky hover states on touch screens to prevent tab change / scroll lag */
+/* Disable hover animations on touchscreen devices to prevent sticky lag */
+@media (hover: none) {
+  .premium-shadow-hover:hover,
   .btn-shopify:hover,
-  .premium-shadow-hover:hover {
+  .product-card-wrap:hover,
+  button:hover,
+  a:hover {
     transform: none !important;
     box-shadow: inherit !important;
   }
+}
+
+/* Optimize text rendering and touch target highlights globally */
+* {
+  text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+/* Bypass mobile double-tap click delay for instant interactive response */
+button, 
+a, 
+input, 
+select, 
+textarea,
+[role="button"] {
+  touch-action: manipulation;
+}
+
+/* 2. Targeted Hardware GPU Acceleration Layers
+   Only hardware-accelerate nodes that transition, translate, or float.
+   Avoid accelerating broad containers (like body/main) to protect GPU memory. */
+
+.sticky, 
+nav, 
+.pwa-bottom-nav,
+.Toastify__toast,
+.modal-overlay,
+.modal-content,
+.drawer-content {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  will-change: transform;
+}
+
+/* Performance layer for images and interactive elements */
+img, 
+.product-card-wrap,
+.btn-shiny-ribbon::after {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* 3. Rendering containment boundaries (isolate layouts to prevent global recalculation) */
+article,
+.premium-card,
+.product-card-wrap {
+  contain: layout paint style;
+}
+
+/* Off-screen/Below-the-fold content rendering deferral (Huge boost to LCP & scroll smoothness) */
+footer,
+.below-the-fold,
+.you-might-also-like-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 400px; /* Reserves space while offscreen to avoid layout shifts */
+}
+
+/* 4. Layout Shift (CLS) Mitigation */
+img {
+  aspect-ratio: attr(width) / attr(height); /* Respect explicit image aspect ratios */
 }
 
 

@@ -28,7 +28,8 @@ function Cart() {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    let active = true;
+    const fetchProducts = async (retries = 3, delay = 500) => {
       try {
         const productsCol = collection(db, "products");
         const productSnapshot = await getDocs(productsCol);
@@ -43,16 +44,29 @@ function Cart() {
           };
         });
 
-        setProducts(productList);
-        setPopularProducts(productList.filter(product => product.showOnHome));
-        setLoading(false);
+        if (active) {
+          setProducts(productList);
+          setPopularProducts(productList.filter(product => product.showOnHome));
+          setLoading(false);
+        }
       } catch (error) {
-        console.error("Error fetching products:", error);
-        setLoading(false);
+        console.error(`Error fetching products in cart (retries left: ${retries}):`, error);
+        if (retries > 0 && active) {
+          setTimeout(() => {
+            if (active) fetchProducts(retries - 1, delay * 2);
+          }, delay);
+        } else {
+          if (active) {
+            setLoading(false);
+          }
+        }
       }
     };
 
     fetchProducts();
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleRemove = (productId) => {
@@ -313,7 +327,7 @@ function Cart() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="mt-16"
+            className="mt-16 you-might-also-like-section"
           >
             <h2 className="text-3xl font-bold text-gray-900 mb-6">You Might Also Like</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">

@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
-import { AnimatePresence, m } from "framer-motion";
 import Navbar from "./components/Navbar";
 import { ToastContainer } from "react-toastify";
 import Footer from "./components/Footer";
@@ -52,9 +51,6 @@ function App() {
   // Use the comprehensive content loader hook
   const {
     isLoading,
-    loadingProgress,
-    loadingStates,
-    errors,
     markAuthLoaded,
     forceComplete
   } = useContentLoader();
@@ -125,11 +121,7 @@ function App() {
   if (isLoading && !isBotOrCrawler()) {
     return (
       <LoadingScreen 
-        message="Preparing your shopping experience"
-        progress={loadingProgress}
-        showTips={true}
-        loadingStates={loadingStates}
-        errors={errors}
+        onComplete={forceComplete}
       />
     );
   }
@@ -210,63 +202,46 @@ function AppContent() {
  * Must be used within a Router context
  */
 function AnimatedRoutes() {
-  const location = useLocation();
-  // Custom key to prevent re-animation for sub-routes of /my-account
-  const getAnimationKey = (path) => {
-    if (path.startsWith('/my-account')) return '/my-account';
-    return path;
-  };
-
   return (
-    <AnimatePresence mode="wait">
-      <m.div
-        key={getAnimationKey(location.pathname)}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-      >
-        <Routes location={location}>
-          <Route path="/" element={<Home />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/product/:id" element={<ProductView />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/password-reset" element={<PasswordReset />} />
-          
-          {/* My Account routes */}
-          <Route path="/my-account" element={
-            <ProtectedRoute>
-              <MyAccount />
-            </ProtectedRoute>
-          } />
-          <Route path="/my-account/:section" element={
-            <ProtectedRoute>
-              <MyAccount />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/wishlist" element={
-            <ProtectedRoute>
-              <Wishlist />
-            </ProtectedRoute>
-          } />
-          <Route path="/checkout" element={<UnifiedCheckout />} />
-          
-          {/* Post-checkout order summary page - displays order confirmation */}
-          <Route path="/summary" element={<OrderSummary />} />
-          
-          <Route path="/about" element={<AboutUs />} />
-          <Route path="/contact" element={<ContactUs />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/terms-of-service" element={<TermsOfService />} />
-          <Route path="/return-policy" element={<ReturnPolicy />} />
-          <Route path="/shipping-info" element={<ShippingInfo />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </m.div>
-    </AnimatePresence>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/products" element={<Products />} />
+      <Route path="/product/:id" element={<ProductView />} />
+      <Route path="/cart" element={<Cart />} />
+      <Route path="/signin" element={<SignIn />} />
+      <Route path="/signup" element={<SignUp />} />
+      <Route path="/password-reset" element={<PasswordReset />} />
+      
+      {/* My Account routes */}
+      <Route path="/my-account" element={
+        <ProtectedRoute>
+          <MyAccount />
+        </ProtectedRoute>
+      } />
+      <Route path="/my-account/:section" element={
+        <ProtectedRoute>
+          <MyAccount />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/wishlist" element={
+        <ProtectedRoute>
+          <Wishlist />
+        </ProtectedRoute>
+      } />
+      <Route path="/checkout" element={<UnifiedCheckout />} />
+      
+      {/* Post-checkout order summary page - displays order confirmation */}
+      <Route path="/summary" element={<OrderSummary />} />
+      
+      <Route path="/about" element={<AboutUs />} />
+      <Route path="/contact" element={<ContactUs />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/terms-of-service" element={<TermsOfService />} />
+      <Route path="/return-policy" element={<ReturnPolicy />} />
+      <Route path="/shipping-info" element={<ShippingInfo />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 }
 

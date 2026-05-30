@@ -107,7 +107,7 @@ const ProductCard = memo(function ProductCard({
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       whileHover={{ y: -6, scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
-      className="bg-white rounded-[24px] overflow-hidden shadow-soft hover:shadow-hover transition-all duration-400 flex flex-col h-full cursor-pointer group border border-gray-100/80"
+      className="bg-white rounded-[24px] overflow-hidden shadow-soft hover:shadow-hover transition-all duration-400 flex flex-col h-full cursor-pointer group border border-gray-100/80 product-card-wrap"
       onClick={handleViewDetails}
     >
       {/* Product Image Section */}

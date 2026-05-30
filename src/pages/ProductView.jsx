@@ -450,7 +450,7 @@ function ProductView() {
 
           {/* Similar Products */}
           {similarProducts.length > 0 && (
-            <section className="pt-24 border-t border-gray-100">
+            <section className="pt-24 border-t border-gray-100 you-might-also-like-section">
               <h2 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight mb-12">You might also like...</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
                 {similarProducts.map((similarProduct) => (
