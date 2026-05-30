@@ -67,15 +67,17 @@ async function verifyAppCheckToken(token, projectId, projectNumber) {
       return { isValid: false, reason: 'Token expired' };
     }
 
-    // Verify issuer & audience
+    // Verify issuer & audience (supporting both string and array formats)
     const expectedIss = `https://firebaseappcheck.googleapis.com/${projectNumber}`;
     const expectedAud = `projects/${projectNumber}`;
 
-    if (payload.iss !== expectedIss && payload.iss !== `https://firebaseappcheck.googleapis.com/${projectId}`) {
+    const issArray = Array.isArray(payload.iss) ? payload.iss : [payload.iss];
+    if (!issArray.includes(expectedIss) && !issArray.includes(`https://firebaseappcheck.googleapis.com/${projectId}`)) {
       return { isValid: false, reason: `Issuer mismatch. Expected: ${expectedIss}, Got: ${payload.iss}` };
     }
 
-    if (payload.aud !== expectedAud && payload.aud !== `projects/${projectId}`) {
+    const audArray = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
+    if (!audArray.includes(expectedAud) && !audArray.includes(`projects/${projectId}`)) {
       return { isValid: false, reason: `Audience mismatch. Expected: ${expectedAud}, Got: ${payload.aud}` };
     }
 
