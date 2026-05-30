@@ -405,7 +405,7 @@ export default function Navbar() {
 
               {/* Input Capsule */}
               <div className="relative mb-8 shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-4.5 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-1.5 pl-4.5 flex items-center pointer-events-none">
                   <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
@@ -416,7 +416,7 @@ export default function Navbar() {
                   placeholder="Type notebook, pen, ruler..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="block w-full pl-12 pr-12 py-4 bg-gray-50/50 border border-gray-200/80 rounded-[22px] focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all duration-300 placeholder-gray-400 font-medium text-base shadow-inner"
+                  className="block w-full pl-12 pr-12 py-4 bg-gray-50/50 border border-gray-200/80 rounded-xl focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-all duration-300 placeholder-gray-400 font-medium text-base shadow-inner"
                 />
                 {searchQuery && (
                   <button

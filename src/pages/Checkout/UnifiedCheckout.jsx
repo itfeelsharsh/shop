@@ -83,7 +83,7 @@ function UnifiedCheckout() {
   const [upi, setUpi] = useState('');
   const [processingPayment, setProcessingPayment] = useState(false);
   const [createdOrderId, setCreatedOrderId] = useState(null);
-  const [orderComplete, setOrderComplete] = useState(false);
+  const [orderComplete] = useState(false);
   const [savePaymentInfo] = useState(true);
   const [completedOrder] = useState(null);
 
@@ -373,6 +373,24 @@ function UnifiedCheckout() {
           },
           theme: {
             color: '#111827',
+          },
+          config: {
+            display: {
+              blocks: {
+                upi: {
+                  name: 'UPI / QR',
+                  instruments: [
+                    {
+                      method: 'upi',
+                    },
+                  ],
+                },
+              },
+              sequence: ['block.upi', 'card'],
+              preferences: {
+                show_default_blocks: true,
+              },
+            },
           },
           handler: async function (response) {
             // 4. Verify payment signature on server

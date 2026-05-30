@@ -10,6 +10,7 @@ import WishlistButton from './WishlistButton';
 import reviewUtils from '../utils/reviewUtils';
 import { toast } from 'react-toastify';
 import Button from './Button';
+import noImageFallback from '../assets/noimgsimg.png';
 
 /**
  * Premium ProductCard Component
@@ -126,6 +127,10 @@ const ProductCard = memo(function ProductCard({
           className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
           loading="lazy"
           decoding="async"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = noImageFallback;
+          }}
         />
 
         {/* Dynamic Overlay */}

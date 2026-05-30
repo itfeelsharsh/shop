@@ -17,6 +17,7 @@ import ProductReviews from '../components/ProductReviews';
 import ProductReviewForm from '../components/ProductReviewForm';
 import ProductCard from '../components/ProductCard';
 import Button from '../components/Button';
+import noImageFallback from '../assets/noimgsimg.png';
 
 /**
  * Peak 2020 Premium Product View
@@ -169,6 +170,10 @@ function ProductView() {
                       src={productImages[activeImageIndex] || product.image}
                       alt={product.name}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = noImageFallback;
+                      }}
                     />
                   </AnimatePresence>
                   {product.mrp && product.mrp > product.price && (
@@ -187,7 +192,15 @@ function ProductView() {
                         onClick={() => setActiveImageIndex(index)}
                         className={`w-20 h-20 rounded-2xl overflow-hidden border-2 bg-gray-50 shadow-sm transition-all duration-300 ${activeImageIndex === index ? 'border-gray-900 scale-105 ring-2 ring-gray-900/10' : 'border-transparent hover:border-gray-300'}`}
                       >
-                        <img src={imgUrl} alt={`${product.name} View ${index + 1}`} className="w-full h-full object-cover" />
+                        <img 
+                          src={imgUrl} 
+                          alt={`${product.name} View ${index + 1}`} 
+                          className="w-full h-full object-cover" 
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = noImageFallback;
+                          }}
+                        />
                       </button>
                     ))}
                   </div>
