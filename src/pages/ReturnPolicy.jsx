@@ -19,7 +19,7 @@ function ReturnPolicy() {
         <h1 className="text-4xl md:text-5xl font-black mb-8 text-gray-900 text-center">Return Policy</h1>
         
         <p className="text-lg text-gray-700 mb-8 leading-relaxed text-center">
-          At <strong className="font-extrabold text-cyan-600">KamiKoto</strong>, I stand behind the quality of my premium stationery. If you are not completely satisfied with your purchase, I am here to help.
+          At <strong className="font-extrabold text-cyan-600">KamiKoto</strong>, I stand behind the quality of my premium goods. If you are not completely satisfied with your purchase, I am here to help.
         </p>
         
         <h2 className="text-2xl font-bold mb-4 text-gray-800">1. Returns & Exchanges</h2>
@@ -37,7 +37,7 @@ function ReturnPolicy() {
           Please note that certain items are not eligible for returns or refunds, including:
         </p>
         <ul className="list-disc list-inside text-base text-gray-600 mb-6 space-y-2">
-          <li>Customized or personalized stationery items</li>
+          <li>Customized or personalized items</li>
           <li>Gift cards and digital voucher purchases</li>
           <li>Items marked as final sale or clearance</li>
         </ul>

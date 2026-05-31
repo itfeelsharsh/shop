@@ -238,7 +238,7 @@ function SignUp() {
     <div className="min-h-screen relative bg-[#FCFCF9] bg-[linear-gradient(to_right,#f3f4f6_1px,transparent_1px),linear-gradient(to_bottom,#f3f4f6_1px,transparent_1px)] bg-[size:4rem_4rem] flex items-center justify-center px-4 py-16 overflow-hidden font-sans">
       <Helmet>
         <title>Create Account | KamiKoto</title>
-        <meta name="description" content="Join KamiKoto today and start your journey with premium stationery." />
+        <meta name="description" content="Join KamiKoto today and start your journey with premium items." />
       </Helmet>
 
       {/* Premium Architectural Draft Board Details */}

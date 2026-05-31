@@ -19,7 +19,7 @@ function ShippingInfo() {
         <h1 className="text-4xl md:text-5xl font-black mb-8 text-gray-900 text-center">Shipping Information</h1>
         
         <p className="text-lg text-gray-700 mb-8 leading-relaxed text-center">
-          At <strong className="font-extrabold text-cyan-600">KamiKoto</strong>, I strive to deliver your premium stationery items safely and efficiently. Below is everything you need to know about my shipping rates, delivery timelines, and methods.
+          At <strong className="font-extrabold text-cyan-600">KamiKoto</strong>, I strive to deliver your premium items safely and efficiently. Below is everything you need to know about my shipping rates, delivery timelines, and methods.
         </p>
         
         <h2 className="text-2xl font-bold mb-4 text-gray-800">1. Processing Times</h2>

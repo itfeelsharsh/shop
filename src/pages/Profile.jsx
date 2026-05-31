@@ -534,7 +534,7 @@ function MyAccount() {
                           <ShoppingBag size={40} className="mx-auto text-gray-300" />
                           <div>
                             <h3 className="font-extrabold text-lg text-gray-900">No orders placed yet</h3>
-                            <p className="text-gray-400 text-xs mt-1">Explore our premium curation of stationery essentials to start building your collective.</p>
+                            <p className="text-gray-400 text-xs mt-1">Explore our premium curation of Kamikoto essentials to start building your collective.</p>
                           </div>
                           <Link to="/products" className="inline-flex items-center px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all">
                             Explore Catalog
@@ -728,7 +728,7 @@ function MyAccount() {
                           <Heart size={40} className="mx-auto text-gray-300" />
                           <div>
                             <h3 className="font-extrabold text-lg text-gray-900">Your wishlist is empty</h3>
-                            <p className="text-gray-400 text-xs mt-1">Bookmark product listings to save premium stationery finds inside this page.</p>
+                            <p className="text-gray-400 text-xs mt-1">Bookmark product listings to save premium finds inside this page.</p>
                           </div>
                           <Link to="/products" className="inline-flex items-center px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all">
                             Explore Catalog

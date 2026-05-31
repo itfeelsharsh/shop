@@ -25,7 +25,7 @@ function TermsOfService() {
       
       <h2 className="text-3xl font-semibold mb-4 text-gray-800">2. Purpose of the Application</h2>
       <p className="text-lg text-gray-700 mb-4 leading-relaxed">
-        <strong>KamiKoto</strong> is developed exclusively for educational purposes. It serves as a demonstration of React and Firebase integration in building a Japanese stationery shopping application.
+        <strong>KamiKoto</strong> is developed exclusively for educational purposes. It serves as a demonstration of React and Firebase integration in building a premium shopping application.
       </p>
       
       <h2 className="text-3xl font-semibold mb-4 text-gray-800">3. No Data Collection</h2>

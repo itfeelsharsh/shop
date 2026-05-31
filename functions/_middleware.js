@@ -169,7 +169,7 @@ async function fetchProductData(productId, env) {
       mrp: Number(data.fields?.mrp?.integerValue || data.fields?.mrp?.doubleValue || 0),
       image: data.fields?.image?.stringValue || '',
       brand: data.fields?.brand?.stringValue || 'KamiKoto',
-      type: data.fields?.type?.stringValue || 'Stationery',
+      type: data.fields?.type?.stringValue || 'Premium',
       stock: Number(data.fields?.stock?.integerValue || 0),
     };
   } catch (error) {
@@ -315,7 +315,7 @@ function generateMetaTags(product, rating, url) {
   const mrpFormatted = product.mrp > product.price ? formatPrice(product.mrp) : null;
   const discountPercent = product.mrp > product.price ? Math.round(((product.mrp - product.price) / product.mrp) * 100) : null;
   
-  const title = `${product.name} | KamiKoto - Premium Stationery`;
+  const title = `${product.name} | KamiKoto - Premium Shop`;
   const metaDesc = product.description.substring(0, 160) + (product.description.length > 160 ? '...' : '');
   
   // Discord/WhatsApp specific title that includes price and discount

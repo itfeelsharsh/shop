@@ -103,8 +103,8 @@ function Home() {
   return (
     <div className="min-h-screen bg-white">
       <Helmet>
-        <title>KamiKoto | Premium Japanese Stationery & Writing Tools</title>
-        <meta name="description" content="Discover the pinnacle of premium Japanese stationery. Engineered for precision, designed for inspiration. Shop our collection of notebooks, pens, and more." />
+        <title>KamiKoto | Premium Shop</title>
+        <meta name="description" content="Discover the pinnacle of premium Kamikoto items. Engineered for precision, designed for inspiration. Shop our collection of notebooks, pens, and more." />
       </Helmet>
       {/* Thin Premium Banner Section */}
       <section className="container mx-auto px-4 pt-4">
@@ -130,7 +130,7 @@ function Home() {
         >
           <div>
             <h2 className="text-[32px] font-extrabold text-gray-900 tracking-tight mb-3">Our Best Sellers</h2>
-            <p className="text-base text-gray-700 max-w-md mb-2">A thoughtfully selected range of stationery crafted for daily use and lasting craftsmanship.</p>
+            <p className="text-base text-gray-700 max-w-md mb-2">A thoughtfully selected range of Kamikoto goods crafted for daily use and lasting craftsmanship.</p>
           </div>
           <Button
             variant="primary"

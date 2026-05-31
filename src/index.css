@@ -5,11 +5,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 /* 
-  KamiKoto Premium Stationery Theme Colors:
+  KamiKoto Premium Shop Theme Colors:
   -----------------------------------------
   1. Obsidian Black: #0A0A0A (Rich high-contrast primary for typography/borders)
   2. Pure White: #FFFFFF (Clean primary background, no dark mode)
-  3. Japanese Vermilion: #B91C1C (Vibrant forged-steel crimson representing Japan/fire)
+  3. Vermilion: #B91C1C (Vibrant forged-steel crimson representing fire)
   4. Craftsmanship Gold: #C5A880 (Luxurious warm brass/gold accent representing steelcraft)
   5. Sage Green: #16A34A (Clean success/in-stock badge green)
   6. Slate/Misty Grey: #F8FAFC / #F1F5F9 (Subtle structural panel colors)
@@ -18,7 +18,7 @@
 :root {
   --primary: #0a0a0a;
   --primary-light: #1e293b;
-  --accent: #b91c1c; /* Japanese Vermilion */
+  --accent: #b91c1c; /* Vermilion */
   --accent-gold: #c5a880; /* Craftsmanship Gold */
   --background: #ffffff;
   --surface: #f8fafc;

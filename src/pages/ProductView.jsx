@@ -163,7 +163,7 @@ function ProductView() {
     <>
       <Helmet>
         <title>{product ? `${product.name} | KamiKoto` : 'Loading Product... | KamiKoto'}</title>
-        <meta name="description" content={product ? product.description : 'Explore premium stationery at KamiKoto.'} />
+        <meta name="description" content={product ? product.description : 'Explore premium products at KamiKoto.'} />
       </Helmet>
 
       <div className="bg-white pb-12">

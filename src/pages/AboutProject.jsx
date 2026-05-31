@@ -84,7 +84,7 @@ function AboutProject() {
           <section id="overview" className="bg-white p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-4">
             <h2 className="text-2xl font-bold text-gray-900 border-b border-gray-100 pb-3">1. Project Overview</h2>
             <p className="text-gray-655 text-sm sm:text-base leading-relaxed">
-              KamiKoto is a full-stack, serverless e-commerce platform built to sell premium stationery. 
+              KamiKoto is a full-stack, serverless e-commerce platform built to sell premium goods. 
               The main design goal is high developer experience (DX) and zero hosting overhead cost. 
               I achieve this by decoupling the client storefront from the admin dashboard and running everything serverless; 
               using Cloudflare Pages and Firebase databases.

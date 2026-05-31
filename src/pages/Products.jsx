@@ -369,7 +369,7 @@ function Products() {
     return (
       <div className="min-h-screen bg-white">
         <Helmet>
-          <title>Loading Premium Stationery... | KamiKoto</title>
+          <title>Loading Premium Products... | KamiKoto</title>
         </Helmet>
         <div className="container mx-auto px-4 py-8 max-w-7xl">
           <div className="mb-8 animate-pulse">
@@ -389,8 +389,8 @@ function Products() {
   return (
     <div className="min-h-screen bg-white">
       <Helmet>
-        <title>Shop Premium Japanese Stationery | KamiKoto</title>
-        <meta name="description" content="Explore our curated collection of premium Japanese notebooks, journals, writing tools, and desk accessories." />
+        <title>Shop Premium Products | KamiKoto</title>
+        <meta name="description" content="Explore our curated collection of premium notebooks, journals, writing tools, and desk accessories." />
       </Helmet>
       
       <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -644,7 +644,7 @@ function Products() {
         {/* Total Count Info */}
         <div className="flex items-center justify-between mb-6">
           <p className="text-sm font-semibold text-gray-500">
-            Showing <span className="text-gray-900 font-bold">{Math.min(filteredProducts.length, visibleCount)}</span> of <span className="text-gray-900 font-bold">{filteredProducts.length}</span> premium stationery products
+            Showing <span className="text-gray-900 font-bold">{Math.min(filteredProducts.length, visibleCount)}</span> of <span className="text-gray-900 font-bold">{filteredProducts.length}</span> premium products
           </p>
         </div>
 
@@ -665,7 +665,7 @@ function Products() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-white border border-gray-100 shadow-md rounded-2xl mb-4 text-red-600 font-black">
               ✦
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No stationery matching filters</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">No products matching filters</h3>
             <p className="text-gray-500 text-sm max-w-sm mx-auto mb-6">We couldn't find matches. Try clearing some filters or searching for another term.</p>
             <Button
               variant="primary"

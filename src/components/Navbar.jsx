@@ -468,7 +468,7 @@ export default function Navbar() {
                     </div>
                   ) : (
                     <div className="text-center py-12">
-                      <p className="text-sm font-bold text-gray-900 mb-1">No stationery matches found</p>
+                      <p className="text-sm font-bold text-gray-900 mb-1">No matches found</p>
                       <p className="text-xs text-gray-400 font-medium">Try searching for generic terms like "notebook" or "writing".</p>
                     </div>
                   )

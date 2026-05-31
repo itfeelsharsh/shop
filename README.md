@@ -5,7 +5,7 @@ admin site features and working showcase video>
 
 https://youtu.be/TbbCTfXJl9E
 
-Welcome to KamiKoto, a beautifully crafted, high-fidelity e-commerce platform offering a seamless shopping experience for premium stationery. This codebase is built with React.js and Firebase, optimized for fluid UI/UX, premium aesthetics, and responsive performance.
+Welcome to KamiKoto, a beautifully crafted, high-fidelity e-commerce platform offering a seamless shopping experience for premium items. This codebase is built with React.js and Firebase, optimized for fluid UI/UX, premium aesthetics, and responsive performance.
 
 ## Architecture Overview
 
