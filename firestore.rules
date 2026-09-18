@@ -1,0 +1,171 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is an admin
+    // Validates custom claims token or verified user document in users collection
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.token.admin == true ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userRole == 'Admin')
+      );
+    }
+
+    // Helper function to check authentication
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check document ownership
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // User profiles
+    // Security Fix: Prevent privilege escalation. Normal users cannot assign or elevate themselves to 'Admin'.
+    // Restricts modifications to authorized user profile fields and prevents UID spoofing.
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && 
+                      request.resource.data.uid == userId &&
+                      (!('userRole' in request.resource.data) || request.resource.data.userRole == 'User');
+      allow update: if isAdmin() || (
+                      isOwner(userId) && 
+                      request.resource.data.uid == userId &&
+                      !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userRole', 'uid'])
+                    );
+      allow delete: if isAdmin() || isOwner(userId);
+    }
+
+    // Products
+    // Security Fix: Enforce integer type and non-negative bounds on stock updates during checkout
+    match /products/{productId} {
+      allow read: if true; 
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (
+                      isAuthenticated() && 
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock', 'lastSold']) &&
+                      request.resource.data.stock is int &&
+                      request.resource.data.stock >= 0
+                    );
+    }
+
+    // Coupons
+    // Security Fix: Allow authenticated checkout process to increment usedCount without permitting discount/code alterations
+    match /coupons/{couponId} {
+      allow read: if isAuthenticated();
+      allow create, delete: if isAdmin(); 
+      allow update: if isAdmin() || (
+                      isAuthenticated() &&
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usedCount']) &&
+                      request.resource.data.usedCount is int &&
+                      request.resource.data.usedCount >= resource.data.usedCount
+                    );
+    }
+
+    // Cart items for users (subcollection)
+    match /users/{userId}/cart/{cartItemId} {
+      allow read, write: if isOwner(userId) || isAdmin(); 
+    }
+
+    // Wishlist items for users
+    match /users/{userId}/wishlist/{wishlistItemId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+    }
+
+    // Orders for users (inside user document)
+    match /users/{userId}/orders/{orderId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isAdmin() || (
+                      isOwner(userId) && 
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'emailSent'])
+                    );
+      allow delete: if isAdmin();
+    }
+    
+    // Global orders collection
+    // Security Fix 1: Require query to filter by userId for non-admins to prevent listing other users' orders
+    // Security Fix 2: Allow emailSent tracking updates from OrderSummary while preventing unauthorized status alterations
+    match /orders/{orderId} {
+      allow get: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isAuthenticated() && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin() || (
+                      isAuthenticated() && 
+                      resource.data.userId == request.auth.uid && (
+                        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['emailSent']) && request.resource.data.emailSent is bool) ||
+                        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) && resource.data.status == 'Placed' && request.resource.data.status == 'Cancelled')
+                      )
+                    );
+      allow delete: if isAdmin();
+    }
+    
+    // Product reviews
+    // Security Fix: Strict validation on rating (1-5), text length (max 2000 chars), and immutable author
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && 
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.rating is number &&
+                      request.resource.data.rating >= 1 &&
+                      request.resource.data.rating <= 5 &&
+                      request.resource.data.text is string &&
+                      request.resource.data.text.size() <= 2000;
+      allow update: if isAdmin() || (
+                      isAuthenticated() && 
+                      resource.data.userId == request.auth.uid &&
+                      request.resource.data.userId == resource.data.userId &&
+                      request.resource.data.productId == resource.data.productId &&
+                      request.resource.data.rating is number &&
+                      request.resource.data.rating >= 1 &&
+                      request.resource.data.rating <= 5 &&
+                      request.resource.data.text is string &&
+                      request.resource.data.text.size() <= 2000
+                    );
+      allow delete: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+    }
+
+    // Product-specific reviews subcollection
+    match /products/{productId}/reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && 
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.rating is number &&
+                      request.resource.data.rating >= 1 &&
+                      request.resource.data.rating <= 5 &&
+                      request.resource.data.text is string &&
+                      request.resource.data.text.size() <= 2000;
+      allow update: if isAdmin() || (
+                      isAuthenticated() && 
+                      resource.data.userId == request.auth.uid &&
+                      request.resource.data.userId == resource.data.userId &&
+                      request.resource.data.rating is number &&
+                      request.resource.data.rating >= 1 &&
+                      request.resource.data.rating <= 5 &&
+                      request.resource.data.text is string &&
+                      request.resource.data.text.size() <= 2000
+                    );
+      allow delete: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+    }
+
+    // Banner System
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Announcement System
+    match /announcements/{announcementId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // General Settings
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

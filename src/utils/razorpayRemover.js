@@ -3,7 +3,7 @@
  * 
  * Permanently and completely suppresses and purges the Razorpay "Test Mode"
  * top-right red diagonal ribbon badge with zero visual flicker.
- * Uses the exact mechanism from the fuckTestMode extension:
+ * Uses a dual-stage removal mechanism:
  * 1. Targeted CSS suppression
  * 2. Real-time DOM purge via MutationObserver
  */

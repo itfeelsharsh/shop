@@ -256,9 +256,11 @@ function AboutProject() {
               </p>
               <pre className="text-[10px] text-indigo-300 font-mono bg-gray-900 p-2.5 rounded border border-gray-800 overflow-x-auto">
 {`function isAdmin() {
-  return request.auth != null &&
-         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userRole == 'Admin';
+  return request.auth != null && (
+    request.auth.token.admin == true ||
+    (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userRole == 'Admin')
+  );
 }`}
               </pre>
             </div>

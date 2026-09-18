@@ -1,146 +1,173 @@
 // Paste Below Given Code In Your Firebase Firestore Database Rules  
 
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
     // Helper function to check if user is an admin
+    // Validates custom claims token or verified user document in users collection
     function isAdmin() {
-      // 1. Check if the user is authenticated.
-      // 2. Check if the user's document exists in the 'users' collection.
-      // 3. If it exists, check if the 'userRole' field in that document's data is 'Admin'.
-      return request.auth != null &&
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userRole == 'Admin';
+      return request.auth != null && (
+        request.auth.token.admin == true ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userRole == 'Admin')
+      );
     }
 
-    // Helper function to check if user has purchased and received a product
-    function hasPurchasedAndReceivedProduct(productId) {
-      // 1. Check if the user is authenticated
-      // 2. Check if there's an order with status "Delivered" containing this product
-      return request.auth != null &&
-             exists(/databases/$(database)/documents/orders) &&
-             exists(/databases/$(database)/documents/reviews) &&
-             (
-               // Query if any order exists with this product ID that is delivered
-               // This is a simplified check - in production you might need more complex logic
-               // that truly verifies the order is for this specific user AND this product AND is delivered
-               request.auth.uid != null
-             );
+    // Helper function to check authentication
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check document ownership
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
     }
     
     // User profiles
+    // Security Fix: Prevent privilege escalation. Normal users cannot assign or elevate themselves to 'Admin'.
+    // Restricts modifications to authorized user profile fields and prevents UID spoofing.
     match /users/{userId} {
-      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
-      allow write: if request.auth != null && request.auth.uid == userId; 
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && 
+                      request.resource.data.uid == userId &&
+                      (!('userRole' in request.resource.data) || request.resource.data.userRole == 'User');
+      allow update: if isAdmin() || (
+                      isOwner(userId) && 
+                      request.resource.data.uid == userId &&
+                      !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userRole', 'uid'])
+                    );
+      allow delete: if isAdmin() || isOwner(userId);
     }
 
     // Products
+    // Security Fix: Enforce integer type and non-negative bounds on stock updates during checkout
     match /products/{productId} {
       allow read: if true; 
-      allow create, delete: if request.auth != null && isAdmin();
-      // Allow authenticated users to update stock and lastSold fields during order processing
-      allow update: if request.auth != null && 
-                     (isAdmin() || 
-                      (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock', 'lastSold'])));
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (
+                      isAuthenticated() && 
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock', 'lastSold']) &&
+                      request.resource.data.stock is int &&
+                      request.resource.data.stock >= 0
+                    );
     }
 
     // Coupons
+    // Security Fix: Allow authenticated checkout process to increment usedCount without permitting discount/code alterations
     match /coupons/{couponId} {
-      // Any authenticated user can read coupons (needed for validation in cart)
-      allow read: if request.auth != null;
-      // Only admins can create, update, or delete coupons
-      allow write: if request.auth != null && isAdmin(); 
+      allow read: if isAuthenticated();
+      allow create, delete: if isAdmin(); 
+      allow update: if isAdmin() || (
+                      isAuthenticated() &&
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usedCount']) &&
+                      request.resource.data.usedCount is int &&
+                      request.resource.data.usedCount >= resource.data.usedCount
+                    );
     }
 
-    // Cart items for users
+    // Cart items for users (subcollection)
     match /users/{userId}/cart/{cartItemId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId; 
+      allow read, write: if isOwner(userId) || isAdmin(); 
     }
 
-    // Wishlist items for users - Only the user who created the wishlist can access it
+    // Wishlist items for users
     match /users/{userId}/wishlist/{wishlistItemId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if isOwner(userId) || isAdmin();
     }
 
     // Orders for users (inside user document)
     match /users/{userId}/orders/{orderId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId; 
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isAdmin() || (
+                      isOwner(userId) && 
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'emailSent'])
+                    );
+      allow delete: if isAdmin();
     }
     
-    // Global orders collection (needed for admin access)
+    // Global orders collection
+    // Security Fix 1: Require query to filter by userId for non-admins to prevent listing other users' orders
+    // Security Fix 2: Allow emailSent tracking updates from OrderSummary while preventing unauthorized status alterations
     match /orders/{orderId} {
-      // Read: Admins can read all orders, users can only read specific order documents they own
-      allow get: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
-      
-      // List: 
-      allow list: if request.auth != null &&
-                      (
-                        isAdmin() || // Admins can list all orders
-                        // --- TEMPORARY SIMPLIFICATION FOR NON-ADMINS ---
-                        // This relies on the client-side query ALWAYS including where("userId", "==", request.auth.uid)
-                        (request.auth.uid != null) // Any authenticated user can attempt to list.
-                                                   // Security relies on client query being correct.
-                      );
-      
-      // Create: Users can create their own orders
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      
-      // Update: Admins can update any order, users can only update their own orders with limited fields
-      allow update: if request.auth != null && 
-                      (isAdmin() || 
-                       (resource.data.userId == request.auth.uid && 
-                        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])));
-      
-      // Delete: Only admins can delete orders
-      allow delete: if request.auth != null && isAdmin();
+      allow get: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isAuthenticated() && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin() || (
+                      isAuthenticated() && 
+                      resource.data.userId == request.auth.uid && (
+                        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['emailSent']) && request.resource.data.emailSent is bool) ||
+                        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) && resource.data.status == 'Placed' && request.resource.data.status == 'Cancelled')
+                      )
+                    );
+      allow delete: if isAdmin();
     }
     
     // Product reviews
+    // Security Fix: Strict validation on rating (1-5), text length (max 2000 chars), and immutable author
     match /reviews/{reviewId} {
-      // Anyone can read reviews
       allow read: if true;
-      
-      // Users can create reviews if authenticated
-      allow create: if request.auth != null && 
-                      request.resource.data.userId == request.auth.uid;
-      
-      // Users can update or delete only their own reviews
-      allow update, delete: if request.auth != null && 
-                              resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && 
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.rating is number &&
+                      request.resource.data.rating >= 1 &&
+                      request.resource.data.rating <= 5 &&
+                      request.resource.data.text is string &&
+                      request.resource.data.text.size() <= 2000;
+      allow update: if isAdmin() || (
+                      isAuthenticated() && 
+                      resource.data.userId == request.auth.uid &&
+                      request.resource.data.userId == resource.data.userId &&
+                      request.resource.data.productId == resource.data.productId &&
+                      request.resource.data.rating is number &&
+                      request.resource.data.rating >= 1 &&
+                      request.resource.data.rating <= 5 &&
+                      request.resource.data.text is string &&
+                      request.resource.data.text.size() <= 2000
+                    );
+      allow delete: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
     }
 
-    // Product-specific reviews
+    // Product-specific reviews subcollection
     match /products/{productId}/reviews/{reviewId} {
-      // Anyone can read reviews
       allow read: if true;
-      
-      // Users can create reviews if authenticated and they've purchased the product
-      allow create: if request.auth != null && 
-                      request.resource.data.userId == request.auth.uid;
-      
-      // Users can update or delete only their own reviews
-      allow update, delete: if request.auth != null && 
-                              resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && 
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.rating is number &&
+                      request.resource.data.rating >= 1 &&
+                      request.resource.data.rating <= 5 &&
+                      request.resource.data.text is string &&
+                      request.resource.data.text.size() <= 2000;
+      allow update: if isAdmin() || (
+                      isAuthenticated() && 
+                      resource.data.userId == request.auth.uid &&
+                      request.resource.data.userId == resource.data.userId &&
+                      request.resource.data.rating is number &&
+                      request.resource.data.rating >= 1 &&
+                      request.resource.data.rating <= 5 &&
+                      request.resource.data.text is string &&
+                      request.resource.data.text.size() <= 2000
+                    );
+      allow delete: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
     }
 
     // Banner System
     match /banners/{bannerId} {
-      allow read: if true; // Allow public read for all users
-      allow write: if request.auth != null && isAdmin(); // Admins can create, update, delete
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     // Announcement System
     match /announcements/{announcementId} {
-      allow read: if true; // Allow public read for all users
-      allow write: if request.auth != null && isAdmin(); // Admins can create, update, delete
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
-    // General Settings (for banner/announcement toggles etc.)
+    // General Settings
     match /settings/{settingId} {
-      allow read: if true; // Allow public read for all users
-      allow write: if request.auth != null && isAdmin(); // Admins can create, update, delete
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }

@@ -8,8 +8,8 @@ const userSlice = createSlice({
   },
   reducers: {
     setUser: (state, action) => {
-      const { uid, email } = action.payload; 
-      state.currentUser = { uid, email }; 
+      const { uid, email } = action.payload || {}; 
+      state.currentUser = uid ? { uid, email } : null; 
     },
     clearUser: (state) => {
       state.currentUser = null;

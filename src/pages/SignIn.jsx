@@ -34,7 +34,8 @@ function SignIn() {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  const from = location.state?.from?.pathname || "/";
+  const rawFrom = location.state?.from?.pathname || location.state?.from || "/";
+  const from = (typeof rawFrom === 'string' && rawFrom.startsWith('/') && !rawFrom.startsWith('//') && !rawFrom.includes('://')) ? rawFrom : "/";
   const [user] = useAuthState(auth);
 
   // Automatically redirect to /my-account if already logged in
@@ -76,12 +77,13 @@ function SignIn() {
             const userDoc = await getDoc(userRef);
 
             if (!userDoc.exists()) {
-              // New user - set up with default profile picture
+              // New user - set up with default profile picture and standard User role
               await setDoc(userRef, {
                 uid: result.user.uid,
                 email: result.user.email,
                 name: result.user.email?.split('@')[0] || "",
                 profilePic: defaultPfp,
+                userRole: 'User',
                 cart: [],
                 createdAt: new Date().toISOString(),
               });
@@ -123,7 +125,6 @@ function SignIn() {
     setRecaptchaChecking(true);
     try {
       const token = await executeRecaptcha('signin');
-      console.log("reCAPTCHA token:", token);
       return !!token;
     } catch (error) {
       console.error("reCAPTCHA error:", error);
@@ -138,8 +139,15 @@ function SignIn() {
   const handleEmailSignIn = async (e) => {
     e.preventDefault();
 
-    if (!email) {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) {
       toast.error("Please enter your email address");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      toast.error("Please enter a valid email address");
       return;
     }
 
@@ -155,8 +163,8 @@ function SignIn() {
         handleCodeInApp: true,
       };
 
-      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-      window.localStorage.setItem('emailForSignIn', email);
+      await sendSignInLinkToEmail(auth, cleanEmail, actionCodeSettings);
+      window.localStorage.setItem('emailForSignIn', cleanEmail);
       setEmailSent(true);
       toast.success("Check your email for the sign-in link!");
     } catch (error) {
@@ -197,12 +205,13 @@ function SignIn() {
       const userDoc = await getDoc(userRef);
 
       if (!userDoc.exists()) {
-        // New user - set default profile picture
+        // New user - set default profile picture and standard User role
         await setDoc(userRef, {
           uid: user.uid,
           name: user.displayName || "",
           email: user.email,
           profilePic: user.photoURL || defaultPfp,
+          userRole: 'User',
           cart: [],
           createdAt: new Date().toISOString(),
         });
@@ -216,7 +225,7 @@ function SignIn() {
         }, { merge: true });
       }
 
-      dispatch(setUser(user));
+      dispatch(setUser({ uid: user.uid, email: user.email }));
       toast.success("Sign in successful!");
       navigate(from, { replace: true });
     } catch (error) {

@@ -71,7 +71,6 @@ function PasswordReset() {
     setRecaptchaChecking(true);
     try {
       const token = await executeRecaptcha(actionName);
-      console.log("reCAPTCHA token:", token);
       return !!token;
     } catch (error) {
       console.error("reCAPTCHA error:", error);
@@ -87,13 +86,25 @@ function PasswordReset() {
   const handleRequestReset = async (e) => {
     e.preventDefault();
     
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) {
+      toast.error("Please enter your email address");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
     if (!await verifyRecaptchaToken('passwordreset')) {
       return;
     }
 
     setLoading(true);
     try {
-      await sendPasswordResetEmail(auth, email);
+      await sendPasswordResetEmail(auth, cleanEmail);
       toast.success('Password reset email sent! Please check your inbox.');
       setEmail('');
     } catch (error) {
@@ -113,7 +124,7 @@ function PasswordReset() {
       return;
     }
 
-    if (newPassword.length < 6) {
+    if (!newPassword || newPassword.trim().length < 6) {
       toast.error("Password must be at least 6 characters long.");
       return;
     }
