@@ -15,6 +15,7 @@ import CouponService from '../../utils/couponService';
 import { processNewOrder } from '../../utils/orderService';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import Button from '../../components/Button';
+import { sweepRazorpayTestModeRibbon } from '../../utils/razorpayRemover';
 
 
 // Import card logos
@@ -499,7 +500,14 @@ function UnifiedCheckout() {
           toast.error(response.error?.description || 'Payment failed. Please try again.');
           resolve({ success: false, error: response.error?.description });
         });
+        sweepRazorpayTestModeRibbon();
         rzp.open();
+        sweepRazorpayTestModeRibbon();
+        if (typeof window !== 'undefined' && window.requestAnimationFrame) {
+          window.requestAnimationFrame(sweepRazorpayTestModeRibbon);
+        }
+        setTimeout(sweepRazorpayTestModeRibbon, 50);
+        setTimeout(sweepRazorpayTestModeRibbon, 200);
       });
     } catch (error) {
       setProcessingPayment(false);

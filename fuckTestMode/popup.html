@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Razorpay Test Mode Remover</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo-area">
+                <div class="badge-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <path d="M9 12l2 2 4-4"/>
+                    </svg>
+                </div>
+                <div class="title-group">
+                    <h1>RZP Mode Clean</h1>
+                    <span id="statusBadge" class="status-badge active">Active</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="content">
+            <div class="feature-card">
+                <div class="feature-info">
+                    <span class="feature-title">Block Test Mode Ribbon</span>
+                    <span class="feature-desc">Permanently remove top-right red badge</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="enableToggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-info">
+                    <span class="feature-title">Hide Dark Backdrop</span>
+                    <span class="feature-desc">Make modal background transparent</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="backdropToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="stats-card">
+                <div class="stat-number" id="blockedCount">0</div>
+                <div class="stat-label">Ribbons Removed On Page</div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <span>Instant Zero-Flicker Protection</span>
+        </footer>
+    </div>
+    <script src="popup.js"></script>
+</body>
+</html>

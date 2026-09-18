@@ -135,6 +135,30 @@
       .grecaptcha-badge {
         visibility: hidden;
       }
+      /* Razorpay Test Mode Ribbon Suppression (Zero-Flicker) */
+      .razorpay-backdrop > span,
+      .razorpay-backdrop span,
+      .razorpay-container .razorpay-backdrop span,
+      div.razorpay-backdrop > span,
+      div.razorpay-backdrop span,
+      span[style*="rotate(45deg)"][style*="214, 68, 68"],
+      span[style*="rotate(45deg)"][style*="rgb(214, 68, 68)"],
+      span[style*="rotate(45deg)"][style*="#d64444"],
+      span[style*="rotate(45deg)"][style*="dashed"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        transform: scale(0) !important;
+        width: 0 !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        clip: rect(0, 0, 0, 0) !important;
+        overflow: hidden !important;
+        position: absolute !important;
+        z-index: -999999 !important;
+      }
     </style>
     
     <!-- Prerender.io support - Moved to external file -->

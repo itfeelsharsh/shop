@@ -5,6 +5,10 @@ import App from './App';
 import store from './redux/store';
 import { Provider } from 'react-redux';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
+import { initRazorpayTestModeRemover } from './utils/razorpayRemover';
+
+// Permanently suppress and purge Razorpay Test Mode ribbon badges
+initRazorpayTestModeRemover();
 
 /**
  * Main application entry point with hydration support for react-snap prerendering
