@@ -99,11 +99,12 @@ Configure the following in your Cloudflare Pages dashboard under Settings > Envi
 ## Setup Integrations
 
 ### 1. Razorpay Payment Integration
-Razorpay processes secure card, UPI, and wallet payments via a hosted checkout popup.
+Razorpay Standard Checkout offers every payment method enabled for your merchant account via the hosted checkout popup. The storefront does not otherwise restrict the payment method list.
 - Create a Razorpay account at https://razorpay.com.
 - Generate a Key ID and Key Secret from the Razorpay dashboard and configure them as `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` in your Cloudflare environment variables.
 - Add the public key as `REACT_APP_RAZORPAY_KEY_ID` for the storefront.
 - The app uses the serverless endpoints under `/functions/api/razorpay/` to create orders and verify signatures after checkout completes.
+- Cash on Delivery is available for India only when Razorpay has activated it for your merchant account. Checkout hides COD for non-India shipping addresses, and confirms a COD order through Razorpay's order-payment API after Checkout closes.
 
 ### 2. Resend Transactional Emails
 Emails are automatically sent upon checkout success (Payment Successful) and on order status updates from the admin panel (Packed, Shipped, Delivered).

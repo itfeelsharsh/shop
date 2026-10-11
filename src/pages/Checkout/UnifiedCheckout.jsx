@@ -415,6 +415,7 @@ function UnifiedCheckout() {
 
       // 3. Open Razorpay checkout popup
       return new Promise((resolve) => {
+        let paymentHandlerCompleted = false;
         const options = {
           key: data.keyId,
           amount: data.amount,
@@ -430,25 +431,15 @@ function UnifiedCheckout() {
           theme: {
             color: '#111827',
           },
-          config: {
-            display: {
-              blocks: {
-                upi: {
-                  name: 'UPI / QR',
-                  instruments: [
-                    {
-                      method: 'upi',
-                    },
-                  ],
-                },
-              },
-              sequence: ['block.upi', 'card'],
-              preferences: {
-                show_default_blocks: true,
+          ...(address.country !== 'India' && {
+            config: {
+              display: {
+                hide: [{ method: 'cod' }],
               },
             },
-          },
+          }),
           handler: async function (response) {
+            paymentHandlerCompleted = true;
             // 4. Verify payment signature on server
             try {
               const verifyHeaders = { 'Content-Type': 'application/json' };
@@ -485,20 +476,55 @@ function UnifiedCheckout() {
             }
           },
           modal: {
-            ondismiss: function () {
-              setProcessingPayment(false);
-              toast.info('Payment cancelled.');
-              resolve({ success: false, error: 'Payment cancelled by user' });
+            ondismiss: async function () {
+              if (paymentHandlerCompleted) return;
+
+              try {
+                const statusHeaders = {};
+                if (appCheckToken) {
+                  statusHeaders['X-Firebase-AppCheck'] = appCheckToken;
+                }
+
+                for (let attempt = 0; attempt < 6; attempt += 1) {
+                  const statusRes = await fetch(
+                    `/api/razorpay/payment-status?orderId=${encodeURIComponent(data.id)}`,
+                    { headers: statusHeaders }
+                  );
+                  const statusData = await statusRes.json();
+
+                  if (!statusRes.ok) {
+                    throw new Error(statusData.error || 'Unable to confirm the payment status.');
+                  }
+
+                  if (statusData.codPlaced) {
+                    paymentHandlerCompleted = true;
+                    navigate(`/summary?orderId=${orderId}&paymentId=${statusData.paymentId}&clearCart=true`);
+                    resolve({ success: true });
+                    return;
+                  }
+
+                  if (attempt < 5) {
+                    await new Promise((retry) => setTimeout(retry, 750));
+                  }
+                }
+
+                setProcessingPayment(false);
+                toast.info('Payment cancelled.');
+                resolve({ success: false, error: 'Payment cancelled by user' });
+              } catch (statusError) {
+                setProcessingPayment(false);
+                console.error('Razorpay payment status check failed:', statusError);
+                toast.error('We could not confirm whether your order was placed. Please contact support before retrying.');
+                resolve({ success: false, error: statusError.message });
+              }
             },
           },
         };
 
         const rzp = new window.Razorpay(options);
         rzp.on('payment.failed', function (response) {
-          setProcessingPayment(false);
           console.error('Razorpay payment failed:', response.error);
-          toast.error(response.error?.description || 'Payment failed. Please try again.');
-          resolve({ success: false, error: response.error?.description });
+          toast.error(response.error?.description || 'Payment failed. You can retry or choose another available method.');
         });
         sweepRazorpayTestModeRibbon();
         rzp.open();
