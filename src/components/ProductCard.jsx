@@ -11,6 +11,7 @@ import reviewUtils from '../utils/reviewUtils';
 import { toast } from 'react-toastify';
 import Button from './Button';
 import noImageFallback from '../assets/noimgsimg.png';
+import { hasOptions } from '../utils/productOptions';
 
 /**
  * Premium ProductCard Component
@@ -65,6 +66,13 @@ const ProductCard = memo(function ProductCard({
       return;
     }
 
+    // Products with real choices (size, colour, ...) need a selection first.
+    if (hasOptions(product)) {
+      toast.info('Choose your options to continue');
+      navigate(`/product/${product.id}`);
+      return;
+    }
+
     setIsAddingToCart(true);
     try {
       await onAddToCart(product);
@@ -100,31 +108,33 @@ const ProductCard = memo(function ProductCard({
   };
 
   return (
-    <m.div
+    <m.article
       ref={ref}
       initial={{ opacity: 0, y: 20 }}
       animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      whileHover={{ y: -6, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      className="bg-white rounded-[24px] overflow-hidden shadow-soft hover:shadow-hover transition-all duration-400 flex flex-col h-full cursor-pointer group border border-gray-100/80 product-card-wrap"
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ y: -4 }}
+      className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-[border-color,box-shadow] duration-300 hover:border-gray-300 hover:shadow-xl hover:shadow-gray-950/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2 product-card-wrap"
       onClick={handleViewDetails}
+      onKeyDown={(event) => {
+        if (event.target === event.currentTarget && event.key === 'Enter') handleViewDetails();
+      }}
+      role="link"
+      tabIndex={0}
+      aria-label={`View ${product?.name || 'product'} details`}
     >
       {/* Product Image Section */}
-      <div className="relative overflow-hidden aspect-square bg-gray-50">
-        {/* Shiny corner green ribbon if there is a discount */}
+      <div className="relative aspect-square overflow-hidden bg-[#f7f6f3]">
         {product?.mrp && product.mrp > product.price && (
-          <div className="absolute top-0 left-0 overflow-hidden w-20 h-20 pointer-events-none z-20">
-            <div className="absolute top-0 left-0 bg-gradient-to-r from-emerald-600 via-green-500 to-emerald-500 text-white text-[9px] font-extrabold uppercase py-1.5 shadow-md w-[130px] text-center transform -rotate-45 -translate-x-[36px] translate-y-[16px] tracking-wider border border-white/20 select-none btn-shiny-ribbon">
-              {calculateDiscount(product.mrp, product.price)}% OFF
-            </div>
+          <div className="absolute left-3 top-3 z-20 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-red-800 shadow-sm ring-1 ring-black/5 backdrop-blur-sm">
+            {calculateDiscount(product.mrp, product.price)}% off
           </div>
         )}
 
         <img
           src={product?.image}
           alt={product?.name}
-          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
           loading="lazy"
           decoding="async"
           onError={(e) => {
@@ -133,39 +143,30 @@ const ProductCard = memo(function ProductCard({
           }}
         />
 
-        {/* Dynamic Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-        {/* Badges */}
-        <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-10">
-          <div className="flex flex-col gap-2">
-            {product?.isNew && (
-              <m.div 
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="bg-black text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-lg"
-              >
-                NEW ARRIVAL
-              </m.div>
-            )}
+        {product?.isNew && (
+          <div className="absolute bottom-3 left-3 z-10 rounded-full bg-[#D32F2F]/95 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white backdrop-blur-sm">
+            New
           </div>
+        )}
 
-          <div className="transform translate-x-12 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
-            <WishlistButton product={product} size="sm" />
-          </div>
+        <div className="absolute right-3 top-3 z-20">
+          <WishlistButton
+            product={product}
+            size="sm"
+            className="!bg-white/95 !text-gray-700 shadow-sm ring-1 ring-black/5 backdrop-blur-sm transition-colors hover:!bg-white hover:!text-red-700"
+          />
         </div>
 
-        {/* Center Quick View */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-90 group-hover:scale-100">
+        <div className="absolute inset-x-3 bottom-3 hidden translate-y-2 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 md:block">
           <Button
             variant="secondary"
             size="small"
-            icon={<Eye className="w-4 h-4" />}
+            icon={<Eye className="h-4 w-4" />}
             onClick={(e) => {
               e.stopPropagation();
               handleViewDetails();
             }}
-            className="bg-white/95 backdrop-blur-sm border-none shadow-xl hover:bg-white"
+            className="!w-full !justify-center !rounded-lg !border-0 !bg-white/95 !font-semibold !text-gray-900 shadow-lg backdrop-blur-sm hover:!bg-white"
           >
             Quick View
           </Button>
@@ -173,27 +174,27 @@ const ProductCard = memo(function ProductCard({
       </div>
 
       {/* Product Content */}
-      <div className="p-4 sm:p-6 flex flex-col gap-2 sm:gap-3 flex-grow">
+      <div className="flex flex-grow flex-col gap-2.5 p-4 sm:p-5">
         {/* Category/Brand & Stock */}
         <div className="flex items-center justify-between">
-          <span className="text-[8px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em] truncate max-w-[65%]">
+          <span className="max-w-[65%] truncate text-[10px] font-semibold uppercase tracking-[0.12em] text-gray-500">
             {product.brand || 'Premium Collection'}
           </span>
-          <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
-            <div className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${product?.stock > 0 ? 'bg-emerald-500' : 'bg-red-500'}`} />
-            <span className={`text-[8px] sm:text-[10px] font-bold uppercase tracking-wider ${product?.stock > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <div className={`h-1.5 w-1.5 rounded-full ${product?.stock > 0 ? 'bg-emerald-600' : 'bg-gray-400'}`} />
+            <span className={`text-[10px] font-medium ${product?.stock > 0 ? 'text-emerald-700' : 'text-gray-500'}`}>
               {product?.stock > 0 ? 'In Stock' : 'Sold Out'}
             </span>
           </div>
         </div>
 
         {/* Product Name */}
-        <h3 className="text-[18px] font-semibold text-gray-900 line-clamp-1 leading-tight min-h-[1.6rem] group-hover:text-[#D32F2F] transition-colors">
+        <h3 className="line-clamp-2 min-h-[2.75rem] text-[15px] font-semibold leading-[1.35] tracking-tight text-gray-950 transition-colors group-hover:text-red-800 sm:text-base">
           {product?.name}
         </h3>
 
         {/* Rating */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex min-h-4 items-center gap-1.5">
           {productRating.total > 0 ? (
             <div className="flex items-center gap-1 sm:gap-1.5">
               <div className="flex">
@@ -204,47 +205,47 @@ const ProductCard = memo(function ProductCard({
                   />
                 ))}
               </div>
-              <span className="text-[10px] sm:text-xs font-bold text-gray-400">({productRating.total})</span>
+              <span className="text-xs font-medium text-gray-500">({productRating.total})</span>
             </div>
           ) : (
-            <span className="text-[8px] sm:text-[10px] font-medium text-gray-300">No reviews yet</span>
+            <span className="text-[11px] font-medium text-gray-400">No reviews yet</span>
           )}
         </div>
 
         {/* Price section */}
-        <div className="flex items-end justify-between mt-auto pt-3 border-t border-gray-50 gap-1.5">
+        <div className="mt-auto flex items-end justify-between gap-2 border-t border-gray-100 pt-3">
           <div className="flex flex-col min-w-0">
-            <div className="flex items-baseline gap-1 sm:gap-1.5 flex-wrap">
-              <span className="text-lg font-extrabold text-gray-900 leading-tight">
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+              <span className="text-lg font-bold leading-tight tracking-tight text-gray-950">
                 {formatPrice(product?.price)}
               </span>
               {product?.mrp && product.mrp > product.price && (
-                <span className="text-[10px] sm:text-xs text-gray-400 line-through font-medium leading-tight">
+                <span className="text-xs font-medium leading-tight text-gray-400 line-through">
                   {formatPrice(product.mrp)}
                 </span>
               )}
             </div>
             {product?.mrp && product.mrp > product.price && (
-              <span className="text-[8px] sm:text-[9px] font-extrabold text-emerald-600 uppercase tracking-wide mt-0.5 block truncate">
-                SAVE {formatPrice(product.mrp - product.price)}
+              <span className="mt-1 block truncate text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+                Save {formatPrice(product.mrp - product.price)}
               </span>
             )}
           </div>
 
-          {/* Mini Add to Cart */}
           <Button
-            variant="primary"
+            variant="secondary"
             size="small"
             isLoading={isAddingToCart}
             loadingText=""
             disabled={!product?.stock || product.stock <= 0}
             onClick={handleAddToCart}
-            className="!rounded-full w-8 h-8 sm:w-9 sm:h-9 !p-0 shadow-md hover:shadow-red-200 flex-shrink-0 flex items-center justify-center bg-[#D32F2F] hover:bg-[#C62828] text-white btn-shiny-ribbon"
-            icon={<ShoppingCart className="w-3 h-3 sm:w-3.5 sm:h-3.5" />}
+            className="!h-10 !w-10 !shrink-0 !rounded-lg !bg-[#D32F2F] !p-0 !text-white !shadow-none hover:!bg-[#B71C1C] disabled:!bg-gray-200"
+            icon={<ShoppingCart className="h-4 w-4" />}
+            aria-label={`Add ${product?.name || 'product'} to cart`}
           />
         </div>
       </div>
-    </m.div>
+    </m.article>
   );
 });
 

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { downloadOrderReceipt } from '../utils/pdfUtils';
 import { Home, Package, FileDown, CheckCircle, AlertTriangle } from 'lucide-react';
 import { m } from "framer-motion";
+import { getItemOptionLabel } from '../utils/productOptions';
 
 /**
  * Component for displaying order confirmation with receipt download functionality
@@ -137,6 +138,9 @@ function OrderConfirmation({ order }) {
                 </div>
                 <div className="flex-grow">
                   <h4 className="text-gray-800 font-medium">{item.name}</h4>
+                  {getItemOptionLabel(item) && (
+                    <p className="text-gray-500 text-xs font-semibold mt-0.5">{getItemOptionLabel(item)}</p>
+                  )}
                   <p className="text-gray-500 text-sm mt-1">Quantity: {item.quantity}</p>
                   <p className="text-gray-700 font-medium mt-1">
                     {formatPrice(item.price)}

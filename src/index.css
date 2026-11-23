@@ -330,17 +330,6 @@
 }
 
 /* PWA safe area utilities */
-.pwa-main-padding {
-  padding-bottom: 4rem; /* Fallback for older browsers */
-  padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
-}
-
-@media (min-width: 768px) {
-  .pwa-main-padding {
-    padding-bottom: 0px !important;
-  }
-}
-
 .pwa-top-padding {
   padding-top: env(safe-area-inset-top, 0px);
 }
@@ -361,11 +350,6 @@
     padding-top: 0px;
     height: 2.25rem; /* Fallback equivalent to h-9 */
   }
-}
-
-.pwa-bottom-nav {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); /* Add clean breathing room */
 }
 
 /* ==========================================================================
@@ -416,7 +400,6 @@ textarea,
 
 .sticky, 
 nav, 
-.pwa-bottom-nav,
 .Toastify__toast,
 .modal-overlay,
 .modal-content,

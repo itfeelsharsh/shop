@@ -16,14 +16,7 @@ import { processNewOrder } from '../../utils/orderService';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import Button from '../../components/Button';
 import { sweepRazorpayTestModeRibbon } from '../../utils/razorpayRemover';
-
-
-// Import card logos
-import VisaLogo from '../../assets/visa.png';
-import MasterCardLogo from '../../assets/mastercard.png';
-import RuPayLogo from '../../assets/rupay.png';
-import AMEXLogo from '../../assets/amex.png';
-
+import { getItemOptionLabel } from '../../utils/productOptions';
 
 
 const COUNTRY_CODES = {
@@ -421,6 +414,7 @@ function UnifiedCheckout() {
           amount: data.amount,
           currency: data.currency,
           name: 'KamiKoto',
+          image: '/kamikoto-logo-transparent-darkish-logo-for-better-visibility.png',
           description: cartDetails.map(item => `${item.product.name} (x${item.quantity})`).join(', ').substring(0, 255) || `Order #${orderId.slice(-8)}`,
           order_id: data.id,
           prefill: {
@@ -429,15 +423,18 @@ function UnifiedCheckout() {
             contact: getFullPhoneNumber() || '',
           },
           theme: {
-            color: '#111827',
+            color: '#D32F2F',
           },
-          ...(address.country !== 'India' && {
-            config: {
-              display: {
-                hide: [{ method: 'cod' }],
+          config: {
+            display: {
+              preferences: {
+                show_default_blocks: true,
               },
+              ...(address.country !== 'India' && {
+                hide: [{ method: 'cod' }],
+              }),
             },
-          }),
+          },
           handler: async function (response) {
             paymentHandlerCompleted = true;
             // 4. Verify payment signature on server
@@ -607,7 +604,8 @@ function UnifiedCheckout() {
               name: productData.name,
               requested: item.quantity,
               available: productData.stock,
-              productId: item.productId
+              productId: item.productId,
+              lineId: item.lineId || item.productId
             };
           }
         }
@@ -624,11 +622,11 @@ function UnifiedCheckout() {
 
           if (item.available > 0) {
             dispatch(updateQuantity({
-              productId: item.productId,
+              lineId: item.lineId,
               quantity: item.available
             }));
           } else {
-            dispatch(removeFromCart(item.productId));
+            dispatch(removeFromCart(item.lineId));
           }
         });
 
@@ -650,10 +648,13 @@ function UnifiedCheckout() {
           createdAt: new Date().toISOString(),
           items: updatedCartDetails.map(item => ({
             productId: item.productId,
+            lineId: item.lineId || item.productId,
             name: item.product.name,
             price: item.product.price,
             quantity: item.quantity,
             image: item.product.image,
+            selectedOptions: item.selectedOptions || {},
+            variant: getItemOptionLabel(item),
           })),
           shipping: {
             address: address,
@@ -916,13 +917,8 @@ function UnifiedCheckout() {
           
           <h2 className="text-2xl font-bold mb-3 tracking-tight text-gray-900">Processing Payment</h2>
           <p className="text-gray-600 text-sm mb-6 leading-relaxed">
-            We are securely connecting to Razorpay to verify your transaction. Please do not refresh this page, close the browser, or click the back button.
+            Razorpay is confirming your transaction. Please keep this page open while we finish.
           </p>
-          
-          <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-gray-50 border border-gray-100 text-xs text-gray-500">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
-            <span>Secure Connection</span>
-          </div>
         </m.div>
       </div>
     );
@@ -936,7 +932,7 @@ function UnifiedCheckout() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 py-12">
       <Helmet>
-        <title>Secure Checkout | KamiKoto</title>
+        <title>Checkout | KamiKoto</title>
         <meta name="description" content="Complete your purchase securely at KamiKoto." />
       </Helmet>
       <div className="container mx-auto px-2 sm:px-4">
@@ -1004,7 +1000,7 @@ function UnifiedCheckout() {
                     ) : (
                       <div className="space-y-4">
                         {cartDetails.map((item) => (
-                          <div key={item.productId} className="flex items-center p-4 border border-gray-100 rounded-xl hover:shadow-sm transition-shadow">
+                          <div key={item.lineId || item.productId} className="flex items-center p-4 border border-gray-100 rounded-xl hover:shadow-sm transition-shadow">
                             <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200">
                               <img
                                 src={item.product.image}
@@ -1017,6 +1013,9 @@ function UnifiedCheckout() {
                                 <h3>{item.product.name}</h3>
                                 <p className="ml-4">{formatPrice(item.product.price * item.quantity)}</p>
                               </div>
+                              {getItemOptionLabel(item) && (
+                                <p className="mt-1 text-xs font-semibold text-gray-500">{getItemOptionLabel(item)}</p>
+                              )}
                               <p className="mt-1 text-sm text-gray-500">Quantity: {item.quantity}</p>
                             </div>
                           </div>
@@ -1311,19 +1310,20 @@ function UnifiedCheckout() {
                     ) : (
                       <div className="space-y-6">
                         <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8 text-center">
-                          <div className="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
-                            <CreditCard size={32} className="text-gray-900" />
+                          <div className="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm ring-1 ring-red-100">
+                            <img
+                              src="/kamikoto-logo-transparent-darkish-logo-for-better-visibility.png"
+                              alt="KamiKoto"
+                              className="h-14 w-14 object-contain"
+                            />
                           </div>
-                          <h3 className="text-xl font-bold text-gray-900 mb-2">Secure Checkout</h3>
+                          <h3 className="text-xl font-bold text-gray-900 mb-2">Pay with Razorpay</h3>
                           <p className="text-gray-600 max-w-sm mx-auto mb-6">
-                            Finalize your purchase securely using Razorpay. All transactions are encrypted and safe.
+                            Choose from the payment options available in your Razorpay checkout.
                           </p>
 
-                          <div className="mt-8 flex justify-center gap-4 opacity-50 grayscale">
-                            <img src={VisaLogo} alt="Visa" className="h-6" />
-                            <img src={MasterCardLogo} alt="MasterCard" className="h-6" />
-                            <img src={RuPayLogo} alt="RuPay" className="h-6" />
-                            <img src={AMEXLogo} alt="AMEX" className="h-6" />
+                          <div className="mx-auto mt-8 flex max-w-sm items-center justify-center gap-2 rounded-xl border border-red-100 bg-red-50/60 px-4 py-3 text-sm font-medium text-red-800">
+                            Payment methods enabled for your account appear at checkout
                           </div>
                         </div>
 

@@ -105,6 +105,7 @@ Razorpay Standard Checkout offers every payment method enabled for your merchant
 - Add the public key as `REACT_APP_RAZORPAY_KEY_ID` for the storefront.
 - The app uses the serverless endpoints under `/functions/api/razorpay/` to create orders and verify signatures after checkout completes.
 - Cash on Delivery is available for India only when Razorpay has activated it for your merchant account. Checkout hides COD for non-India shipping addresses, and confirms a COD order through Razorpay's order-payment API after Checkout closes.
+- The checkout requests Razorpay's default payment blocks. The integration cannot activate methods that are not enabled for the merchant account; Razorpay's Payment Methods activation controls are configured in Live mode, so test-mode availability depends on Razorpay's account/test setup.
 
 ### 2. Resend Transactional Emails
 Emails are automatically sent upon checkout success (Payment Successful) and on order status updates from the admin panel (Packed, Shipped, Delivered).

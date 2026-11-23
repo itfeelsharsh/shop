@@ -2,7 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { m } from "framer-motion";
 import { useInView } from 'react-intersection-observer';
-import { Instagram, Twitter, } from 'lucide-react';
+import { ArrowUpRight, Instagram, Twitter } from 'lucide-react';
+import brandLogo from '../assets/kamikoto-logo-transparent-darkish-logo-for-better-visibility.png';
 
 const Footer = () => {
   const [ref, inView] = useInView({
@@ -29,28 +30,29 @@ const Footer = () => {
       variants={containerVariants}
       initial="hidden"
       animate={inView ? "visible" : "hidden"}
-      className="bg-white border-t border-gray-200 text-gray-600 pt-16 pb-8 mt-20 relative z-10 hidden md:block font-sans"
+      className="relative z-10 mt-16 hidden border-t border-gray-200 bg-white pb-8 pt-12 font-sans text-gray-600 md:block sm:mt-20 sm:pt-16"
     >
-      <div className="container mx-auto px-4 max-w-7xl">
-        {/* Main Footer Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+      <div className="mx-auto max-w-7xl px-5 sm:px-8">
+        <div className="mb-10 grid grid-cols-2 gap-x-8 gap-y-10 sm:gap-x-12 lg:mb-14 lg:grid-cols-4">
           
           {/* Brand Column */}
-          <div className="space-y-4">
-            <Link to="/" className="text-lg font-semibold text-gray-900 hover:text-gray-700 transition-colors">
-              KamiKoto
+          <div className="col-span-2 space-y-4 lg:col-span-1">
+            <Link to="/" className="inline-flex items-center gap-3 text-lg font-bold tracking-tight text-gray-950 transition-colors hover:text-red-800">
+              <img src={brandLogo} alt="" className="h-9 w-9 object-contain" />
+              KamiKoto<span className="-ml-3 text-red-700">.</span>
             </Link>
-            <p className="text-sm text-gray-500 leading-relaxed">
-Scamming you since 1871, <br></br> PROUDLY.
+            <p className="max-w-xs text-sm leading-6 text-gray-500">
+              Thoughtfully made essentials for writing, planning, and everyday creativity.
             </p>
             {/* Social Icons */}
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-2 pt-1">
               <a 
                 href="https://instagram.com" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-900 flex items-center justify-center text-gray-600 hover:text-white transition-all duration-300"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-500 transition-colors hover:border-gray-950 hover:bg-gray-950 hover:text-white"
                 title="Follow on Instagram"
+                aria-label="Follow KamiKoto on Instagram"
               >
                 <Instagram className="w-4 h-4" />
               </a>
@@ -58,8 +60,9 @@ Scamming you since 1871, <br></br> PROUDLY.
                 href="https://x.com" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-900 flex items-center justify-center text-gray-600 hover:text-white transition-all duration-300"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-500 transition-colors hover:border-gray-950 hover:bg-gray-950 hover:text-white"
                 title="Follow on Twitter"
+                aria-label="Follow KamiKoto on X"
               >
                 <Twitter className="w-4 h-4" />
               </a>
@@ -68,20 +71,20 @@ Scamming you since 1871, <br></br> PROUDLY.
 
           {/* Shop Column */}
           <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-gray-900">Shop</h4>
-            <ul className="space-y-3">
+            <h4 className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-950">Shop</h4>
+            <ul className="space-y-2.5">
               {[
                 { label: 'All Products', path: '/products' },
                 { label: 'Notebooks', path: '/products?category=notebooks' },
                 { label: 'Writing Tools', path: '/products?category=writing' },
-         
               ].map((item) => (
                 <li key={item.label}>
                   <Link 
                     to={item.path}
-                    className="text-sm text-gray-500 hover:text-gray-900 transition-colors duration-200"
+                    className="group inline-flex items-center gap-1 text-sm text-gray-500 transition-colors hover:text-red-800"
                   >
                     {item.label}
+                    <ArrowUpRight className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-100" aria-hidden="true" />
                   </Link>
                 </li>
               ))}
@@ -90,8 +93,8 @@ Scamming you since 1871, <br></br> PROUDLY.
 
           {/* Support Column */}
           <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-gray-900">Support</h4>
-            <ul className="space-y-3">
+            <h4 className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-950">Support</h4>
+            <ul className="space-y-2.5">
               {[
                 { label: 'Shipping Info', path: '/shipping-info' },
                 { label: 'Return Policy', path: '/return-policy' },
@@ -100,9 +103,10 @@ Scamming you since 1871, <br></br> PROUDLY.
                 <li key={item.label}>
                   <Link 
                     to={item.path}
-                    className="text-sm text-gray-500 hover:text-gray-900 transition-colors duration-200"
+                    className="group inline-flex items-center gap-1 text-sm text-gray-500 transition-colors hover:text-red-800"
                   >
                     {item.label}
+                    <ArrowUpRight className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-100" aria-hidden="true" />
                   </Link>
                 </li>
               ))}
@@ -111,8 +115,8 @@ Scamming you since 1871, <br></br> PROUDLY.
 
           {/* Legal Column */}
           <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-gray-900">Legal</h4>
-            <ul className="space-y-3">
+            <h4 className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-950">Legal</h4>
+            <ul className="space-y-2.5">
               {[
                 { label: 'Privacy Policy', path: '/privacy-policy' },
                 { label: 'Terms of Service', path: '/terms-of-service' }
@@ -120,9 +124,10 @@ Scamming you since 1871, <br></br> PROUDLY.
                 <li key={item.label}>
                   <Link 
                     to={item.path}
-                    className="text-sm text-gray-500 hover:text-gray-900 transition-colors duration-200"
+                    className="group inline-flex items-center gap-1 text-sm text-gray-500 transition-colors hover:text-red-800"
                   >
                     {item.label}
+                    <ArrowUpRight className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-100" aria-hidden="true" />
                   </Link>
                 </li>
               ))}
@@ -131,17 +136,11 @@ Scamming you since 1871, <br></br> PROUDLY.
 
         </div>
 
-        {/* Divider */}
-        <div className="h-px bg-gray-200 mb-8"></div>
-
-        {/* Bottom Section */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <p className="text-xs text-gray-500">
-            © 1871 KamiKoto Stationeries Pvt. Ltd. - NO rights reserved.
+        <div className="flex flex-col gap-3 border-t border-gray-200 pt-6 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            © {new Date().getFullYear()} KamiKoto Stationeries Pvt. Ltd.
           </p>
-          <p className="text-xs text-gray-500">
-            This is a Demo project.
-          </p>
+          <p>Made for the things you make.</p>
         </div>
 
       </div>

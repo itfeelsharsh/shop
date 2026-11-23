@@ -1,4 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { getCartLineId } from '../utils/productOptions';
+
+const lineKey = (item) => item?.lineId || item?.productId;
 
 /**
  * Initial state for the cart slice.
@@ -23,11 +26,14 @@ const cartSlice = createSlice({
      * @param {Object} action - Action with productId and quantity
      */
     addToCart(state, action) {
-      const item = state.items.find(i => i.productId === action.payload.productId);
+      const payload = action.payload;
+      const lineId = payload.lineId || getCartLineId(payload.productId, payload.selectedOptions);
+      const item = state.items.find(i => lineKey(i) === lineId);
       if (item) {
-        item.quantity += action.payload.quantity;
+        item.quantity += payload.quantity;
+        if (payload.selectedOptions) item.selectedOptions = payload.selectedOptions;
       } else {
-        state.items.push(action.payload);
+        state.items.push({ ...payload, lineId });
       }
     },
     
@@ -37,7 +43,7 @@ const cartSlice = createSlice({
      * @param {string} action - Product ID to remove
      */
     removeFromCart(state, action) {
-      state.items = state.items.filter(i => i.productId !== action.payload);
+      state.items = state.items.filter(i => lineKey(i) !== action.payload);
     },
     
     /**
@@ -46,7 +52,8 @@ const cartSlice = createSlice({
      * @param {Object} action - Action with productId and new quantity
      */
     updateQuantity(state, action) {
-      const item = state.items.find(i => i.productId === action.payload.productId);
+      const target = action.payload.lineId || action.payload.productId;
+      const item = state.items.find(i => lineKey(i) === target);
       if (item) {
         item.quantity = action.payload.quantity;
       }

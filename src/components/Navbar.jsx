@@ -19,6 +19,7 @@ import { useSelector } from 'react-redux';
 import { m, AnimatePresence } from 'framer-motion';
 import logger from '../utils/logger';
 import defaultPfp from '../assets/defaultpfp.png';
+import brandLogo from '../assets/kamikoto-logo-transparent-darkish-logo-for-better-visibility.png';
 import Button from './Button';
 
 function classNames(...classes) {
@@ -209,55 +210,66 @@ export default function Navbar() {
 
   return (
     <>
+      <nav className="hidden">
+        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
+          <Link to="/" className="group inline-flex items-center gap-2" aria-label="KamiKoto home">
+            <img src={brandLogo} alt="" className="h-8 w-8 object-contain" />
+            <span className="text-lg font-bold tracking-tight text-gray-950">
+              KamiKoto<span className="text-red-700">.</span>
+            </span>
+          </Link>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400">Everyday essentials</span>
+        </div>
+      </nav>
+
       <nav
         className={`
           sticky top-0 left-0 right-0 z-50
-          transition-all duration-300 backdrop-blur-md
+          transition-all duration-300 backdrop-blur-xl
           hidden md:block
           ${isScrolled 
-            ? 'bg-white/95 shadow-md border-b border-gray-100' 
-            : 'bg-white/50 border-b border-transparent'}
+            ? 'bg-white/95 shadow-sm border-b border-gray-200/80'
+            : 'bg-white/90 border-b border-gray-100'}
         `}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+        <div className="mx-auto max-w-7xl px-5 sm:px-8">
+          <div className="flex h-[72px] items-center justify-between">
             <div className="flex-shrink-0">
-              <Link to="/" className="flex items-center space-x-2">
-                <img
-                  className="h-10 w-auto"
-                  src="/kamikoto-logo-with-name-tagline-dark-brown-bg.png"
-                  alt="KamiKoto"
-                />
-                <span className="text-3xl font-black tracking-tighter hover:opacity-80 transition-opacity text-gray-900">KamiKoto<span className="text-red-600 font-extrabold">.</span></span>
+              <Link to="/" className="group inline-flex items-center gap-3" aria-label="KamiKoto home">
+                <img src={brandLogo} alt="" className="h-10 w-10 object-contain transition-transform duration-200 group-hover:scale-105" />
+                <span className="text-[25px] font-bold tracking-tight text-gray-950">
+                  KamiKoto<span className="text-red-700">.</span>
+                </span>
               </Link>
             </div>
 
             {/* Desktop Navigation Links */}
-            <div className="hidden md:flex items-center space-x-8">
+            <div className="hidden md:flex items-center gap-1">
               {mainNavItems.map((item) => (
-                <div key={item.name} className="relative">
+                <div key={item.name}>
                   <Link
                     to={item.href}
                     className={classNames(
                       location.pathname === item.href
-                        ? 'text-gray-900 bg-gray-50'
-                        : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50',
-                      'flex items-center px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300'
+                        ? 'text-gray-950 after:scale-x-100'
+                        : 'text-gray-500 after:scale-x-0 hover:text-gray-950 hover:after:scale-x-100',
+                      'relative flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-colors after:absolute after:inset-x-4 after:bottom-1.5 after:h-0.5 after:origin-left after:rounded-full after:bg-red-700 after:transition-transform'
                     )}
                   >
-                    <item.icon className={`h-5 w-5 mr-2 transition-transform duration-300 ${location.pathname === item.href ? 'scale-110' : ''}`} />
+                    <item.icon className={`h-[18px] w-[18px] transition-colors ${location.pathname === item.href ? 'text-red-700' : 'text-gray-400'}`} />
                     {item.name}
                   </Link>
                 </div>
               ))}
             </div>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-2">
               {/* Interactive Search Bar Trigger */}
               <button
                 onClick={() => setIsSearchOpen(true)}
-                className="text-gray-500 hover:text-gray-900 transition-all duration-300 p-2 rounded-xl hover:bg-gray-50 flex items-center justify-center"
+                className="flex h-10 w-10 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2"
                 title="Search Products"
+                aria-label="Search products"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -268,13 +280,14 @@ export default function Navbar() {
                 <Link
                   to="/cart"
                   className={classNames(
-                    "text-gray-600 hover:text-gray-900 transition-all duration-300 relative p-2 rounded-xl hover:bg-gray-50 flex items-center justify-center",
-                    animateCart ? "scale-125 text-gray-900" : ""
+                    "relative flex h-10 w-10 items-center justify-center rounded-full text-gray-600 transition-all duration-300 hover:bg-gray-100 hover:text-gray-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2",
+                    animateCart ? "scale-110 text-gray-950" : ""
                   )}
+                  aria-label={`Cart${cartItemCount ? `, ${cartItemCount} items` : ''}`}
                 >
                   <ShoppingBagIcon className="h-5 w-5" />
                   {cartItemCount > 0 && (
-                    <div className="absolute top-[38%] -translate-y-1/2 -right-1 bg-red-600 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-white shadow-sm">
+                    <div className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-700 px-1 text-[10px] font-bold text-white ring-2 ring-white">
                       {cartItemCount}
                     </div>
                   )}
@@ -284,9 +297,9 @@ export default function Navbar() {
               {user ? (
                 <div className="relative h-9">
                   <Menu as="div" className="relative inline-block text-left">
-                    <Menu.Button className="flex items-center space-x-2 rounded-full focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2">
+                    <Menu.Button className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2">
                       <img
-                        className="h-9 w-9 rounded-full object-cover ring-2 ring-white shadow-sm"
+                        className="h-9 w-9 rounded-full object-cover ring-1 ring-gray-200"
                         src={profilePic}
                         alt={userName}
                       />
@@ -302,7 +315,7 @@ export default function Navbar() {
                       leaveFrom="transform opacity-100 scale-100"
                       leaveTo="transform opacity-0 scale-95"
                     >
-                      <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                      <Menu.Items className="absolute right-0 z-50 mt-2 w-52 origin-top-right rounded-xl border border-gray-200 bg-white py-1 shadow-xl shadow-gray-950/10 focus:outline-none">
                         <Menu.Item>
                           {({ active }) => (
                             <Link
@@ -355,7 +368,7 @@ export default function Navbar() {
                 <div className="flex items-center space-x-3">
                   <Link
                     to="/signin"
-                    className="text-gray-600 hover:text-gray-900 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300 hover:bg-gray-50"
+                    className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-950"
                   >
                     Sign in
                   </Link>
@@ -363,7 +376,7 @@ export default function Navbar() {
                     variant="primary"
                     size="small"
                     onClick={() => navigate('/signup')}
-                    className="btn-shopify"
+                    className="!rounded-lg !bg-[#D32F2F] !px-4 !py-2 !text-sm !font-semibold !shadow-none hover:!bg-[#B71C1C]"
                   >
                     Sign up
                   </Button>
@@ -495,7 +508,10 @@ export default function Navbar() {
       </AnimatePresence>
 
       {/* Bottom Tab Navigation (for mobile) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-gray-100 shadow-[0_-4px_12px_rgba(0,0,0,0.03)] z-50 pwa-bottom-nav">
+      <nav
+        aria-label="Mobile navigation"
+        className="fixed inset-x-0 bottom-0 z-50 border-t border-gray-200 bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(0,0,0,0.06)] backdrop-blur-xl md:hidden"
+      >
         <div className="max-w-md mx-auto flex justify-around items-center h-16 px-3">
           {bottomNavItems.map((item) => {
             const isActive = item.isAction 

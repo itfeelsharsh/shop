@@ -24,6 +24,7 @@ import useWindowSize from '../hooks/useWindowSize';
 import { downloadOrderReceipt } from '../utils/pdfUtils';
 import Button from '../components/Button';
 import { Helmet } from 'react-helmet-async';
+import { getItemOptionLabel } from '../utils/productOptions';
 
 /**
  * Order Summary Page Component
@@ -649,7 +650,7 @@ function OrderSummary() {
                   <AnimatePresence>
                     {order?.items?.map((item, index) => (
                       <motion.div 
-                        key={item.productId || index}
+                        key={item.lineId || item.productId || index}
                         initial={{ opacity: 0 }}
                         animate={{ 
                           opacity: 1,
@@ -685,10 +686,10 @@ function OrderSummary() {
                         {/* Product Details */}
                         <div className="ml-4 flex-1">
                           <h4 className="font-medium text-gray-800">{item.name || 'Unknown Product'}</h4>
-                          <p className="text-sm text-gray-500">Qty: {item.quantity || 1}</p>
-                          {item.variant && (
-                            <p className="text-xs text-gray-400">{item.variant}</p>
+                          {getItemOptionLabel(item) && (
+                            <p className="text-xs font-semibold text-gray-500 mt-0.5">{getItemOptionLabel(item)}</p>
                           )}
+                          <p className="text-sm text-gray-500">Qty: {item.quantity || 1}</p>
                         </div>
                         
                         {/* Pricing with Error Handling */}

@@ -30,6 +30,7 @@ import useWishlist from '../utils/useWishlist';
 import { downloadOrderReceipt } from '../utils/pdfUtils';
 import UserReviews from '../components/UserReviews';
 import defaultPfp from '../assets/defaultpfp.png';
+import { getItemOptionLabel } from '../utils/productOptions';
 
 const ORDER_STATUS = {
   PLACED: { label: 'Placed', color: 'bg-amber-50 text-amber-700 border-amber-100' },
@@ -579,6 +580,9 @@ function MyAccount() {
                                     <img src={item.image} alt={item.name} className="w-14 h-14 object-contain rounded-xl border border-gray-100 p-1 flex-shrink-0" />
                                     <div className="flex-grow">
                                       <h4 className="font-bold text-sm text-gray-900 line-clamp-1">{item.name}</h4>
+                                      {getItemOptionLabel(item) && (
+                                        <p className="text-[11px] font-semibold text-gray-500 mt-0.5 line-clamp-1">{getItemOptionLabel(item)}</p>
+                                      )}
                                       <p className="text-xs text-gray-400 mt-0.5">Quantity: {item.quantity} · Price: {formatPrice(item.price)}</p>
                                     </div>
                                     <p className="font-extrabold text-sm text-gray-900">{formatPrice(item.price * item.quantity)}</p>

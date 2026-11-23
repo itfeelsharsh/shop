@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { db } from "../firebase/config";
-import { collection, getDocs, query, orderBy, limit, startAfter, where } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, limit, startAfter, where, doc, getDoc } from "firebase/firestore";
 import ProductCard from "../components/ProductCard";
 import { Search, X, SlidersHorizontal } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
@@ -39,7 +39,31 @@ function Products() {
   
   // Selected category state for top horizontal selector
   const [activeCategory, setActiveCategory] = useState("All");
+  const [dynamicCategories, setDynamicCategories] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
+
+  // Pull custom categories created from the admin panel (settings/categories)
+  useEffect(() => {
+    let active = true;
+    const loadCategories = async () => {
+      try {
+        const snap = await getDoc(doc(db, "settings", "categories"));
+        if (active && snap.exists()) {
+          const list = snap.data()?.categories;
+          if (Array.isArray(list)) {
+            setDynamicCategories(list.map((entry) => String(entry).trim()).filter(Boolean));
+          }
+        }
+      } catch (error) {
+        // Silent fallback: the built-in category list still works.
+        console.warn("Unable to load custom categories:", error?.message || error);
+      }
+    };
+    loadCategories();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Pagination & Infinite Scroll states
   const [visibleCount, setVisibleCount] = useState(12);
@@ -284,19 +308,42 @@ function Products() {
     return () => observer.disconnect();
   }, [loading, isPaginating, isFullyLoaded, hasMore, fetchProductsPage]);
 
-  const categories = useMemo(() => [
-    "All",
-    "Notebooks and Journals",
-    "Pens and Pencils",
-    "Paper and Notepads",
-    "Planners and Calendars",
-    "Office Supplies",
-    "Art Supplies",
-    "Desk Accessories",
-    "Cards and Envelopes",
-    "Writing Accessories",
-    "Gift Wrap and Packaging"
-  ], []);
+  const categories = useMemo(() => {
+    const base = [
+      "All",
+      "Notebooks and Journals",
+      "Pens and Pencils",
+      "Paper and Notepads",
+      "Planners and Calendars",
+      "Office Supplies",
+      "Art Supplies",
+      "Desk Accessories",
+      "Cards and Envelopes",
+      "Writing Accessories",
+      "Gift Wrap and Packaging",
+      "Bicycles",
+      "Bike Accessories",
+      "Fitness Equipment",
+      "Electronics",
+      "Audio",
+      "Apparel and Footwear",
+      "Home and Kitchen",
+      "Beauty and Personal Care",
+      "Toys and Games",
+      "Musical Instruments",
+      "Bags and Luggage",
+      "Jewellery and Watches",
+      "Health and Wellness",
+      "Automotive",
+    ];
+
+    // Include any custom categories created in shopAdmin
+    const dynamic = (dynamicCategories || []).filter(Boolean);
+    const fromProducts = products.map((product) => product.type).filter(Boolean);
+    const merged = [...new Set([...base.slice(1), ...dynamic, ...fromProducts])].sort();
+
+    return ["All", ...merged];
+  }, [dynamicCategories, products]);
 
   // Highly optimized product filter computation
   const filteredProducts = useMemo(() => {
@@ -345,7 +392,11 @@ function Products() {
         product.brand?.toLowerCase().includes(term) ||
         product.slug?.toLowerCase().includes(term) ||
         product.origin?.toLowerCase().includes(term) ||
-        product.tags?.some(tag => tag.toLowerCase().includes(term))
+        product.tags?.some(tag => tag.toLowerCase().includes(term)) ||
+        product.options?.some((group) =>
+          group?.name?.toLowerCase().includes(term) ||
+          group?.values?.some((value) => String(value).toLowerCase().includes(term))
+        )
       );
     });
   }, [products, activeCategory, searchTerm, filters]);

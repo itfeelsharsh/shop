@@ -189,7 +189,7 @@ function AppContent() {
       <AnnouncementStrip />
       <Navbar />
 
-      <main className={`flex-grow overflow-hidden pwa-main-padding ${location.pathname !== '/' ? 'pwa-top-padding' : ''}`}>
+      <main className={`flex-grow overflow-hidden pb-[calc(4rem+env(safe-area-inset-bottom,0px))] md:pb-0 ${location.pathname !== '/' ? 'pwa-top-padding' : ''}`}>
         <AnimatedRoutes />
       </main>
       <Footer />

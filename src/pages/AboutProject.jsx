@@ -31,10 +31,7 @@ function AboutProject() {
       <header className="bg-white border-b border-gray-200 py-8 px-6 sm:px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="bg-indigo-50 text-indigo-700 text-xs font-mono font-bold px-2.5 py-0.5 rounded border border-indigo-150">Developer Guide</span>
-              <span className="text-gray-400 text-xs font-mono">v1.2.0-serverless</span>
-            </div>
+  
             <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 mt-2">Storefront & Admin Technical Manual</h1>
             <p className="text-gray-500 text-sm mt-1">
               Architecture guide and code documentation for storefront frontend and admin dashboard.
@@ -46,7 +43,7 @@ function AboutProject() {
             rel="noopener noreferrer"
             className="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-xl text-xs font-mono border border-gray-300 shadow-sm transition-all flex items-center gap-2"
           >
-            <span>📄 github/shop</span>
+            <span> github/shop</span>
           </a>
         </div>
       </header>
@@ -386,14 +383,14 @@ function AboutProject() {
 
             <div className="space-y-4">
               <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                <h4 className="font-mono text-xs text-gray-900 font-bold mb-1">🔧 Keyboard Shortcut Loader Bypass</h4>
+                <h4 className="font-mono text-xs text-gray-900 font-bold mb-1"> Keyboard Shortcut Loader Bypass</h4>
                 <p className="text-xs text-gray-650 leading-relaxed">
                   During development, wait for auth check can be slow. You can press <kbd className="bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded text-[10px] border border-gray-300">Ctrl + Shift + L</kbd> on storefront to force close loading screen and bypass preloader immediately. This works only on local development environment to speed up UI tests.
                 </p>
               </div>
 
               <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                <h4 className="font-mono text-xs text-gray-900 font-bold mb-1">🛠 Firestore REST API Usage</h4>
+                <h4 className="font-mono text-xs text-gray-900 font-bold mb-1"> Firestore REST API Usage</h4>
                 <p className="text-xs text-gray-655 leading-relaxed">
                   To avoid loading huge firebase-admin SDKs into Cloudflare pages worker context (which increases worker 
                   bundle size and latency), I use simple fetch calls to interact with firestore REST endpoints. This 

@@ -15,6 +15,7 @@ import '../assets/receipt.css'; // Import enhanced receipt styling
 
 // Import shop logo
 import logoImage from '../assets/kamikoto-logo-transparent-darkish-logo-for-better-visibility.png';
+import { getItemOptionLabel } from './productOptions';
 
 /**
  * Generates a PDF receipt from an HTML element
@@ -401,7 +402,10 @@ export const createReceiptTemplate = (order, containerId) => {
                   font-size: 11px;
                   color: #1d1d1f;
                   font-weight: 500;
-                ">${item.name}</td>
+                ">
+                  <div>${item.name}</div>
+                  ${getItemOptionLabel(item) ? `<div style="margin-top: 3px; font-size: 9.5px; font-weight: 400; color: #86868b;">${getItemOptionLabel(item)}</div>` : ''}
+                </td>
                 <td style="
                   padding: 14px 16px;
                   text-align: center;

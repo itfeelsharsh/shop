@@ -1,63 +1,63 @@
-
 import React from 'react';
-import { m } from "framer-motion";
-
+import { Helmet } from 'react-helmet-async';
+import InfoPageLayout from '../components/InfoPageLayout';
 
 function ContactUs() {
   return (
-    <m.div
-    initial={{ opacity: 0, y: 50 }} 
-    animate={{ opacity: 1, y: 0 }} 
-    transition={{ duration: 0.6, ease: "easeInOut" }} 
-    className="container mx-auto px-4 py-8 bg-gray-50"
-  >
-    <div className="container mx-auto px-4 py-12">
-      <h1 className="text-5xl font-bold mb-8 text-gray-900 text-center">Contact Us</h1>
-      <p className="text-lg text-gray-700 mb-6 text-center">
-        Have any questions, feedback, or just want to say hello? Feel free to reach out to us using the form below, and we’ll get back to you as soon as possible!
-      </p>
+    <>
+      <Helmet>
+        <title>Contact Us | KamiKoto</title>
+        <meta name="description" content="Contact KamiKoto with questions, feedback, or support requests." />
+      </Helmet>
 
-      <form className="max-w-lg mx-auto space-y-6 bg-white p-6 rounded-lg shadow-md">
-        <div>
-          <label htmlFor="email" className="block text-gray-700 mb-2 font-medium">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            required
-          />
-        </div>
+      <InfoPageLayout
+        category="Support"
+        title="Contact Us"
+        description="Have a question or feedback? Send us a message and we’ll get back to you as soon as possible."
+      >
+        <form className="mx-auto max-w-xl space-y-5 rounded-xl border border-gray-200 bg-gray-50/70 p-5 sm:p-7">
+          <div>
+            <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-900">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-3 text-sm text-gray-900 shadow-sm outline-none transition placeholder:text-gray-400 focus:border-[#D32F2F] focus:ring-4 focus:ring-red-100"
+              required
+            />
+          </div>
 
-        <div>
-          <label htmlFor="title" className="block text-gray-700 mb-2 font-medium">Title</label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            required
-          />
-        </div>
+          <div>
+            <label htmlFor="title" className="mb-2 block text-sm font-medium text-gray-900">Subject</label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3.5 py-3 text-sm text-gray-900 shadow-sm outline-none transition placeholder:text-gray-400 focus:border-[#D32F2F] focus:ring-4 focus:ring-red-100"
+              required
+            />
+          </div>
 
-        <div>
-          <label htmlFor="description" className="block text-gray-700 mb-2 font-medium">Description</label>
-          <textarea
-            id="description"
-            name="description"
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            rows="5"
-            required
-          ></textarea>
-        </div>
+          <div>
+            <label htmlFor="description" className="mb-2 block text-sm font-medium text-gray-900">Message</label>
+            <textarea
+              id="description"
+              name="description"
+              rows="5"
+              className="w-full resize-y rounded-lg border border-gray-300 bg-white px-3.5 py-3 text-sm text-gray-900 shadow-sm outline-none transition placeholder:text-gray-400 focus:border-[#D32F2F] focus:ring-4 focus:ring-red-100"
+              required
+            />
+          </div>
 
-        <button type="submit" className="w-full bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-500 transition duration-150">
-          Send Message
-        </button>
-      </form>
-    </div>
-    </m.div>
-
+          <button
+            type="submit"
+            className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-[#D32F2F] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#B71C1C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D32F2F] focus-visible:ring-offset-2"
+          >
+            Send Message
+          </button>
+        </form>
+      </InfoPageLayout>
+    </>
   );
 }
 

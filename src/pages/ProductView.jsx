@@ -18,6 +18,11 @@ import ProductReviewForm from '../components/ProductReviewForm';
 import ProductCard from '../components/ProductCard';
 import Button from '../components/Button';
 import noImageFallback from '../assets/noimgsimg.png';
+import {
+  normalizeOptions,
+  buildDefaultSelection,
+  getCartLineId,
+} from '../utils/productOptions';
 
 /**
  * Peak 2020 Premium Product View
@@ -41,6 +46,10 @@ function ProductView() {
   // High-fidelity image gallery states
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
+  // Purchasable options (size, colour, wheel size, ...)
+  const [selectedOptions, setSelectedOptions] = useState({});
+  const productOptions = useMemo(() => normalizeOptions(product?.options), [product?.options]);
+
   const productImages = useMemo(() => {
     const list = [];
     if (product) {
@@ -55,6 +64,15 @@ function ProductView() {
   useEffect(() => {
     setActiveImageIndex(0);
   }, [id]);
+
+  // Seed the selection with sensible defaults so buying stays one tap away
+  useEffect(() => {
+    if (product) {
+      setSelectedOptions(buildDefaultSelection(product.options));
+    } else {
+      setSelectedOptions({});
+    }
+  }, [product?.id, product?.options]);
 
   useEffect(() => {
     let active = true;
@@ -137,11 +155,29 @@ function ProductView() {
       return;
     }
 
+    if (productOptions.length > 0) {
+      const missing = productOptions.find(
+        (group) => group.required !== false && !selectedOptions[group.name]
+      );
+      if (missing) {
+        toast.error(`Please choose a ${missing.name}`);
+        return;
+      }
+    }
+
     setIsAdding(true);
     // Simulate a slight delay for smooth animation
     await new Promise(resolve => setTimeout(resolve, 800));
-    
-    dispatch(addToCart({ productId: product.id, quantity }));
+
+    dispatch(addToCart({
+      productId: product.id,
+      quantity,
+      selectedOptions,
+      lineId: getCartLineId(product.id, selectedOptions),
+      name: product.name,
+      price: product.price,
+      image: product.image,
+    }));
     toast.success(`Added ${quantity} item(s) to cart!`);
     setIsAdding(false);
   };
@@ -244,6 +280,11 @@ function ProductView() {
                       {product.brand}
                     </span>
                   )}
+                  {product.type && (
+                    <span className="px-3 py-1 bg-gray-100 text-gray-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-gray-200/70">
+                      {product.type}
+                    </span>
+                  )}
                 </div>
                 
                 <h1 className="text-3xl md:text-4.5xl font-black text-gray-900 tracking-tight leading-[1.05]">
@@ -315,6 +356,71 @@ function ProductView() {
                   )}
                 </p>
               </div>
+
+              {/* Purchasable Options (category-specific) */}
+              {productOptions.length > 0 && (
+                <div className="space-y-5 pt-1">
+                  {productOptions.map((group, groupIndex) => (
+                    <m.div
+                      key={group.name}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.35, delay: groupIndex * 0.05 }}
+                      className="space-y-2.5"
+                    >
+                      <div className="flex items-baseline justify-between gap-3">
+                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-400">
+                          {group.name}
+                          {group.required !== false && <span className="text-[#D32F2F] ml-1">*</span>}
+                        </h3>
+                        <span className="text-xs font-bold text-gray-900">
+                          {selectedOptions[group.name] || (group.required === false ? 'Any' : '—')}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {group.required === false && (
+                          <m.button
+                            type="button"
+                            onClick={() => setSelectedOptions((prev) => {
+                              const next = { ...prev };
+                              delete next[group.name];
+                              return next;
+                            })}
+                            whileTap={{ scale: 0.96 }}
+                            aria-pressed={!selectedOptions[group.name]}
+                            className={`min-w-[3rem] px-4 py-2.5 rounded-2xl border text-sm font-bold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20 ${
+                              !selectedOptions[group.name]
+                                ? 'border-gray-900 bg-gray-900 text-white shadow-md shadow-gray-900/10'
+                                : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400 hover:text-gray-900'
+                            }`}
+                          >
+                            Any
+                          </m.button>
+                        )}
+                        {group.values.map((value) => {
+                          const isActive = selectedOptions[group.name] === value;
+                          return (
+                            <m.button
+                              key={value}
+                              type="button"
+                              onClick={() => setSelectedOptions((prev) => ({ ...prev, [group.name]: value }))}
+                              whileTap={{ scale: 0.96 }}
+                              aria-pressed={isActive}
+                              className={`min-w-[3rem] px-4 py-2.5 rounded-2xl border text-sm font-bold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20 ${
+                                isActive
+                                  ? 'border-gray-900 bg-gray-900 text-white shadow-md shadow-gray-900/10'
+                                  : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400 hover:text-gray-900'
+                              }`}
+                            >
+                              {value}
+                            </m.button>
+                          );
+                        })}
+                      </div>
+                    </m.div>
+                  ))}
+                </div>
+              )}
 
               {/* Actions */}
               {product.stock > 0 && (

@@ -1,65 +1,62 @@
-
 import React from 'react';
-import { m } from "framer-motion";
-
+import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+import InfoPageLayout from '../components/InfoPageLayout';
 
 function TermsOfService() {
   return (
-    <m.div
-    initial={{ opacity: 0, y: 50 }} 
-    animate={{ opacity: 1, y: 0 }} 
-    transition={{ duration: 0.6, ease: "easeInOut" }} 
-    className="container mx-auto px-4 py-8 bg-gray-50"
-  >
-    <div className="container mx-auto px-4 py-12">
-      <h1 className="text-5xl font-bold mb-8 text-gray-900 text-center">Terms of Service</h1>
-      
-      <p className="text-lg text-gray-700 mb-6 leading-relaxed text-center">
-        Welcome to <strong className="text-indigo-600">KamiKoto</strong>! By accessing or using my application, you agree to comply with and be bound by the following terms and conditions. Please read them carefully.
-      </p>
-      
-      <h2 className="text-3xl font-semibold mb-4 text-gray-800">1. Acceptance of Terms</h2>
-      <p className="text-lg text-gray-700 mb-4 leading-relaxed">
-        These Terms of Service govern your use of the <strong>KamiKoto</strong> application. By using my app, you accept these terms in full. If you disagree with any part of these terms, you must not use my application.
-      </p>
-      
-      <h2 className="text-3xl font-semibold mb-4 text-gray-800">2. Purpose of the Application</h2>
-      <p className="text-lg text-gray-700 mb-4 leading-relaxed">
-        <strong>KamiKoto</strong> is developed exclusively for educational purposes. It serves as a demonstration of React and Firebase integration in building a premium shopping application.
-      </p>
-      
-      <h2 className="text-3xl font-semibold mb-4 text-gray-800">3. No Data Collection</h2>
-      <p className="text-lg text-gray-700 mb-4 leading-relaxed">
-        I do not collect, store, or process any personal information from users. As a result, there are no user accounts, payment processing, or data storage mechanisms in place.
-      </p>
-      
-      <h2 className="text-3xl font-semibold mb-4 text-gray-800">4. Intellectual Property</h2>
-      <p className="text-lg text-gray-700 mb-4 leading-relaxed">
-        All content, including text, images, logos, and software, is the property of <strong>KamiKoto</strong> or its respective owners. Unauthorized use or reproduction of any materials is strictly prohibited.
-      </p>
-      
-      <h2 className="text-3xl font-semibold mb-4 text-gray-800">5. Limitation of Liability</h2>
-      <p className="text-lg text-gray-700 mb-4 leading-relaxed">
-        <strong>KamiKoto</strong> is provided "as is" without any warranties, express or implied. I am not liable for any damages arising from the use or inability to use my application.
-      </p>
-      
-      <h2 className="text-3xl font-semibold mb-4 text-gray-800">6. Changes to Terms</h2>
-      <p className="text-lg text-gray-700 mb-4 leading-relaxed">
-        I reserve the right to modify these Terms of Service at any time. Any changes will be effective immediately upon posting on this page. Your continued use of the application constitutes acceptance of the revised terms.
-      </p>
-      
-      <h2 className="text-3xl font-semibold mb-4 text-gray-800">7. Governing Law</h2>
-      <p className="text-lg text-gray-700 mb-4 leading-relaxed">
-        These terms are governed by and construed in accordance with the laws of Sentinese Peoples Court. Any disputes arising from these terms shall be resolved in the courts of Sentinese Peoples Court.
-      </p>
-      
-      <h2 className="text-3xl font-semibold mb-4 text-gray-800">8. Contact Us</h2>
-      <p className="text-lg text-gray-700 mb-4 leading-relaxed">
-        If you have any questions about these Terms of Service, please contact me through my <a href="/contact" className="text-blue-500 underline">Contact Us</a> page.
-      </p>
-    </div>
-    </m.div>
+    <>
+      <Helmet>
+        <title>Terms of Service | KamiKoto</title>
+        <meta name="description" content="Review the terms that apply to use of the KamiKoto application." />
+      </Helmet>
 
+      <InfoPageLayout
+        category="Legal"
+        title="Terms of Service"
+        description="Please review these terms before accessing or using the KamiKoto application."
+      >
+        <h2>1. Acceptance of Terms</h2>
+        <p>
+          These Terms of Service govern use of the KamiKoto application. By using the app, you accept these terms in full. If you disagree with any part of these terms, do not use the application.
+        </p>
+
+        <h2>2. Purpose of the Application</h2>
+        <p>
+          KamiKoto is developed for educational purposes. It demonstrates React and Firebase integration in a shopping application.
+        </p>
+
+        <h2>3. No Data Collection</h2>
+        <p>
+          We do not collect, store, or process personal information from users. As a result, there are no user accounts, payment processing, or data storage mechanisms in place.
+        </p>
+
+        <h2>4. Intellectual Property</h2>
+        <p>
+          All content, including text, images, logos, and software, is the property of KamiKoto or its respective owners. Unauthorized use or reproduction of materials is prohibited.
+        </p>
+
+        <h2>5. Limitation of Liability</h2>
+        <p>
+          KamiKoto is provided “as is” without warranties, express or implied. We are not liable for damages arising from the use or inability to use the application.
+        </p>
+
+        <h2>6. Changes to Terms</h2>
+        <p>
+          We may modify these Terms of Service at any time. Changes are effective upon posting on this page. Continued use of the application constitutes acceptance of the revised terms.
+        </p>
+
+        <h2>7. Governing Law</h2>
+        <p>
+          These terms are governed by and construed in accordance with the laws of Sentinese Peoples Court. Any disputes arising from these terms shall be resolved in the courts of Sentinese Peoples Court.
+        </p>
+
+        <h2>8. Contact Us</h2>
+        <p>
+          If you have questions about these Terms of Service, contact us through the <Link to="/contact">Contact Us</Link> page.
+        </p>
+      </InfoPageLayout>
+    </>
   );
 }
 

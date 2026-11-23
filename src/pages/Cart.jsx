@@ -17,6 +17,7 @@ import { m } from 'framer-motion';
 import ProductCard from '../components/ProductCard';
 import Button from '../components/Button';
 import { Helmet } from 'react-helmet-async';
+import { getItemOptionLabel } from '../utils/productOptions';
 
 function Cart() {
   const cartItems = useSelector(state => state.cart.items);
@@ -69,8 +70,8 @@ function Cart() {
     };
   }, []);
 
-  const handleRemove = (productId) => {
-    dispatch(removeFromCart(productId));
+  const handleRemove = (lineId) => {
+    dispatch(removeFromCart(lineId));
   };
 
   const handleCheckout = () => {
@@ -80,9 +81,9 @@ function Cart() {
     }, 800);
   };
 
-  const handleQuantityChange = (productId, quantity) => {
+  const handleQuantityChange = (lineId, quantity) => {
     if (quantity < 1) return;
-    dispatch(updateQuantity({ productId, quantity }));
+    dispatch(updateQuantity({ lineId, quantity }));
   };
 
   const cartDetails = cartItems.map(item => {
@@ -159,7 +160,7 @@ function Cart() {
             <div className="lg:col-span-2 space-y-4">
               {cartDetails.map((item, index) => (
                 <m.div
-                  key={item.productId}
+                  key={item.lineId || item.productId}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
@@ -185,11 +186,14 @@ function Cart() {
                           {item.product.brand && (
                             <p className="text-sm text-gray-500">{item.product.brand}</p>
                           )}
+                          {getItemOptionLabel(item) && (
+                            <p className="text-sm text-gray-500 mt-1">{getItemOptionLabel(item)}</p>
+                          )}
                         </div>
                         <Button
                           variant="ghost"
                           size="small"
-                          onClick={() => handleRemove(item.productId)}
+                          onClick={() => handleRemove(item.lineId || item.productId)}
                           className="!p-2 text-red-500 hover:text-red-700 hover:bg-red-50"
                           icon={<Trash2 className="w-5 h-5" />}
                         />
@@ -208,7 +212,7 @@ function Cart() {
                             <Button
                               variant="secondary"
                               size="small"
-                              onClick={() => handleQuantityChange(item.productId, item.quantity - 1)}
+                              onClick={() => handleQuantityChange(item.lineId || item.productId, item.quantity - 1)}
                               disabled={item.quantity <= 1}
                               className="!p-2 !rounded-none border-none shadow-none"
                               icon={<Minus className="w-4 h-4" />}
@@ -219,7 +223,7 @@ function Cart() {
                             <Button
                               variant="secondary"
                               size="small"
-                              onClick={() => handleQuantityChange(item.productId, item.quantity + 1)}
+                              onClick={() => handleQuantityChange(item.lineId || item.productId, item.quantity + 1)}
                               disabled={item.quantity >= item.product.stock}
                               className="!p-2 !rounded-none border-none shadow-none"
                               icon={<Plus className="w-4 h-4" />}

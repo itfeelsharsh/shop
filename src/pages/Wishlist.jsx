@@ -15,6 +15,7 @@ import { toast } from 'react-toastify';
 import { m, AnimatePresence } from 'framer-motion';
 import useWishlist from '../utils/useWishlist';
 import logger from '../utils/logger';
+import { hasOptions } from '../utils/productOptions';
 
 /**
  * Wishlist Page Component
@@ -62,6 +63,12 @@ function Wishlist() {
     if (!user) {
       toast.error('Please sign in to add items to your cart');
       navigate('/signin');
+      return;
+    }
+
+    if (hasOptions(product)) {
+      toast.info('Choose your options to continue');
+      navigate(`/product/${product.id}`);
       return;
     }
 
