@@ -157,6 +157,23 @@ export const collectOptionGroups = (items) => {
 };
 
 /**
+ * Ensure the cheapest value in each group is the base (0 delta).
+ * Useful for AI-generated option groups.
+ */
+export const balanceOptionDeltas = (options) =>
+  normalizeOptions(options).map((group) => {
+    const cheapest = Math.min(...group.values.map((value) => value.priceDelta));
+    if (cheapest === 0) return group;
+    return {
+      ...group,
+      values: group.values.map((value) => ({
+        ...value,
+        priceDelta: value.priceDelta - cheapest,
+      })),
+    };
+  });
+
+/**
  * Sum the extra price for the currently selected option values.
  */
 export const getOptionPriceDelta = (options, selectedOptions = {}) => {
@@ -247,6 +264,7 @@ const productOptions = {
   collectOptionGroups,
   getOptionPriceDelta,
   getUnitPrice,
+  balanceOptionDeltas,
   getOptionValueLabel,
   getOptionValuePriceDelta,
   hasOptions,
