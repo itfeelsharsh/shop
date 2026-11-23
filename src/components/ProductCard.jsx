@@ -11,7 +11,7 @@ import reviewUtils from '../utils/reviewUtils';
 import { toast } from 'react-toastify';
 import Button from './Button';
 import noImageFallback from '../assets/noimgsimg.png';
-import { hasOptions } from '../utils/productOptions';
+import { hasOptions, normalizeOptions } from '../utils/productOptions';
 
 /**
  * Premium ProductCard Component
@@ -29,6 +29,9 @@ const ProductCard = memo(function ProductCard({
   const navigate = useNavigate();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [productRating, setProductRating] = useState({ average: 0, total: 0 });
+  const hasPaidOptions = normalizeOptions(product?.options).some((group) =>
+    group.values.some((value) => value.priceDelta > 0)
+  );
 
   const [ref, inView] = useInView({
     triggerOnce: true,
@@ -217,6 +220,7 @@ const ProductCard = memo(function ProductCard({
           <div className="flex flex-col min-w-0">
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
               <span className="text-lg font-bold leading-tight tracking-tight text-gray-950">
+                {hasPaidOptions && <span className="mr-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400">From</span>}
                 {formatPrice(product?.price)}
               </span>
               {product?.mrp && product.mrp > product.price && (

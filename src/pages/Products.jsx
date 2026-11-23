@@ -381,7 +381,7 @@ function Products() {
         product.tags?.some(tag => tag.toLowerCase().includes(term)) ||
         product.options?.some((group) =>
           group?.name?.toLowerCase().includes(term) ||
-          group?.values?.some((value) => String(value).toLowerCase().includes(term))
+          group?.values?.some((value) => String(value?.label || '').toLowerCase().includes(term))
         )
       );
     });

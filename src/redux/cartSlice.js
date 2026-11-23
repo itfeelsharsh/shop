@@ -32,6 +32,7 @@ const cartSlice = createSlice({
       if (item) {
         item.quantity += payload.quantity;
         if (payload.selectedOptions) item.selectedOptions = payload.selectedOptions;
+        if (payload.unitPrice != null) item.unitPrice = payload.unitPrice;
       } else {
         state.items.push({ ...payload, lineId });
       }

@@ -16,7 +16,7 @@ import { processNewOrder } from '../../utils/orderService';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import Button from '../../components/Button';
 import { sweepRazorpayTestModeRibbon } from '../../utils/razorpayRemover';
-import { getItemOptionLabel } from '../../utils/productOptions';
+import { getItemOptionLabel, getUnitPrice } from '../../utils/productOptions';
 
 
 const COUNTRY_CODES = {
@@ -214,11 +214,18 @@ function UnifiedCheckout() {
   // Cart details with product info
   const cartDetails = cartItems.map(item => {
     const product = products.find(p => p.id === item.productId);
-    return product ? { ...item, product } : null;
+    if (!product) return null;
+
+    const storedUnitPrice = item.unitPrice != null ? Number(item.unitPrice) : NaN;
+    const unitPrice = Number.isFinite(storedUnitPrice)
+      ? storedUnitPrice
+      : getUnitPrice(product, item.selectedOptions);
+
+    return { ...item, product, unitPrice };
   }).filter(Boolean);
 
   // Calculate total
-  const subtotal = cartDetails.reduce((acc, item) => acc + (item.product.price * item.quantity), 0);
+  const subtotal = cartDetails.reduce((acc, item) => acc + (item.unitPrice * item.quantity), 0);
   const tax = subtotal * (18 / 118); // 18% GST (inclusive)
 
   // Calculate shipping cost
@@ -650,10 +657,11 @@ function UnifiedCheckout() {
             productId: item.productId,
             lineId: item.lineId || item.productId,
             name: item.product.name,
-            price: item.product.price,
+            price: item.unitPrice,
             quantity: item.quantity,
             image: item.product.image,
             selectedOptions: item.selectedOptions || {},
+            optionPriceDelta: Math.max(0, Number(item.unitPrice) - Number(item.product.price || 0)),
             variant: getItemOptionLabel(item),
           })),
           shipping: {
@@ -1011,7 +1019,7 @@ function UnifiedCheckout() {
                             <div className="ml-4 flex flex-1 flex-col">
                               <div className="flex justify-between text-base font-semibold text-gray-900">
                                 <h3>{item.product.name}</h3>
-                                <p className="ml-4">{formatPrice(item.product.price * item.quantity)}</p>
+                                <p className="ml-4">{formatPrice(item.unitPrice * item.quantity)}</p>
                               </div>
                               {getItemOptionLabel(item) && (
                                 <p className="mt-1 text-xs font-semibold text-gray-500">{getItemOptionLabel(item)}</p>

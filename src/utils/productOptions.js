@@ -1,45 +1,96 @@
 /**
  * Product Options / Variants
  *
- * A single, shared source of truth for purchasable product options
- * (size, colour, capacity, pack size, etc.).
- *
- * There are no hard-coded category presets. Options are learned from real
- * catalogue usage (existing products in the same category/brand), generated
- * on demand by AI, or added manually in the admin panel.
- *
- * Product document shape:
+ * Canonical shape:
  *   options: [
- *     { name: "Size", values: ["S", "M", "L"], required: true },
- *     { name: "Colour", values: ["Black", "White"], required: true }
+ *     {
+ *       name: "Storage",
+ *       required: true,
+ *       values: [
+ *         { label: "256GB", priceDelta: 0 },
+ *         { label: "512GB", priceDelta: 20000 }
+ *       ]
+ *     }
  *   ]
  *
- * Cart line shape:
- *   { productId, quantity, lineId, selectedOptions: { "Size": "M" } }
+ * Legacy products may still store values as plain strings. Everything is
+ * normalised on read, so no migration is required.
  */
 
 const clean = (value) => String(value ?? '').trim();
 
+export const normalizeOptionValue = (value) => {
+  if (value === null || value === undefined) return null;
+
+  if (typeof value === 'string' || typeof value === 'number') {
+    const label = clean(value);
+    return label ? { label, priceDelta: 0 } : null;
+  }
+
+  const label = clean(value.label ?? value.value ?? value.name ?? value.title);
+  if (!label) return null;
+
+  const rawDelta =
+    value.priceDelta ??
+    value.price_delta ??
+    value.extraPrice ??
+    value.extra_price ??
+    0;
+  const numericDelta = Number(rawDelta);
+
+  return {
+    label,
+    priceDelta: Number.isFinite(numericDelta) ? Math.round(numericDelta) : 0,
+  };
+};
+
+export const getOptionValueLabel = (value) =>
+  normalizeOptionValue(value)?.label || '';
+
+export const getOptionValuePriceDelta = (value) =>
+  normalizeOptionValue(value)?.priceDelta || 0;
+
 /**
- * Trim and discard empty option groups / values.
+ * Trim and discard empty option groups / values. Duplicate labels are merged,
+ * preferring the first non-zero price delta.
  */
 export const normalizeOptions = (options) => {
   if (!Array.isArray(options)) return [];
+
   return options
-    .map((group) => ({
-      name: clean(group?.name),
-      values: Array.isArray(group?.values)
-        ? Array.from(new Set(group.values.map(clean).filter(Boolean)))
-        : [],
-      required: group?.required !== false,
-    }))
+    .map((group) => {
+      const values = [];
+      const seen = new Set();
+
+      (Array.isArray(group?.values) ? group.values : []).forEach((raw) => {
+        const value = normalizeOptionValue(raw);
+        if (!value) return;
+
+        const key = value.label.toLowerCase();
+        if (seen.has(key)) {
+          const existing = values.find((entry) => entry.label.toLowerCase() === key);
+          if (existing && !existing.priceDelta && value.priceDelta) {
+            existing.priceDelta = value.priceDelta;
+          }
+          return;
+        }
+
+        seen.add(key);
+        values.push(value);
+      });
+
+      return {
+        name: clean(group?.name),
+        values,
+        required: group?.required !== false,
+      };
+    })
     .filter((group) => group.name && group.values.length > 0);
 };
 
 /**
- * Merge any number of option group arrays into one deduplicated list.
- * Group names and values are matched case-insensitively while preserving the
- * first casing that was seen. Usage counts are summed when present.
+ * Merge option groups into one deduplicated list. Preserves price deltas and
+ * sums usage counts when present.
  */
 export const mergeOptionGroups = (groups) => {
   const byName = new Map();
@@ -62,11 +113,20 @@ export const mergeOptionGroups = (groups) => {
     if (raw?.required === true) entry.required = true;
     if (Number.isFinite(raw?.usage)) entry.usage += raw.usage;
 
-    (Array.isArray(raw?.values) ? raw.values : []).forEach((value) => {
-      const cleaned = clean(value);
-      if (!cleaned) return;
-      if (!entry.values.some((existing) => existing.toLowerCase() === cleaned.toLowerCase())) {
-        entry.values.push(cleaned);
+    (Array.isArray(raw?.values) ? raw.values : []).forEach((rawValue) => {
+      const value = normalizeOptionValue(rawValue);
+      if (!value) return;
+
+      const existing = entry.values.find(
+        (item) => item.label.toLowerCase() === value.label.toLowerCase()
+      );
+
+      if (existing) {
+        if (!existing.priceDelta && value.priceDelta) {
+          existing.priceDelta = value.priceDelta;
+        }
+      } else {
+        entry.values.push(value);
       }
     });
   });
@@ -83,37 +143,44 @@ export const mergeOptionGroups = (groups) => {
 
 /**
  * Aggregate option groups used by a list of products.
- * Returns groups ordered by how many products use them.
  */
 export const collectOptionGroups = (items) => {
-  const byName = new Map();
-
-  (items || []).forEach((item) => {
-    normalizeOptions(item?.options).forEach((group) => {
-      const key = group.name.toLowerCase();
-      if (!byName.has(key)) {
-        byName.set(key, {
-          name: group.name,
-          values: [],
-          required: false,
-          usage: 0,
-        });
-      }
-
-      const entry = byName.get(key);
-      entry.usage += 1;
-
-      group.values.forEach((value) => {
-        if (!entry.values.some((existing) => existing.toLowerCase() === value.toLowerCase())) {
-          entry.values.push(value);
-        }
-      });
-    });
+  const groups = (items || []).flatMap((item) => normalizeOptions(item?.options));
+  return mergeOptionGroups(groups).map((group) => {
+    const usage = (items || []).filter((item) =>
+      normalizeOptions(item?.options).some(
+        (entry) => entry.name.toLowerCase() === group.name.toLowerCase()
+      )
+    ).length;
+    return { ...group, usage };
   });
+};
 
-  return Array.from(byName.values()).sort(
-    (a, b) => b.usage - a.usage || a.name.localeCompare(b.name)
-  );
+/**
+ * Sum the extra price for the currently selected option values.
+ */
+export const getOptionPriceDelta = (options, selectedOptions = {}) => {
+  const selection = selectedOptions || {};
+
+  return normalizeOptions(options).reduce((total, group) => {
+    const selectedLabel = clean(selection[group.name]);
+    if (!selectedLabel) return total;
+
+    const match = group.values.find(
+      (value) => value.label.toLowerCase() === selectedLabel.toLowerCase()
+    );
+
+    return total + (match?.priceDelta || 0);
+  }, 0);
+};
+
+/**
+ * Final unit price = product base price + selected option deltas.
+ */
+export const getUnitPrice = (product, selectedOptions = {}) => {
+  const basePrice = Number(product?.price ?? product?.sellingPrice ?? 0) || 0;
+  const delta = getOptionPriceDelta(product?.options, selectedOptions);
+  return Math.max(1, Math.round(basePrice + delta));
 };
 
 /**
@@ -128,13 +195,12 @@ export const productRequiresSelection = (product) =>
   normalizeOptions(product?.options).some((group) => group.required);
 
 /**
- * First-value selection for required groups, used to make the product page
- * feel instant. Optional groups start unselected ("Any").
+ * First-value selection for required groups. Optional groups start unselected.
  */
 export const buildDefaultSelection = (options) => {
   const selection = {};
   normalizeOptions(options).forEach((group) => {
-    if (group.required) selection[group.name] = group.values[0];
+    if (group.required) selection[group.name] = group.values[0].label;
   });
   return selection;
 };
@@ -155,7 +221,7 @@ export const getCartLineId = (productId, selectedOptions = {}) => {
 };
 
 /**
- * Human readable variant label, e.g. "Size: M • Colour: Black".
+ * Human readable variant label, e.g. "Storage: 512GB • Colour: Black".
  */
 export const getOptionSummary = (selectedOptions = {}) =>
   Object.entries(selectedOptions || {})
@@ -175,9 +241,14 @@ export const getItemOptionLabel = (item) => {
 };
 
 const productOptions = {
+  normalizeOptionValue,
   normalizeOptions,
   mergeOptionGroups,
   collectOptionGroups,
+  getOptionPriceDelta,
+  getUnitPrice,
+  getOptionValueLabel,
+  getOptionValuePriceDelta,
   hasOptions,
   productRequiresSelection,
   buildDefaultSelection,

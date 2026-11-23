@@ -17,7 +17,7 @@ import { m } from 'framer-motion';
 import ProductCard from '../components/ProductCard';
 import Button from '../components/Button';
 import { Helmet } from 'react-helmet-async';
-import { getItemOptionLabel } from '../utils/productOptions';
+import { getItemOptionLabel, getUnitPrice } from '../utils/productOptions';
 
 function Cart() {
   const cartItems = useSelector(state => state.cart.items);
@@ -88,10 +88,17 @@ function Cart() {
 
   const cartDetails = cartItems.map(item => {
     const product = products.find(p => p.id === item.productId);
-    return product ? { ...item, product } : null;
+    if (!product) return null;
+
+    const storedUnitPrice = item.unitPrice != null ? Number(item.unitPrice) : NaN;
+    const unitPrice = Number.isFinite(storedUnitPrice)
+      ? storedUnitPrice
+      : getUnitPrice(product, item.selectedOptions);
+
+    return { ...item, product, unitPrice };
   }).filter(Boolean);
 
-  const subtotal = cartDetails.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+  const subtotal = cartDetails.reduce((acc, item) => acc + item.unitPrice * item.quantity, 0);
   const tax = subtotal * (18 / 118); // 18% GST (inclusive)
   const shipping = subtotal > 500 ? 0 : 50;
   const total = subtotal + shipping;
@@ -202,7 +209,7 @@ function Cart() {
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         {/* Price */}
                         <div className="text-lg font-bold text-gray-900">
-                          {formatPrice(item.product.price)}
+                          {formatPrice(item.unitPrice)}
                         </div>
 
                         {/* Quantity Controls */}
@@ -235,7 +242,7 @@ function Cart() {
                         <div className="text-right">
                           <div className="text-sm text-gray-500 mb-1">Subtotal</div>
                           <div className="text-xl font-bold text-gray-900">
-                            {formatPrice(item.product.price * item.quantity)}
+                            {formatPrice(item.unitPrice * item.quantity)}
                           </div>
                         </div>
                       </div>

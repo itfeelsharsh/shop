@@ -22,6 +22,8 @@ import {
   normalizeOptions,
   buildDefaultSelection,
   getCartLineId,
+  getOptionPriceDelta,
+  getUnitPrice,
 } from '../utils/productOptions';
 
 /**
@@ -49,6 +51,14 @@ function ProductView() {
   // Purchasable options (size, colour, wheel size, ...)
   const [selectedOptions, setSelectedOptions] = useState({});
   const productOptions = useMemo(() => normalizeOptions(product?.options), [product?.options]);
+  const selectedOptionDelta = useMemo(
+    () => getOptionPriceDelta(productOptions, selectedOptions),
+    [productOptions, selectedOptions]
+  );
+  const unitPrice = useMemo(
+    () => getUnitPrice(product, selectedOptions),
+    [product, selectedOptions]
+  );
 
   const productImages = useMemo(() => {
     const list = [];
@@ -175,7 +185,8 @@ function ProductView() {
       selectedOptions,
       lineId: getCartLineId(product.id, selectedOptions),
       name: product.name,
-      price: product.price,
+      price: unitPrice,
+      unitPrice,
       image: product.image,
     }));
     toast.success(`Added ${quantity} item(s) to cart!`);
@@ -233,9 +244,9 @@ function ProductView() {
                       }}
                     />
                   </AnimatePresence>
-                  {product.mrp && product.mrp > product.price && (
+                  {product.mrp && product.mrp > unitPrice && (
                     <div className="absolute top-8 left-8 bg-black text-white text-xs font-black px-4 py-2 rounded-full uppercase tracking-tighter shadow-2xl z-10">
-                      {calculateDiscount(product.mrp, product.price)}% OFF
+                      {calculateDiscount(product.mrp, unitPrice)}% OFF
                     </div>
                   )}
                 </div>
@@ -307,9 +318,9 @@ function ProductView() {
               <div className="space-y-4 py-4 border-y border-gray-100">
                 <div className="flex items-center gap-3 flex-wrap">
                   <span className="text-4xl font-extrabold text-[#D32F2F] tracking-tight">
-                    {formatPrice(product.price)}
+                    {formatPrice(unitPrice)}
                   </span>
-                  {product.mrp && product.mrp > product.price && (
+                  {product.mrp && product.mrp > unitPrice && (
                     <div className="flex items-center gap-2">
                       <span className="text-xl text-gray-400 line-through font-medium">
                         {formatPrice(product.mrp)}
@@ -320,10 +331,18 @@ function ProductView() {
                     </div>
                   )}
                 </div>
-                
-                {product.mrp && product.mrp > product.price && (
+
+                {selectedOptionDelta !== 0 && (
+                  <p className="text-xs font-semibold text-gray-500">
+                    {selectedOptionDelta > 0 ? 'Includes ' : 'Reduced by '}
+                    <span className="text-gray-900">{formatPrice(Math.abs(selectedOptionDelta))}</span>
+                    {' '}for your selected options.
+                  </p>
+                )}
+
+                {product.mrp && product.mrp > unitPrice && (
                   <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider">
-                    You save {formatPrice(product.mrp - product.price)} ({calculateDiscount(product.mrp, product.price)}% off)
+                    You save {formatPrice(product.mrp - unitPrice)} ({calculateDiscount(product.mrp, unitPrice)}% off)
                   </p>
                 )}
 
@@ -397,13 +416,14 @@ function ProductView() {
                             Any
                           </m.button>
                         )}
-                        {group.values.map((value) => {
-                          const isActive = selectedOptions[group.name] === value;
+                        {group.values.map((optionValue) => {
+                          const label = optionValue.label;
+                          const isActive = selectedOptions[group.name] === label;
                           return (
                             <m.button
-                              key={value}
+                              key={label}
                               type="button"
-                              onClick={() => setSelectedOptions((prev) => ({ ...prev, [group.name]: value }))}
+                              onClick={() => setSelectedOptions((prev) => ({ ...prev, [group.name]: label }))}
                               whileTap={{ scale: 0.96 }}
                               aria-pressed={isActive}
                               className={`min-w-[3rem] px-4 py-2.5 rounded-2xl border text-sm font-bold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20 ${
@@ -412,7 +432,12 @@ function ProductView() {
                                   : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400 hover:text-gray-900'
                               }`}
                             >
-                              {value}
+                              <span className="block leading-tight">{label}</span>
+                              {optionValue.priceDelta !== 0 && (
+                                <span className={`mt-0.5 block text-[10px] font-semibold ${isActive ? 'text-gray-300' : 'text-gray-400'}`}>
+                                  {optionValue.priceDelta > 0 ? '+' : '−'}{formatPrice(Math.abs(optionValue.priceDelta))}
+                                </span>
+                              )}
                             </m.button>
                           );
                         })}
