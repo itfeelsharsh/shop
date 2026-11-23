@@ -72,7 +72,7 @@ function ProductView() {
     } else {
       setSelectedOptions({});
     }
-  }, [product?.id, product?.options]);
+  }, [product]);
 
   useEffect(() => {
     let active = true;

@@ -29,8 +29,6 @@ import {
   CheckCircle2,
   KeyRound,
   Wand2,
-  Shield,
-  Zap,
 } from 'lucide-react';
 import brandLogo from '../assets/kamikoto-logo-transparent-darkish-logo-for-better-visibility.png';
 import defaultPfp from '../assets/defaultpfp.png';

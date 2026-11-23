@@ -174,7 +174,7 @@ export const getItemOptionLabel = (item) => {
   return clean(item.variant);
 };
 
-export default {
+const productOptions = {
   normalizeOptions,
   mergeOptionGroups,
   collectOptionGroups,
@@ -186,3 +186,5 @@ export default {
   getOptionSummary,
   getItemOptionLabel,
 };
+
+export default productOptions;
