@@ -35,6 +35,11 @@
     X-Frame-Options: ALLOWALL
     X-Discord-Allowed: true
 
+# Always fetch the latest app shell after a deployment
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+  Expires: 0
+
 # Ensure service worker is always fresh and checked directly from origin
 /service-worker.js
   Cache-Control: no-cache, no-store, must-revalidate
