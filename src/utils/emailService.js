@@ -416,7 +416,11 @@ const generateOrderStatusHTML = (order, status, shipmentInfo = {}) => {
   // Product cards: image on top with a forced white background, details below.
   const itemsHTML = (order.items || []).map((item) => {
     const processedImageUrl = processImageForEmail(item.image);
-    const optionLabel = getItemOptionLabel(item);
+    const baseOptionLabel = getItemOptionLabel(item);
+    const optionDelta = Number(item.optionPriceDelta) || 0;
+    const optionLabel = baseOptionLabel
+      ? `${baseOptionLabel}${optionDelta > 0 ? ` · +${formatCurrency(optionDelta)}` : ''}`
+      : '';
     return `
     <tr>
       <td style="padding: 14px 0;">

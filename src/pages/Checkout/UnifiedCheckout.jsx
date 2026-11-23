@@ -661,7 +661,7 @@ function UnifiedCheckout() {
             quantity: item.quantity,
             image: item.product.image,
             selectedOptions: item.selectedOptions || {},
-            optionPriceDelta: Math.max(0, Number(item.unitPrice) - Number(item.product.price || 0)),
+            optionPriceDelta: Math.max(0, Number(item.unitPrice) - Number(item.product.price ?? item.product.sellingPrice ?? 0)),
             variant: getItemOptionLabel(item),
           })),
           shipping: {

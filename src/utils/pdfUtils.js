@@ -404,7 +404,7 @@ export const createReceiptTemplate = (order, containerId) => {
                   font-weight: 500;
                 ">
                   <div>${item.name}</div>
-                  ${getItemOptionLabel(item) ? `<div style="margin-top: 3px; font-size: 9.5px; font-weight: 400; color: #86868b;">${getItemOptionLabel(item)}</div>` : ''}
+                  ${getItemOptionLabel(item) ? `<div style="margin-top: 3px; font-size: 9.5px; font-weight: 400; color: #86868b;">${getItemOptionLabel(item)}${Number(item.optionPriceDelta) > 0 ? ` · +${formatPrice(item.optionPriceDelta)}` : ''}</div>` : ''}
                 </td>
                 <td style="
                   padding: 14px 16px;
