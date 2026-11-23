@@ -112,7 +112,7 @@ function Home() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="relative w-full h-[120px] sm:h-[200px] md:h-[280px] lg:h-[420px] rounded-2xl md:rounded-[32px] overflow-hidden shadow-md border border-gray-100"
+          className="relative w-full h-[140px] sm:h-[240px] md:h-[290px] lg:h-[450px] rounded-2xl md:rounded-[32px] overflow-hidden shadow-md border border-gray-100"
         >
           <DynamicBanner />
           {/* Elegant premium gradient overlay */}
