@@ -164,6 +164,28 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // FCM device tokens (registered users and guests)
+    // Admins can list tokens for broadcast campaigns.
+    // Guests may register/refresh their own token without an account.
+    match /fcmTokens/{tokenId} {
+      allow read: if isAdmin();
+      allow create: if request.resource.data.token is string &&
+                      request.resource.data.token.size() >= 20 &&
+                      request.resource.data.token.size() <= 4096 &&
+                      request.resource.data.notificationsEnabled == true;
+      allow update: if isAdmin() || (
+                      request.resource.data.token == resource.data.token &&
+                      request.resource.data.notificationsEnabled == true
+                    );
+      allow delete: if isAdmin();
+    }
+
+    // Reusable product option templates learned from real catalogue usage.
+    // Admin-only: the storefront reads options directly from each product.
+    match /optionTemplates/{templateId} {
+      allow read, write: if isAdmin();
+    }
+
     // General Settings
     match /settings/{settingId} {
       allow read: if true;

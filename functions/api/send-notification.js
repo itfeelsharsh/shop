@@ -59,58 +59,133 @@ export async function onRequest(context) {
     const projectId = serviceAccount.project_id;
     const fcmUrl = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
 
-    // FCM v1 API only supports sending to one token at a time or using topics
-    // To send to multiple tokens, we'll iterate. For large numbers, topics are better.
-    // For this implementation, we'll limit to small batches or suggest topic transition.
-    
-    const results = [];
-    const maxTokens = 100; // Safety limit
-    const tokensToSend = tokens.slice(0, maxTokens);
+    // FCM v1 sends one message per token. Process unique tokens with a small
+    // concurrency window so campaigns are not silently capped at 100 devices.
+    const siteUrl = (env.SITE_URL || 'https://kamikoto.click').replace(/\/$/, '');
+    const resolveUrl = (value, fallback = '/') => {
+      const raw = String(value || fallback || '/').trim();
+      if (/^https?:\/\//i.test(raw)) return raw;
+      return `${siteUrl}${raw.startsWith('/') ? raw : `/${raw}`}`;
+    };
 
-    for (const token of tokensToSend) {
-      const message = {
-        message: {
-          token: token,
-          notification: {
-            title: notification.title,
-            body: notification.body
-          },
-          data: data || {},
-          android: {
-            priority: 'high',
-            notification: {
-              click_action: data?.link || '/'
-            }
-          },
-          webpush: {
-            headers: {
-              Urgency: 'high'
-            },
-            notification: {
-              icon: notification.icon || '/logo192.png',
-              click_action: data?.link || '/'
-            }
-          }
-        }
-      };
+    const clickUrl = resolveUrl(data?.link, '/');
+    const iconUrl = resolveUrl(notification.icon || '/logo192.png', '/logo192.png');
+    const stringData = Object.fromEntries(
+      Object.entries(data || {}).map(([key, value]) => [key, String(value ?? '')])
+    );
 
-      const response = await fetch(fcmUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(message)
+    const uniqueTokens = [...new Set(
+      tokens
+        .filter((token) => typeof token === 'string')
+        .map((token) => token.trim())
+        .filter((token) => token.length >= 20)
+    )];
+
+    if (uniqueTokens.length === 0) {
+      return new Response(JSON.stringify({ error: { message: 'No valid FCM tokens provided' } }), {
+        status: 400,
+        headers: getCORSHeaders()
       });
-
-      const result = await response.json();
-      results.push({ token: token.substring(0, 10) + '...', success: response.ok, result });
     }
 
-    return new Response(JSON.stringify({ 
-      success: true, 
-      count: results.filter(r => r.success).length,
-      details: results 
+    const maxTokens = 1000;
+    const tokensToSend = uniqueTokens.slice(0, maxTokens);
+    const truncated = uniqueTokens.length > maxTokens;
+
+    const messages = tokensToSend.map((token) => ({
+      message: {
+        token,
+        notification: {
+          title: notification.title,
+          body: notification.body
+        },
+        data: stringData,
+        android: {
+          priority: 'high',
+          notification: {
+            click_action: clickUrl
+          }
+        },
+        webpush: {
+          headers: {
+            Urgency: 'high'
+          },
+          notification: {
+            icon: iconUrl
+          },
+          fcm_options: {
+            link: clickUrl
+          }
+        }
+      }
+    }));
+
+    const results = [];
+    const concurrency = 20;
+
+    for (let index = 0; index < messages.length; index += concurrency) {
+      const batch = messages.slice(index, index + concurrency);
+      const batchResults = await Promise.all(
+        batch.map(async ({ message }, batchIndex) => {
+          const absoluteIndex = index + batchIndex;
+          const token = tokensToSend[absoluteIndex];
+
+          try {
+            const response = await fetch(fcmUrl, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ message })
+            });
+
+            const result = await response.json().catch(() => ({}));
+            return {
+              token: token.substring(0, 10) + '...',
+              success: response.ok,
+              status: response.status,
+              error: response.ok ? null : result?.error?.message || result?.error || 'FCM rejected the message'
+            };
+          } catch (sendError) {
+            return {
+              token: token.substring(0, 10) + '...',
+              success: false,
+              status: 0,
+              error: sendError.message
+            };
+          }
+        })
+      );
+      results.push(...batchResults);
+    }
+
+    const successCount = results.filter((entry) => entry.success).length;
+    const failures = results.filter((entry) => !entry.success);
+
+    if (successCount === 0) {
+      return new Response(JSON.stringify({
+        error: {
+          message: `FCM rejected all ${results.length} notification(s).`,
+          details: failures.slice(0, 5)
+        },
+        success: false,
+        count: 0,
+        attempted: results.length,
+        failures: failures.length
+      }), {
+        status: 502,
+        headers: getCORSHeaders()
+      });
+    }
+
+    return new Response(JSON.stringify({
+      success: true,
+      count: successCount,
+      attempted: results.length,
+      failures: failures.length,
+      truncated,
+      details: failures.slice(0, 5)
     }), {
       status: 200,
       headers: getCORSHeaders()

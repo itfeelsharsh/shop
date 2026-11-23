@@ -321,20 +321,6 @@ function Products() {
       "Cards and Envelopes",
       "Writing Accessories",
       "Gift Wrap and Packaging",
-      "Bicycles",
-      "Bike Accessories",
-      "Fitness Equipment",
-      "Electronics",
-      "Audio",
-      "Apparel and Footwear",
-      "Home and Kitchen",
-      "Beauty and Personal Care",
-      "Toys and Games",
-      "Musical Instruments",
-      "Bags and Luggage",
-      "Jewellery and Watches",
-      "Health and Wellness",
-      "Automotive",
     ];
 
     // Include any custom categories created in shopAdmin
