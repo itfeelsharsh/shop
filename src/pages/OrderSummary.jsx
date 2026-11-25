@@ -23,6 +23,7 @@ import Confetti from 'react-confetti';
 import useWindowSize from '../hooks/useWindowSize';
 import { downloadOrderReceipt } from '../utils/pdfUtils';
 import Button from '../components/Button';
+import BrandLoader from '../components/BrandLoader';
 import { Helmet } from 'react-helmet-async';
 import { getItemOptionLabel } from '../utils/productOptions';
 
@@ -403,9 +404,8 @@ function OrderSummary() {
   // Show loading spinner
   if (loading) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900 mb-4"></div>
-        <p className="text-gray-600">Loading order details...</p>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-50">
+        <BrandLoader size={180} />
       </div>
     );
   }
@@ -513,7 +513,7 @@ function OrderSummary() {
         />
       )}
     
-      <div className="min-h-screen bg-gray-50 py-12 px-2 sm:px-6">
+      <div className="min-h-screen bg-gray-50 py-12 px-1 sm:px-6">
         <div className="max-w-4xl mx-auto">
           {/* Back button */}
           <Button

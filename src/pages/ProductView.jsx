@@ -476,6 +476,7 @@ function ProductView() {
                       onClick={handleAddToCart}
                       isLoading={isAdding}
                       loadingText="Adding..."
+                      loadingIcon={<BrandLoader size={26} />}
                       disabled={!product.stock || product.stock <= 0}
                       className="h-16 text-lg font-black tracking-tight shadow-lg shadow-red-900/10 hover:shadow-xl hover:shadow-red-900/20 transition-all rounded-[20px] bg-[#D32F2F] hover:bg-[#C62828] text-white border-none flex-grow btn-shiny-ribbon"
                     >

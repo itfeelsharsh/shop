@@ -56,6 +56,7 @@ function Button({
   className = '',
   isLoading = false,
   loadingText = '',
+  loadingIcon = null,
   disabled = false,
   icon = null,
   onClick,
@@ -85,7 +86,9 @@ function Button({
       {...props}
     >
       <div className="flex items-center justify-center gap-2">
-        {isLoading && (
+        {isLoading && (loadingIcon ? (
+          <span className="flex items-center justify-center" aria-hidden="true">{loadingIcon}</span>
+        ) : (
           <m.div
             variants={spinnerAnimation}
             animate="animate"
@@ -112,7 +115,7 @@ function Button({
               />
             </svg>
           </m.div>
-        )}
+        ))}
         
         <span className="flex items-center gap-2">
           {isLoading && loadingText ? loadingText : (

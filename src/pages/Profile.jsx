@@ -23,6 +23,7 @@ import {
   Mail,
 } from 'lucide-react';
 import Button from '../components/Button';
+import BrandLoader from '../components/BrandLoader';
 import Input from '../components/Input';
 import { Link, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -302,9 +303,8 @@ function MyAccount() {
 
   if (loading) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-[60vh] bg-gray-50/50">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#D32F2F] mb-4"></div>
-        <p className="text-gray-500 font-bold text-sm tracking-widest uppercase">Loading Account...</p>
+      <div className="flex min-h-[60vh] items-center justify-center bg-gray-50/50">
+        <BrandLoader size={170} />
       </div>
     );
   }
@@ -316,7 +316,7 @@ function MyAccount() {
         <meta name="description" content="Manage your KamiKoto account, view orders, and update your profile." />
       </Helmet>
       
-      <div className="container mx-auto px-2 sm:px-4 max-w-7xl">
+      <div className="container mx-auto px-1 sm:px-4 max-w-7xl">
         {/* Header Section */}
         <div className="mb-10 text-center md:text-left max-w-2xl">
           <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">Account Dashboard</h1>
@@ -324,7 +324,7 @@ function MyAccount() {
         </div>
 
         {/* Mobile Navigation bar */}
-        <div className="lg:hidden mb-8 overflow-x-auto scrollbar-hide bg-white p-2 rounded-2xl border border-gray-100 shadow-sm flex gap-1.5">
+        <div className="lg:hidden mb-5 overflow-x-auto scrollbar-hide bg-white p-1.5 rounded-2xl border border-gray-100 shadow-sm flex gap-1.5">
           {[
             { id: 'profile', label: 'Profile Settings', icon: User },
             { id: 'orders', label: 'Orders', icon: ShoppingBag },
@@ -420,7 +420,7 @@ function MyAccount() {
 
           {/* Main Content Area (col-span-9) */}
           <div className="col-span-1 lg:col-span-9">
-            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm px-3 py-6 sm:p-6 md:p-10 min-h-[500px]">
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm px-1.5 py-5 sm:p-6 md:p-10 min-h-[500px]">
               <AnimatePresence mode="wait">
                 <m.div
                   key={currentSection}
@@ -439,7 +439,7 @@ function MyAccount() {
                       </div>
 
                       {/* Header Section on Mobile (Displays avatar since sidebar is hidden) */}
-                      <div className="lg:hidden flex items-center gap-5 p-5 bg-gray-50/50 rounded-2xl border border-gray-100">
+                      <div className="lg:hidden flex items-center gap-4 p-3 bg-gray-50/50 rounded-2xl border border-gray-100">
                         <div className="relative w-16 h-16 group">
                           <img
                             src={profile.profilePic || defaultPfp}
@@ -456,7 +456,7 @@ function MyAccount() {
                       
                       <form onSubmit={handleSubmit} className="space-y-8">
                         {/* Personal Info Card */}
-                        <div className="bg-gray-50/30 rounded-3xl p-4 sm:p-6 md:p-8 border border-gray-100/50 space-y-6">
+                        <div className="bg-gray-50/30 rounded-2xl p-2.5 sm:p-6 md:p-8 border border-gray-100/50 space-y-5 sm:space-y-6">
                           <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                             <User size={18} className="text-[#D32F2F]" />
                             Personal Information

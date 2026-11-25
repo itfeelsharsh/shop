@@ -16,6 +16,7 @@ import {
 } from 'firebase/firestore';
 import { Star, Edit2, Trash2, AlertCircle, ShoppingBag, Package2 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import BrandLoader from './BrandLoader';
 import { Link } from 'react-router-dom';
 
 /**
@@ -451,30 +452,30 @@ function UserReviews() {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-8">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-[#E53935]"></div>
+        <BrandLoader size={150} />
       </div>
     );
   }
   
   return (
-    <div className="space-y-8">
+    <div className="space-y-5 sm:space-y-8">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-semibold text-gray-800">My Reviews</h2>
       </div>
       
       {/* Reviewable Products Section */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-2.5 sm:p-6">
         <div className="flex items-center mb-4">
           <ShoppingBag className="text-[#D32F2F] mr-2" />
           <h3 className="text-xl font-medium text-gray-800">Products to Review</h3>
         </div>
         
         {loadingReviewable ? (
-          <div className="py-4 flex justify-center">
-            <div className="animate-spin h-8 w-8 border-2 border-[#E53935] rounded-full border-t-transparent"></div>
+          <div className="py-3 flex justify-center">
+            <BrandLoader size={64} />
           </div>
         ) : reviewableProducts.length === 0 ? (
-          <div className="bg-gray-50 p-6 rounded-lg text-center">
+          <div className="bg-gray-50 p-4 sm:p-6 rounded-lg text-center">
             <Package2 className="mx-auto text-gray-400 mb-3" size={28} />
             <p className="text-gray-700 font-medium">No products to review</p>
             <p className="text-gray-500 text-sm mt-1">

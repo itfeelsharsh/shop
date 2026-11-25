@@ -10,6 +10,7 @@ import WishlistButton from './WishlistButton';
 import reviewUtils from '../utils/reviewUtils';
 import { toast } from 'react-toastify';
 import Button from './Button';
+import BrandLoader from './BrandLoader';
 import noImageFallback from '../assets/noimgsimg.png';
 import { hasOptions, normalizeOptions } from '../utils/productOptions';
 
@@ -241,6 +242,7 @@ const ProductCard = memo(function ProductCard({
             size="small"
             isLoading={isAddingToCart}
             loadingText=""
+            loadingIcon={<BrandLoader size={22} />}
             disabled={!product?.stock || product.stock <= 0}
             onClick={handleAddToCart}
             className="!h-10 !w-10 !shrink-0 !rounded-lg !bg-[#D32F2F] !p-0 !text-white !shadow-none hover:!bg-[#B71C1C] disabled:!bg-gray-200"

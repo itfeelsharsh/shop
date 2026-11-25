@@ -224,12 +224,12 @@ export default function Navbar() {
 
       <nav
         className={`
-          sticky top-0 left-0 right-0 z-50
+          sticky top-0 left-0 right-0 z-50 rounded-t-[28px]
           transition-all duration-300 backdrop-blur-xl
           hidden md:block
           ${isScrolled 
-            ? 'bg-white/95 shadow-sm border-b border-gray-200/80'
-            : 'bg-white/90 border-b border-gray-100'}
+            ? 'bg-[#FFF7F7]/95 shadow-sm border-b border-[#F3E3E3]'
+            : 'bg-[#FFF9F9]/90 border-b border-[#F6E9E9]'}
         `}
       >
         <div className="mx-auto max-w-7xl px-2 sm:px-8">
@@ -510,7 +510,7 @@ export default function Navbar() {
       {/* Bottom Tab Navigation (for mobile) */}
       <nav
         aria-label="Mobile navigation"
-        className="fixed inset-x-0 bottom-0 z-50 border-t border-gray-200 bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(0,0,0,0.06)] backdrop-blur-xl md:hidden"
+        className="fixed inset-x-0 bottom-0 z-50 rounded-t-[28px] border-t border-[#F3E3E3] bg-[#FFF9F9]/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(0,0,0,0.06)] backdrop-blur-xl md:hidden"
       >
         <div className="max-w-md mx-auto flex justify-around items-center h-16 px-3">
           {bottomNavItems.map((item) => {

@@ -30,7 +30,7 @@ const Footer = () => {
       variants={containerVariants}
       initial="hidden"
       animate={inView ? "visible" : "hidden"}
-      className="relative z-10 mt-16 hidden border-t border-gray-200 bg-white pb-8 pt-12 font-sans text-gray-600 md:block sm:mt-20 sm:pt-16"
+      className="relative z-10 mt-16 hidden rounded-t-[32px] border-t border-[#F3E3E3] bg-[#FFF9F9] pb-8 pt-12 font-sans text-gray-600 md:block sm:mt-20 sm:pt-16"
     >
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <div className="mb-10 grid grid-cols-2 gap-x-8 gap-y-10 sm:gap-x-12 lg:mb-14 lg:grid-cols-4">
