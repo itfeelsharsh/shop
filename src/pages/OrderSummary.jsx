@@ -513,7 +513,7 @@ function OrderSummary() {
         />
       )}
     
-      <div className="min-h-screen bg-gray-50 py-12 px-1 sm:px-6">
+      <div className="min-h-screen bg-gray-50 py-6 px-1 sm:px-6 sm:py-12">
         <div className="max-w-4xl mx-auto">
           {/* Back button */}
           <Button
@@ -561,7 +561,7 @@ function OrderSummary() {
           
           {/* Order Success Banner */}
           <motion.div 
-            className="bg-gradient-to-br from-[#D32F2F] to-[#B71C1C] text-white rounded-t-2xl p-10 shadow-2xl relative overflow-hidden"
+            className="bg-gradient-to-br from-[#D32F2F] to-[#B71C1C] text-white rounded-t-2xl p-5 shadow-2xl relative overflow-hidden sm:p-10"
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -585,7 +585,7 @@ function OrderSummary() {
 
           
           {/* Main Content */}
-          <div className="bg-white rounded-b-2xl shadow-lg p-4 sm:p-6 md:p-8">
+          <div className="bg-white rounded-b-2xl shadow-lg px-1.5 py-4 sm:p-6 md:p-8">
             <motion.div
               variants={containerVariants}
               initial="hidden"
