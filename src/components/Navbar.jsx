@@ -224,7 +224,7 @@ export default function Navbar() {
 
       <nav
         className={`
-          sticky top-0 left-0 right-0 z-50 rounded-t-[28px]
+          sticky top-0 left-0 right-0 z-50 rounded-b-[28px]
           transition-all duration-300 backdrop-blur-xl
           hidden md:block
           ${isScrolled 

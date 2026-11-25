@@ -218,20 +218,20 @@ const ProductCard = memo(function ProductCard({
 
         {/* Price section */}
         <div className="mt-auto flex items-end justify-between gap-2 border-t border-gray-100 pt-3">
-          <div className="flex flex-col min-w-0">
-            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-              <span className="text-lg font-bold leading-tight tracking-tight text-gray-950">
-                {hasPaidOptions && <span className="mr-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400">From</span>}
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+              <span className="max-w-full truncate text-[15px] font-bold leading-tight tracking-tight text-gray-950 sm:text-lg">
+                {hasPaidOptions && <span className="mr-1 text-[9px] font-semibold uppercase tracking-wide text-gray-400">From</span>}
                 {formatPrice(product?.price)}
               </span>
               {product?.mrp && product.mrp > product.price && (
-                <span className="text-xs font-medium leading-tight text-gray-400 line-through">
+                <span className="text-[11px] font-medium leading-tight text-gray-400 line-through">
                   {formatPrice(product.mrp)}
                 </span>
               )}
             </div>
             {product?.mrp && product.mrp > product.price && (
-              <span className="mt-1 block truncate text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+              <span className="mt-0.5 block truncate text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
                 Save {formatPrice(product.mrp - product.price)}
               </span>
             )}
@@ -245,7 +245,7 @@ const ProductCard = memo(function ProductCard({
             loadingIcon={<BrandLoader size={22} />}
             disabled={!product?.stock || product.stock <= 0}
             onClick={handleAddToCart}
-            className="!h-10 !w-10 !shrink-0 !rounded-lg !bg-[#D32F2F] !p-0 !text-white !shadow-none hover:!bg-[#B71C1C] disabled:!bg-gray-200"
+            className="!h-9 !w-9 !shrink-0 !rounded-lg !bg-[#D32F2F] !p-0 !text-white !shadow-none hover:!bg-[#B71C1C] disabled:!bg-gray-200 sm:!h-10 sm:!w-10"
             icon={<ShoppingCart className="h-4 w-4" />}
             aria-label={`Add ${product?.name || 'product'} to cart`}
           />

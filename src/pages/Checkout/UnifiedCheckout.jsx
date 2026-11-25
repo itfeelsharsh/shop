@@ -7,7 +7,7 @@ import { doc, getDoc, updateDoc, collection, getDocs, query, where } from 'fireb
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { applyCoupon, removeCoupon, removePurchasedFromCart, updateQuantity, removeFromCart } from '../../redux/cartSlice';
 import countriesStatesData from '../../countriesStates.json';
-import { ShoppingBag, Truck, CreditCard, CheckCircle, ChevronRight, ChevronLeft, Tag, X, Loader2 } from 'lucide-react';
+import { ShoppingBag, Truck, CreditCard, CheckCircle, ChevronRight, ChevronLeft, Tag, X } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { Helmet } from 'react-helmet-async';
 import OrderConfirmation from '../../components/OrderConfirmation';
