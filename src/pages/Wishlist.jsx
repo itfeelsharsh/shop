@@ -149,7 +149,7 @@ function Wishlist() {
   // Loading state
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[60vh]">
+      <div className="container mx-auto px-2 py-8 flex items-center justify-center min-h-[60vh]">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
       </div>
     );
@@ -158,7 +158,7 @@ function Wishlist() {
   // Error state
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8 flex flex-col items-center justify-center min-h-[60vh]">
+      <div className="container mx-auto px-2 py-8 flex flex-col items-center justify-center min-h-[60vh]">
         <AlertCircle size={48} className="text-red-500 mb-4" />
         <h2 className="text-xl font-bold text-gray-800 mb-2">Something went wrong</h2>
         <p className="text-gray-600 mb-4">{error}</p>
@@ -175,7 +175,7 @@ function Wishlist() {
   // Empty wishlist state
   if (items.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-8 flex flex-col items-center justify-center min-h-[60vh]">
+      <div className="container mx-auto px-2 py-8 flex flex-col items-center justify-center min-h-[60vh]">
         <Heart size={64} className="text-gray-300 mb-6" />
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Your wishlist is empty</h2>
         <p className="text-gray-600 mb-6 text-center max-w-md">
@@ -193,7 +193,7 @@ function Wishlist() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-2 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center">
           <Heart size={24} className="mr-2 text-red-500" />

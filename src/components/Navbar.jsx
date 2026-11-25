@@ -211,7 +211,7 @@ export default function Navbar() {
   return (
     <>
       <nav className="hidden">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
+        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-2">
           <Link to="/" className="group inline-flex items-center gap-2" aria-label="KamiKoto home">
             <img src={brandLogo} alt="" className="h-8 w-8 object-contain" />
             <span className="text-lg font-bold tracking-tight text-gray-950">
@@ -232,7 +232,7 @@ export default function Navbar() {
             : 'bg-white/90 border-b border-gray-100'}
         `}
       >
-        <div className="mx-auto max-w-7xl px-5 sm:px-8">
+        <div className="mx-auto max-w-7xl px-2 sm:px-8">
           <div className="flex h-[72px] items-center justify-between">
             <div className="flex-shrink-0">
               <Link to="/" className="group inline-flex items-center gap-3" aria-label="KamiKoto home">

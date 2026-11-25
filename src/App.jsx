@@ -8,6 +8,7 @@ import ContactUs from "./pages/ContactUs";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import ReturnPolicy from "./pages/ReturnPolicy";
+import LegalDisclaimer from "./pages/LegalDisclaimer";
 import ShippingInfo from "./pages/ShippingInfo";
 import ProductView from "./pages/ProductView";
 import Cart from "./pages/Cart";
@@ -239,6 +240,7 @@ function AnimatedRoutes() {
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/terms-of-service" element={<TermsOfService />} />
       <Route path="/return-policy" element={<ReturnPolicy />} />
+      <Route path="/legal-disclaimer" element={<LegalDisclaimer />} />
       <Route path="/shipping-info" element={<ShippingInfo />} />
       <Route path="*" element={<NotFound />} />
     </Routes>

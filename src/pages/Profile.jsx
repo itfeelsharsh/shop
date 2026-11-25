@@ -13,13 +13,14 @@ import {
   Truck,
   ShoppingBag,
   Camera,
-  AlertCircle,
   Trash2,
   FileDown,
   Star,
   LogOut,
   ChevronRight,
-  Copy
+  Copy,
+  Phone,
+  Mail,
 } from 'lucide-react';
 import Button from '../components/Button';
 import Input from '../components/Input';
@@ -34,7 +35,7 @@ import { getItemOptionLabel } from '../utils/productOptions';
 
 const ORDER_STATUS = {
   PLACED: { label: 'Placed', color: 'bg-amber-50 text-amber-700 border-amber-100' },
-  APPROVED: { label: 'Approved', color: 'bg-cyan-50 text-cyan-700 border-cyan-100' },
+  APPROVED: { label: 'Approved', color: 'bg-sky-50 text-sky-700 border-sky-100' },
   PACKED: { label: 'Packed', color: 'bg-blue-50 text-blue-700 border-blue-100' },
   SHIPPED: { label: 'Shipped', color: 'bg-indigo-50 text-indigo-700 border-indigo-100' },
   DELIVERED: { label: 'Delivered', color: 'bg-green-50 text-green-700 border-green-100' },
@@ -302,7 +303,7 @@ function MyAccount() {
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center min-h-[60vh] bg-gray-50/50">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-cyan-600 mb-4"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#D32F2F] mb-4"></div>
         <p className="text-gray-500 font-bold text-sm tracking-widest uppercase">Loading Account...</p>
       </div>
     );
@@ -339,7 +340,7 @@ function MyAccount() {
                 to={`/my-account/${tab.id}`}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 whitespace-nowrap ${
                   isActive
-                    ? 'bg-cyan-600 text-white shadow-sm'
+                    ? 'bg-[#D32F2F] text-white shadow-sm'
                     : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                 }`}
               >
@@ -390,7 +391,7 @@ function MyAccount() {
                       to={`/my-account/${tab.id}`}
                       className={`flex items-center justify-between w-full px-4 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 ${
                         isActive
-                          ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/10'
+                          ? 'bg-[#D32F2F] text-white shadow-md shadow-[#D32F2F]/10'
                           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       }`}
                     >
@@ -457,13 +458,13 @@ function MyAccount() {
                         {/* Personal Info Card */}
                         <div className="bg-gray-50/30 rounded-3xl p-4 sm:p-6 md:p-8 border border-gray-100/50 space-y-6">
                           <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <User size={18} className="text-cyan-600" />
+                            <User size={18} className="text-[#D32F2F]" />
                             Personal Information
                           </h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <Input label="Full Name" name="name" value={profile.name} onChange={handleChange} required icon={User} className="bg-white border-gray-200 rounded-2xl" />
-                            <Input label="Email Address" name="email" value={profile.email} disabled icon={AlertCircle} className="bg-gray-150 border-gray-200 rounded-2xl cursor-not-allowed" />
-                            <Input label="Phone Number" name="phone" value={profile.phone} onChange={handleChange} icon={Truck} className="bg-white border-gray-200 rounded-2xl" />
+                            <Input label="Email Address" name="email" value={profile.email} disabled icon={Mail} className="bg-white border-gray-200 rounded-2xl cursor-not-allowed" />
+                            <Input label="Phone Number" name="phone" value={profile.phone} onChange={handleChange} icon={Phone} className="bg-white border-gray-200 rounded-2xl" />
                             <Input label="Profile Picture URL" name="profilePic" value={profile.profilePic} onChange={handleChange} icon={Camera} className="bg-white border-gray-200 rounded-2xl" />
                           </div>
                         </div>
@@ -471,36 +472,36 @@ function MyAccount() {
                         {/* Address Info Card */}
                         <div className="bg-gray-50/30 rounded-3xl p-4 sm:p-6 md:p-8 border border-gray-100/50 space-y-6">
                           <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <MapPin size={18} className="text-cyan-600" />
+                            <MapPin size={18} className="text-[#D32F2F]" />
                             Default Shipping Address
                           </h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">House / Plot / Suite No.</label>
-                              <input type="text" name="address.houseNo" value={profile.address.houseNo} onChange={handleChange} placeholder="e.g. 402-A" className="w-full p-4 border border-gray-200 rounded-2xl bg-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all" />
+                              <input type="text" name="address.houseNo" value={profile.address.houseNo} onChange={handleChange} placeholder="e.g. 402-A" className="w-full p-4 border border-gray-200 rounded-2xl bg-white text-sm focus:border-[#E53935] focus:ring-1 focus:ring-[#E53935] outline-none transition-all" />
                             </div>
                             <div>
                               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ZIP / Postal PIN Code</label>
-                              <input type="text" name="address.pin" value={profile.address.pin} onChange={handleChange} placeholder="e.g. 400001" className="w-full p-4 border border-gray-200 rounded-2xl bg-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all" />
+                              <input type="text" name="address.pin" value={profile.address.pin} onChange={handleChange} placeholder="e.g. 400001" className="w-full p-4 border border-gray-200 rounded-2xl bg-white text-sm focus:border-[#E53935] focus:ring-1 focus:ring-[#E53935] outline-none transition-all" />
                             </div>
                             <div className="md:col-span-2">
                               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Address Line 1 (Street name, locality)</label>
-                              <input type="text" name="address.line1" value={profile.address.line1} onChange={handleChange} placeholder="e.g. Nariman Point, MG Road" className="w-full p-4 border border-gray-200 rounded-2xl bg-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all" />
+                              <input type="text" name="address.line1" value={profile.address.line1} onChange={handleChange} placeholder="e.g. Nariman Point, MG Road" className="w-full p-4 border border-gray-200 rounded-2xl bg-white text-sm focus:border-[#E53935] focus:ring-1 focus:ring-[#E53935] outline-none transition-all" />
                             </div>
                             <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
                               <div>
                                 <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">City</label>
-                                <input type="text" name="address.city" value={profile.address.city} onChange={handleChange} placeholder="e.g. Mumbai" className="w-full p-4 border border-gray-200 rounded-2xl bg-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all" />
+                                <input type="text" name="address.city" value={profile.address.city} onChange={handleChange} placeholder="e.g. Mumbai" className="w-full p-4 border border-gray-200 rounded-2xl bg-white text-sm focus:border-[#E53935] focus:ring-1 focus:ring-[#E53935] outline-none transition-all" />
                               </div>
                               <div>
                                 <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Country</label>
-                                <select name="address.country" value={profile.address.country} onChange={handleChange} className="w-full p-4 border border-gray-200 rounded-2xl bg-white text-sm focus:border-cyan-500 outline-none transition-all">
+                                <select name="address.country" value={profile.address.country} onChange={handleChange} className="w-full p-4 border border-gray-200 rounded-2xl bg-white text-sm focus:border-[#E53935] outline-none transition-all">
                                   {Object.keys(countriesStatesData.countries).map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
                               </div>
                               <div>
                                 <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">State</label>
-                                <select name="address.state" value={profile.address.state} onChange={handleChange} className="w-full p-4 border border-gray-200 rounded-2xl bg-white text-sm focus:border-cyan-500 outline-none transition-all">
+                                <select name="address.state" value={profile.address.state} onChange={handleChange} className="w-full p-4 border border-gray-200 rounded-2xl bg-white text-sm focus:border-[#E53935] outline-none transition-all">
                                   <option value="">Select State</option>
                                   {profile.address.country && countriesStatesData.countries[profile.address.country]?.map(s => <option key={s} value={s}>{s}</option>)}
                                 </select>
@@ -510,7 +511,7 @@ function MyAccount() {
                         </div>
                         
                         <div className="flex justify-end">
-                          <Button type="submit" variant="primary" isLoading={saveLoading} loadingText="Updating..." className="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-3.5 rounded-2xl font-bold border-none transition-all">
+                          <Button type="submit" variant="primary" isLoading={saveLoading} loadingText="Updating..." className="bg-[#D32F2F] hover:bg-[#B71C1C] text-white px-8 py-3.5 rounded-2xl font-bold border-none transition-all">
                             Save Profile Changes
                           </Button>
                         </div>
@@ -528,7 +529,7 @@ function MyAccount() {
 
                       {ordersLoading ? (
                         <div className="flex justify-center py-20">
-                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan-600"></div>
+                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#D32F2F]"></div>
                         </div>
                       ) : orders.length === 0 ? (
                         <div className="bg-gray-50/50 rounded-3xl p-12 text-center border border-dashed border-gray-200 space-y-4">
@@ -537,7 +538,7 @@ function MyAccount() {
                             <h3 className="font-extrabold text-lg text-gray-900">No orders placed yet</h3>
                             <p className="text-gray-400 text-xs mt-1">Explore our premium curation of Kamikoto essentials to start building your collective.</p>
                           </div>
-                          <Link to="/products" className="inline-flex items-center px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all">
+                          <Link to="/products" className="inline-flex items-center px-6 py-3 bg-[#D32F2F] hover:bg-[#B71C1C] text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all">
                             Explore Catalog
                           </Link>
                         </div>
@@ -546,68 +547,65 @@ function MyAccount() {
                           {orders.map((order) => (
                             <div key={order.id} className="border border-gray-100 rounded-3xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-all">
                               {/* Order Card Header */}
-                              <div className="bg-gray-50/50 px-4 py-4 sm:px-6 sm:py-5 border-b border-gray-100 flex flex-wrap justify-between items-center gap-4">
-                                <div className="flex items-center gap-6 text-xs flex-wrap">
-                                  <div>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">DATE PLACED</p>
-                                    <p className="font-semibold text-gray-900">{formatOrderDate(order.orderDate)}</p>
+                              <div className="flex items-center justify-between gap-3 border-b border-gray-100 bg-gray-50/60 px-3 py-3 sm:flex-wrap sm:justify-between sm:gap-4 sm:px-6 sm:py-5">
+                                <div className="flex min-w-0 flex-1 items-center gap-3 sm:flex-wrap sm:gap-6">
+                                  <div className="min-w-0">
+                                    <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400 sm:text-[10px]">Placed</p>
+                                    <p className="truncate text-xs font-semibold text-gray-900 sm:text-sm">{formatOrderDate(order.orderDate)}</p>
                                   </div>
-                                  <div>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">ORDER ID</p>
-                                    <p className="font-mono font-semibold text-gray-900 flex items-center gap-1.5">
-                                      {order.orderId}
-                                      <button onClick={() => { navigator.clipboard.writeText(order.orderId); toast.success('Order ID copied!'); }} className="text-gray-400 hover:text-gray-900">
-                                        <Copy size={12} />
+                                  <div className="min-w-0 sm:block">
+                                    <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400 sm:text-[10px]">Order ID</p>
+                                    <p className="flex items-center gap-1 truncate font-mono text-[11px] font-semibold text-gray-900 sm:text-sm">
+                                      <span className="truncate">{order.orderId}</span>
+                                      <button onClick={() => { navigator.clipboard.writeText(order.orderId); toast.success('Order ID copied!'); }} className="shrink-0 text-gray-400 hover:text-[#D32F2F]" aria-label="Copy order ID">
+                                        <Copy size={11} />
                                       </button>
                                     </p>
                                   </div>
-                                  <div>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">STATUS</p>
-                                    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${ORDER_STATUS[order.status?.toUpperCase()]?.color || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
-                                      {order.status}
-                                    </span>
-                                  </div>
+                                  <span className={`inline-flex shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold sm:px-2.5 sm:text-[10px] ${ORDER_STATUS[order.status?.toUpperCase()]?.color || 'border-gray-200 bg-gray-50 text-gray-700'}`}>
+                                    {order.status}
+                                  </span>
                                 </div>
-                                <button onClick={() => handleDownloadReceipt(order)} title="Download Invoice Receipt PDF" className="p-2.5 bg-white text-gray-600 rounded-xl border border-gray-150 hover:bg-cyan-600 hover:text-white hover:border-transparent transition-all">
-                                  <FileDown size={16} />
+                                <button onClick={() => handleDownloadReceipt(order)} title="Download invoice PDF" aria-label="Download invoice PDF" className="shrink-0 rounded-lg border border-gray-200 bg-white p-2 text-gray-600 transition-all hover:border-[#D32F2F] hover:bg-[#D32F2F] hover:text-white sm:rounded-xl sm:p-2.5">
+                                  <FileDown size={14} className="sm:h-4 sm:w-4" />
                                 </button>
                               </div>
 
                               {/* Order Card Body */}
-                              <div className="p-4 sm:p-6 space-y-4 divide-y divide-gray-100">
+                              <div className="space-y-3 px-3 py-3 sm:space-y-4 sm:p-6">
                                 {order.items.map((item, idx) => (
-                                  <div key={idx} className="flex items-center gap-5 pt-4 first:pt-0">
-                                    <img src={item.image} alt={item.name} className="w-14 h-14 object-contain rounded-xl border border-gray-100 p-1 flex-shrink-0" />
-                                    <div className="flex-grow">
-                                      <h4 className="font-bold text-sm text-gray-900 line-clamp-1">{item.name}</h4>
+                                  <div key={idx} className="flex items-center gap-3 sm:gap-5">
+                                    <img src={item.image} alt={item.name} className="h-11 w-11 shrink-0 rounded-lg border border-gray-100 object-contain p-0.5 sm:h-14 sm:w-14 sm:rounded-xl sm:p-1" />
+                                    <div className="min-w-0 flex-grow">
+                                      <h4 className="line-clamp-1 text-[13px] font-bold text-gray-900 sm:text-sm">{item.name}</h4>
                                       {getItemOptionLabel(item) && (
-                                        <p className="text-[11px] font-semibold text-gray-500 mt-0.5 line-clamp-1">{getItemOptionLabel(item)}</p>
+                                        <p className="line-clamp-1 text-[10px] font-semibold text-gray-500 sm:text-[11px]">{getItemOptionLabel(item)}</p>
                                       )}
-                                      <p className="text-xs text-gray-400 mt-0.5">Quantity: {item.quantity} · Price: {formatPrice(item.price)}</p>
+                                      <p className="text-[11px] text-gray-400 sm:mt-0.5 sm:text-xs">Qty {item.quantity} · {formatPrice(item.price)}</p>
                                     </div>
-                                    <p className="font-extrabold text-sm text-gray-900">{formatPrice(item.price * item.quantity)}</p>
+                                    <p className="shrink-0 text-[13px] font-extrabold text-gray-900 sm:text-sm">{formatPrice(item.price * item.quantity)}</p>
                                   </div>
                                 ))}
-                                
+
                                 {/* Order Card Footer */}
-                                <div className="pt-5 border-t border-gray-100 flex flex-wrap justify-between items-end gap-4">
-                                  <div className="flex gap-8 text-xs text-gray-400">
+                                <div className="flex items-end justify-between gap-3 border-t border-gray-100 pt-3 sm:gap-4 sm:pt-5">
+                                  <div className="hidden gap-8 text-xs text-gray-400 sm:flex">
                                     {order.address && (
                                       <div>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">DELIVER TO</p>
+                                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Deliver to</p>
                                         <p className="font-medium text-gray-700">{order.address.houseNo}, {order.address.line1}, {order.address.city}</p>
                                       </div>
                                     )}
                                     {order.paymentDetails && (
                                       <div>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">PAYMENT METHOD</p>
+                                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Payment method</p>
                                         <p className="font-medium text-gray-700">{order.paymentDetails.method || 'Online Payment'}</p>
                                       </div>
                                     )}
                                   </div>
-                                  <div className="text-right">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">GRAND TOTAL</p>
-                                    <p className="text-2xl font-black text-cyan-600 tracking-tight">{formatPrice(order.totalAmount || order.total)}</p>
+                                  <div className="ml-auto text-right">
+                                    <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400 sm:text-[10px]">Grand total</p>
+                                    <p className="text-base font-black tracking-tight text-[#D32F2F] sm:text-2xl">{formatPrice(order.totalAmount || order.total)}</p>
                                   </div>
                                 </div>
                               </div>
@@ -628,7 +626,7 @@ function MyAccount() {
 
                       {ordersLoading ? (
                         <div className="flex justify-center py-20">
-                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan-600"></div>
+                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#D32F2F]"></div>
                         </div>
                       ) : orders.filter(o => o.status === 'Shipped' || o.status === 'Delivered').length === 0 ? (
                         <div className="bg-gray-50/50 rounded-3xl p-12 text-center border border-gray-150 space-y-4">
@@ -653,7 +651,7 @@ function MyAccount() {
                                     </button>
                                   </h3>
                                 </div>
-                                <a href="https://www.indiapost.gov.in" target="_blank" rel="noopener noreferrer" className="px-5 py-3 bg-gray-900 hover:bg-cyan-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all">
+                                <a href="https://www.indiapost.gov.in" target="_blank" rel="noopener noreferrer" className="px-5 py-3 bg-gray-900 hover:bg-[#D32F2F] text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all">
                                   Go to Carrier Portal
                                 </a>
                               </div>
@@ -665,7 +663,7 @@ function MyAccount() {
                                   
                                   {/* Step 1 */}
                                   <div className="flex gap-4 items-start relative">
-                                    <div className="w-9 h-9 rounded-full bg-cyan-50 border-2 border-cyan-500 text-cyan-600 flex items-center justify-center font-bold z-10 flex-shrink-0">
+                                    <div className="w-9 h-9 rounded-full bg-red-50 border-2 border-[#E53935] text-[#D32F2F] flex items-center justify-center font-bold z-10 flex-shrink-0">
                                       ✓
                                     </div>
                                     <div>
@@ -676,7 +674,7 @@ function MyAccount() {
 
                                   {/* Step 2 */}
                                   <div className="flex gap-4 items-start relative">
-                                    <div className="w-9 h-9 rounded-full bg-cyan-50 border-2 border-cyan-500 text-cyan-600 flex items-center justify-center font-bold z-10 flex-shrink-0">
+                                    <div className="w-9 h-9 rounded-full bg-red-50 border-2 border-[#E53935] text-[#D32F2F] flex items-center justify-center font-bold z-10 flex-shrink-0">
                                       ✓
                                     </div>
                                     <div>
@@ -687,7 +685,7 @@ function MyAccount() {
 
                                   {/* Step 3 */}
                                   <div className="flex gap-4 items-start relative">
-                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold z-10 flex-shrink-0 border-2 ${order.status === 'Shipped' || order.status === 'Delivered' ? 'bg-cyan-50 border-cyan-500 text-cyan-600' : 'bg-white border-gray-200 text-gray-400'}`}>
+                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold z-10 flex-shrink-0 border-2 ${order.status === 'Shipped' || order.status === 'Delivered' ? 'bg-red-50 border-[#E53935] text-[#D32F2F]' : 'bg-white border-gray-200 text-gray-400'}`}>
                                       {order.status === 'Shipped' || order.status === 'Delivered' ? '✓' : '3'}
                                     </div>
                                     <div>
@@ -698,7 +696,7 @@ function MyAccount() {
 
                                   {/* Step 4 */}
                                   <div className="flex gap-4 items-start relative">
-                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold z-10 flex-shrink-0 border-2 ${order.status === 'Delivered' ? 'bg-cyan-50 border-cyan-500 text-cyan-600' : 'bg-white border-gray-200 text-gray-400'}`}>
+                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold z-10 flex-shrink-0 border-2 ${order.status === 'Delivered' ? 'bg-red-50 border-[#E53935] text-[#D32F2F]' : 'bg-white border-gray-200 text-gray-400'}`}>
                                       {order.status === 'Delivered' ? '✓' : '4'}
                                     </div>
                                     <div>
@@ -725,7 +723,7 @@ function MyAccount() {
 
                       {wishlistHookLoading ? (
                         <div className="flex justify-center py-20">
-                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan-600"></div>
+                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#D32F2F]"></div>
                         </div>
                       ) : hookWishlistItems.length === 0 ? (
                         <div className="bg-gray-50/50 rounded-3xl p-12 text-center border border-dashed border-gray-200 space-y-4">
@@ -734,14 +732,14 @@ function MyAccount() {
                             <h3 className="font-extrabold text-lg text-gray-900">Your wishlist is empty</h3>
                             <p className="text-gray-400 text-xs mt-1">Bookmark product listings to save premium finds inside this page.</p>
                           </div>
-                          <Link to="/products" className="inline-flex items-center px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all">
+                          <Link to="/products" className="inline-flex items-center px-6 py-3 bg-[#D32F2F] hover:bg-[#B71C1C] text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all">
                             Explore Catalog
                           </Link>
                         </div>
                       ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                           {hookWishlistItems.map((item) => (
-                            <div key={item.id} className="group bg-white rounded-2xl border border-gray-155 overflow-hidden hover:border-cyan-600 transition-all hover:shadow-md flex flex-col justify-between">
+                            <div key={item.id} className="group bg-white rounded-2xl border border-gray-155 overflow-hidden hover:border-[#D32F2F] transition-all hover:shadow-md flex flex-col justify-between">
                               <div className="aspect-square relative overflow-hidden bg-gray-50/50 flex items-center justify-center p-3 sm:p-4">
                                 <img src={item.image} alt={item.name} className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105" />
                                 <button onClick={() => handleRemoveFromWishlist(item.id)} title="Remove from Wishlist" className="absolute top-3 right-3 p-2 bg-white/95 rounded-xl text-gray-400 hover:text-red-600 shadow-sm border border-gray-100 hover:rotate-6 transition-all">
@@ -755,7 +753,7 @@ function MyAccount() {
                                 </div>
                                 <div className="space-y-4">
                                   <p className="text-lg font-black text-gray-900">{formatPrice(item.price)}</p>
-                                  <Link to={`/product/${item.id}`} className="w-full inline-flex justify-center py-3 bg-gray-900 hover:bg-cyan-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all text-center">
+                                  <Link to={`/product/${item.id}`} className="w-full inline-flex justify-center py-3 bg-gray-900 hover:bg-[#D32F2F] text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all text-center">
                                     View Details
                                   </Link>
                                 </div>

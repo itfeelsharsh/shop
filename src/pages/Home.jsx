@@ -107,7 +107,7 @@ function Home() {
         <meta name="description" content="Discover the pinnacle of premium Kamikoto items. Engineered for precision, designed for inspiration. Shop our collection of notebooks, pens, and more." />
       </Helmet>
       {/* Thin Premium Banner Section */}
-      <section className="container mx-auto px-4 pt-4">
+      <section className="container mx-auto px-2 pt-4">
         <m.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -121,7 +121,7 @@ function Home() {
       </section>
 
       {/* Featured Products */}
-      <section className="container mx-auto px-4 py-12">
+      <section className="container mx-auto px-2 py-12">
         <m.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -172,7 +172,7 @@ function Home() {
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
-        className="container mx-auto px-4 py-16 below-the-fold"
+        className="container mx-auto px-2 py-16 below-the-fold"
       >
         <div className="bg-gray-900 rounded-[32px] md:rounded-[48px] overflow-hidden relative group shadow-lg">
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent z-10" />

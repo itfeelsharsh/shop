@@ -7,7 +7,7 @@ import { addToCart } from '../redux/cartSlice';
 import { toast } from 'react-toastify';
 import {
   Truck, ShieldCheck,
-  Minus, Plus, Loader2, CheckCircle2
+  Minus, Plus, CheckCircle2
 } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
 import WishlistButton from '../components/WishlistButton';
@@ -17,6 +17,7 @@ import ProductReviews from '../components/ProductReviews';
 import ProductReviewForm from '../components/ProductReviewForm';
 import ProductCard from '../components/ProductCard';
 import Button from '../components/Button';
+import BrandLoader from '../components/BrandLoader';
 import noImageFallback from '../assets/noimgsimg.png';
 import {
   normalizeOptions,
@@ -197,9 +198,8 @@ function ProductView() {
 
   if (loading) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen bg-white">
-        <Loader2 className="w-12 h-12 text-black animate-spin mb-4" />
-        <p className="text-gray-500 font-medium tracking-tight">Refining details...</p>
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <BrandLoader size={180} />
       </div>
     );
   }
@@ -214,7 +214,7 @@ function ProductView() {
       </Helmet>
 
       <div className="bg-white pb-12">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-2">
           {/* Product Main Section */}
 
           {/* Product Main Section */}

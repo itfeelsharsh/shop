@@ -12,7 +12,7 @@ function NotFound() {
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className="container mx-auto px-4 py-24 text-center max-w-xl min-h-[60vh] flex flex-col justify-center items-center"
+      className="container mx-auto px-2 py-24 text-center max-w-xl min-h-[60vh] flex flex-col justify-center items-center"
     >
       <Helmet>
         <title>404 - Page Not Found | KamiKoto</title>

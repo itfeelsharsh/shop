@@ -92,8 +92,7 @@ const Input = ({
       outline-none
       transition-all
       duration-300
-      bg-gray-50/50
-      backdrop-blur-sm
+      bg-gray-50
       placeholder:text-transparent
       ${disabled ? 'bg-gray-100 cursor-not-allowed opacity-60' : 'hover:bg-white focus:bg-white'}
     `;
@@ -105,7 +104,7 @@ const Input = ({
       return `${baseStyles} border-emerald-300 focus:border-emerald-500 text-emerald-900 ring-4 ring-emerald-50`;
     }
     if (isFocused) {
-      return `${baseStyles} border-gray-900 ring-4 ring-gray-100 text-gray-900`;
+      return `${baseStyles} border-[#D32F2F] ring-4 ring-red-50 text-gray-900`;
     }
     return `${baseStyles} border-gray-200 text-gray-900 hover:border-gray-300`;
   };
@@ -133,7 +132,7 @@ const Input = ({
       {/* Input container */}
       <div className="relative">
         {Icon && (
-          <div className={`absolute left-4 top-1/2 transform -translate-y-1/2 transition-colors duration-300 ${isFocused ? 'text-gray-900' : 'text-gray-400'}`}>
+          <div className={`pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 transform transition-colors duration-300 ${isFocused ? 'text-[#D32F2F]' : 'text-gray-400'}`}>
             <Icon className="w-5 h-5" />
           </div>
         )}

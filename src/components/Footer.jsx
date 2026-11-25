@@ -119,6 +119,7 @@ const Footer = () => {
             <ul className="space-y-2.5">
               {[
                 { label: 'Privacy Policy', path: '/privacy-policy' },
+                { label: 'Legal Disclaimer', path: '/legal-disclaimer' },
                 { label: 'Terms of Service', path: '/terms-of-service' }
               ].map((item) => (
                 <li key={item.label}>
@@ -138,9 +139,20 @@ const Footer = () => {
 
         <div className="flex flex-col gap-3 border-t border-gray-200 pt-6 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {new Date().getFullYear()} KamiKoto Stationeries Pvt. Ltd.
+            © April 20, 1889 KamiKoto Stationeries Pvt. Ltd.
           </p>
-          <p>Made for the things you make.</p>
+          <p>
+            Made using vibecoding by{' '}
+            <a
+              href="https://harshbanker.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-0.5 font-normal text-red-700 underline decoration-red-700 underline-offset-4 transition-colors hover:text-red-900 hover:decoration-red-900"
+            >
+              Harsh Banker
+              <ArrowUpRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
+            </a>
+          </p>
         </div>
 
       </div>

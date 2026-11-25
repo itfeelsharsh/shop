@@ -408,7 +408,7 @@ function Products() {
         <Helmet>
           <title>Loading Premium Products... | KamiKoto</title>
         </Helmet>
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="container mx-auto px-2 py-8 max-w-7xl">
           <div className="mb-8 animate-pulse">
             <div className="h-10 w-64 bg-gray-100 rounded-xl mb-4" />
             <div className="h-5 w-48 bg-gray-50 rounded-lg" />
@@ -430,7 +430,7 @@ function Products() {
         <meta name="description" content="Explore our curated collection of premium notebooks, journals, writing tools, and desk accessories." />
       </Helmet>
       
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="container mx-auto px-2 py-8 max-w-7xl">
         {/* Page Header */}
         <m.div
           initial={{ opacity: 0, y: -15 }}
@@ -698,7 +698,7 @@ function Products() {
           </div>
         ) : (
           /* Empty / No Results State */
-          <div className="text-center py-20 bg-gray-50/50 border border-gray-100 rounded-[32px] max-w-xl mx-auto px-6">
+          <div className="text-center py-20 bg-gray-50/50 border border-gray-100 rounded-[32px] max-w-xl mx-auto px-2">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-white border border-gray-100 shadow-md rounded-2xl mb-4 text-red-600 font-black">
               ✦
             </div>

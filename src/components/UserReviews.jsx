@@ -451,7 +451,7 @@ function UserReviews() {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-8">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-[#E53935]"></div>
       </div>
     );
   }
@@ -465,13 +465,13 @@ function UserReviews() {
       {/* Reviewable Products Section */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center mb-4">
-          <ShoppingBag className="text-blue-600 mr-2" />
+          <ShoppingBag className="text-[#D32F2F] mr-2" />
           <h3 className="text-xl font-medium text-gray-800">Products to Review</h3>
         </div>
         
         {loadingReviewable ? (
           <div className="py-4 flex justify-center">
-            <div className="animate-spin h-8 w-8 border-2 border-blue-500 rounded-full border-t-transparent"></div>
+            <div className="animate-spin h-8 w-8 border-2 border-[#E53935] rounded-full border-t-transparent"></div>
           </div>
         ) : reviewableProducts.length === 0 ? (
           <div className="bg-gray-50 p-6 rounded-lg text-center">
@@ -521,7 +521,7 @@ function UserReviews() {
                       onChange={(e) => setNewReview({...newReview, text: e.target.value})}
                       rows={4}
                       maxLength={500}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E53935]"
                       placeholder="Share your experience with this product. What did you like or dislike? Would you recommend it to others?"
                     ></textarea>
                     <p className="text-sm text-gray-500 mt-1">
@@ -543,7 +543,7 @@ function UserReviews() {
                       className={`px-6 py-2 rounded-lg text-white ${
                         isSubmittingNewReview || newReview.rating === 0
                           ? "bg-gray-400 cursor-not-allowed"
-                          : "bg-blue-600 hover:bg-blue-700"
+                          : "bg-[#D32F2F] hover:bg-[#B71C1C]"
                       }`}
                     >
                       {isSubmittingNewReview ? (
@@ -581,13 +581,13 @@ function UserReviews() {
                         <div className="mt-3 flex justify-between items-center">
                           <Link 
                             to={`/product/${product.id}`}
-                            className="text-sm text-blue-600 hover:underline"
+                            className="text-sm text-[#D32F2F] hover:underline"
                           >
                             View Product
                           </Link>
                           <button
                             onClick={() => handleSelectProduct(product)}
-                            className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm hover:bg-blue-200 transition-colors"
+                            className="px-3 py-1 bg-red-100 text-[#9B1C1C] rounded-full text-sm hover:bg-red-200 transition-colors"
                           >
                             Write Review
                           </button>
@@ -657,7 +657,7 @@ function UserReviews() {
                           onChange={(e) => setEditReviewText(e.target.value)}
                           maxLength={500}
                           rows={4}
-                          className="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E53935]"
                           placeholder="What did you think about this product?"
                         ></textarea>
                         <p className="text-sm text-gray-500 mt-1">
@@ -674,7 +674,7 @@ function UserReviews() {
                         </button>
                         <button
                           onClick={saveEditedReview}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                          className="px-4 py-2 bg-[#D32F2F] text-white rounded-md hover:bg-[#B71C1C]"
                         >
                           Save Changes
                         </button>
@@ -708,7 +708,7 @@ function UserReviews() {
                       <div className="flex space-x-2">
                         <button
                           onClick={() => handleEditReview(review)}
-                          className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full"
+                          className="p-1.5 text-gray-500 hover:text-[#D32F2F] hover:bg-red-50 rounded-full"
                           aria-label="Edit review"
                         >
                           <Edit2 size={16} />
