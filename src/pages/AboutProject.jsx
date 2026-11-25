@@ -49,7 +49,7 @@ function AboutProject() {
       </header>
 
       {/* Main Container */}
-      <div className="max-w-7xl mx-auto px-2 md:px-8 py-8 flex flex-col lg:flex-row gap-8">
+      <div className="mobile-bleed max-w-7xl mx-auto px-2 md:px-8 py-8 flex flex-col lg:flex-row gap-8">
         
         {/* Sidebar Index Links (Desktop Only) */}
         <aside className="hidden lg:block lg:w-64 shrink-0">

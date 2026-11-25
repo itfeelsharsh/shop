@@ -463,4 +463,18 @@ span[style*="rotate(45deg)"][style*="dashed"] {
   overflow: hidden !important;
   position: absolute !important;
   z-index: -999999 !important;
-}
+}
+
+
+/* Mobile portrait: keep page content near full-bleed with hairline side gutters */
+@media (max-width: 639px) and (orientation: portrait) {
+  .container {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+    max-width: 100% !important;
+  }
+  .mobile-bleed {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+}

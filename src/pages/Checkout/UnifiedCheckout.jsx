@@ -962,14 +962,14 @@ function UnifiedCheckout() {
         <title>Checkout | KamiKoto</title>
         <meta name="description" content="Complete your purchase securely at KamiKoto." />
       </Helmet>
-      <div className="container mx-auto px-2 sm:px-4">
+      <div className="container mx-auto px-1 sm:px-4">
         {/* Main Checkout Container */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden lg:flex lg:h-[calc(100dvh-73px-3rem)] lg:max-h-[1200px] lg:flex-col">
           {/* Checkout steps (merged into the card header) */}
           <m.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="shrink-0 border-b border-gray-100 px-4 py-3 sm:px-6 sm:py-4 md:px-8"
+            className="shrink-0 border-b border-gray-100 px-2 py-3 sm:px-6 sm:py-4 md:px-8"
           >
             <div className="mx-auto flex max-w-3xl items-center justify-between">
               {[
@@ -996,7 +996,7 @@ function UnifiedCheckout() {
 
           <div className="grid grid-cols-1 lg:min-h-0 lg:flex-1 lg:grid-cols-3">
             {/* Left Column - Content */}
-            <div className="lg:col-span-2 lg:min-h-0 lg:overflow-y-auto p-4 sm:p-6 md:p-8">
+            <div className="lg:col-span-2 lg:min-h-0 lg:overflow-y-auto p-1.5 sm:p-6 md:p-8">
               <AnimatePresence mode="wait">
                 {currentStep === 1 && (
                   <m.div
@@ -1016,7 +1016,7 @@ function UnifiedCheckout() {
                     ) : (
                       <div className="space-y-4">
                         {cartDetails.map((item) => (
-                          <div key={item.lineId || item.productId} className="flex items-center p-4 border border-gray-100 rounded-xl hover:shadow-sm transition-shadow">
+                          <div key={item.lineId || item.productId} className="flex items-center p-2.5 sm:p-4 border border-gray-100 rounded-xl hover:shadow-sm transition-shadow">
                             <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-gray-200">
                               <img
                                 src={item.product.image}
@@ -1053,7 +1053,7 @@ function UnifiedCheckout() {
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Shipping Information</h2>
 
                     {/* Customer Details */}
-                    <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 p-5">
+                    <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 p-2.5 sm:p-5">
                       <h3 className="text-lg font-semibold text-gray-900 mb-4">Customer Details</h3>
                       <div className="space-y-4">
                         <div>
@@ -1110,7 +1110,7 @@ function UnifiedCheckout() {
                     </div>
 
                     {/* Shipping Address */}
-                    <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 p-5">
+                    <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 p-2.5 sm:p-5">
                       <h3 className="text-lg font-semibold text-gray-900 mb-4">Shipping Address</h3>
                       <div className="space-y-4">
                         <div>
@@ -1230,7 +1230,7 @@ function UnifiedCheckout() {
                     </div>
 
                     {/* Shipping Method */}
-                    <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 p-5">
+                    <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 p-2.5 sm:p-5">
                       <h3 className="text-lg font-semibold text-gray-900 mb-4">Shipping Method</h3>
 
                       {address.country === 'India' && subtotal > 500 && (
@@ -1352,12 +1352,12 @@ function UnifiedCheckout() {
             </div>
 
             {/* Right Column - Order Summary */}
-            <div className="lg:col-span-1 lg:min-h-0 lg:overflow-y-auto bg-gradient-to-br from-gray-50 to-white p-4 sm:p-6 md:p-8 lg:p-5 border-t lg:border-t-0 lg:border-l border-gray-200">
+            <div className="lg:col-span-1 lg:min-h-0 lg:overflow-y-auto bg-gradient-to-br from-gray-50 to-white p-2.5 sm:p-6 md:p-8 lg:p-5 border-t lg:border-t-0 lg:border-l border-gray-200">
               <div>
                 <h3 className="text-lg font-bold text-gray-900 mb-6 lg:mb-3">Order Summary</h3>
 
                 {/* Coupon Section */}
-                <div className="bg-white p-4 lg:p-3 rounded-xl border border-gray-200 mb-6 lg:mb-4">
+                <div className="bg-white p-2.5 sm:p-4 lg:p-3 rounded-xl border border-gray-200 mb-6 lg:mb-4">
                   <h4 className="font-medium text-gray-700 mb-3 lg:mb-2 flex items-center">
                     <Tag size={16} className="mr-2 text-gray-900" />
                     Apply Coupon

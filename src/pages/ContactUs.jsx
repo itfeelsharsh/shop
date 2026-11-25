@@ -15,7 +15,7 @@ function ContactUs() {
         title="Contact Us"
         description="Have a question or feedback? Send us a message and we’ll get back to you as soon as possible."
       >
-        <form className="mx-auto max-w-xl space-y-5 rounded-xl border border-gray-200 bg-gray-50/70 p-5 sm:p-7">
+        <form className="mx-auto max-w-xl space-y-5 rounded-xl border border-gray-200 bg-gray-50/70 p-3 sm:p-7">
           <div>
             <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-900">Email</label>
             <input
