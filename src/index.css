@@ -478,3 +478,27 @@ span[style*="rotate(45deg)"][style*="dashed"] {
     padding-right: 4px !important;
   }
 }
+
+
+/* Desktop: thin Kami-red scrollbar */
+@media (min-width: 1024px) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #D32F2F #F8F1F1;
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #F8F1F1;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #D32F2F;
+    border-radius: 999px;
+    border: 2px solid #F8F1F1;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #B71C1C;
+  }
+}

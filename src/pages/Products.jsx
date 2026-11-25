@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { db } from "../firebase/config";
-import { collection, getDocs, query, orderBy, limit, startAfter, where, doc, getDoc } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import ProductCard from "../components/ProductCard";
 import { Search, X, SlidersHorizontal } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
+import BrandLoader from "../components/BrandLoader";
 import { m, AnimatePresence } from "framer-motion";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../redux/cartSlice";
@@ -11,25 +13,22 @@ import { auth } from "../firebase/config";
 import { Helmet } from "react-helmet-async";
 import Button from "../components/Button";
 
-const ProductSkeleton = () => (
-  <div className="bg-white rounded-[24px] overflow-hidden shadow-sm border border-gray-100 flex flex-col h-full animate-pulse">
-    <div className="aspect-[4/5] bg-gray-100" />
-    <div className="p-5 flex flex-col gap-3 flex-grow">
-      <div className="flex justify-between">
-        <div className="h-3 w-16 bg-gray-100 rounded-full" />
-        <div className="h-3 w-12 bg-gray-100 rounded-full" />
-      </div>
-      <div className="h-5 w-full bg-gray-100 rounded-lg" />
-      <div className="h-5 w-2/3 bg-gray-100 rounded-lg" />
-      <div className="mt-auto pt-3 border-t border-gray-50 flex justify-between items-center">
-        <div className="h-6 w-20 bg-gray-100 rounded-lg" />
-        <div className="h-10 w-10 bg-gray-100 rounded-full" />
-      </div>
-    </div>
-  </div>
-);
+const slugifyCategory = (value) => String(value || "")
+  .toLowerCase()
+  .trim()
+  .replace(/&/g, "and")
+  .replace(/[^a-z0-9]+/g, "-")
+  .replace(/^-+|-+$/g, "");
+
+const unslugifyCategory = (slug) => String(slug || "")
+  .split("-")
+  .filter(Boolean)
+  .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+  .join(" ");
 
 function Products() {
+  const { categorySlug } = useParams();
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -37,8 +36,7 @@ function Products() {
   const [inputValue, setInputValue] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   
-  // Selected category state for top horizontal selector
-  const [activeCategory, setActiveCategory] = useState("All");
+  // Selected category is derived from the URL; every collection has its own address
   const [dynamicCategories, setDynamicCategories] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
 
@@ -83,11 +81,10 @@ function Products() {
   const dispatch = useDispatch();
   const [user] = useAuthState(auth);
 
-  // Pagination cursor & control states
-  const lastVisibleRef = useRef(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [isFullyLoaded, setIsFullyLoaded] = useState(false);
-  const [isPaginating, setIsPaginating] = useState(false);
+  const [switching, setSwitching] = useState(false);
+  const previousSlugRef = useRef(categorySlug);
+  const switchTimerRef = useRef(null);
+  const startedAtRef = useRef(Date.now());
 
   // Search input debouncer effect (250ms)
   useEffect(() => {
@@ -99,110 +96,32 @@ function Products() {
     return () => clearTimeout(handler);
   }, [inputValue]);
 
-  // Fetch paginated chunk from Firestore
-  const fetchProductsPage = useCallback(async (isInitial = false, retries = 3, delay = 500) => {
-    if (isFullyLoaded) return;
-    
-    if (isInitial && retries === 3) {
-      setLoading(true);
-      setProducts([]);
-      lastVisibleRef.current = null;
-      setHasMore(true);
-    } else if (!isInitial && retries === 3) {
-      setIsPaginating(true);
-    }
-
-    try {
-      let q = query(collection(db, "products"));
-      
-      if (activeCategory !== "All") {
-        q = query(q, where("type", "==", activeCategory));
-      }
-      
-      q = query(q, orderBy("name"), limit(12));
-      
-      if (!isInitial && lastVisibleRef.current) {
-        q = query(q, startAfter(lastVisibleRef.current));
-      }
-      
-      const querySnapshot = await getDocs(q);
-      
-      if (querySnapshot && querySnapshot.docs) {
-        const fetchedProducts = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        
-        if (isInitial) {
-          setProducts(fetchedProducts);
-        } else {
-          setProducts((prev) => {
-            const existingIds = new Set(prev.map(p => p.id));
-            const newProducts = fetchedProducts.filter(p => !existingIds.has(p.id));
-            return [...prev, ...newProducts];
-          });
-        }
-        
-        const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
-        lastVisibleRef.current = lastDoc || null;
-        
-        if (fetchedProducts.length < 12) {
-          setHasMore(false);
-        }
-      } else {
-        setHasMore(false);
-      }
-      setLoading(false);
-      setIsPaginating(false);
-    } catch (error) {
-      console.error(`Error fetching paginated products (retries left: ${retries}):`, error);
-      if (retries > 0) {
-        setTimeout(() => {
-          fetchProductsPage(isInitial, retries - 1, delay * 2);
-        }, delay);
-      } else {
-        setLoading(false);
-        setIsPaginating(false);
-      }
-    }
-  }, [activeCategory, isFullyLoaded]);
-
-  // Fetch all products for search or filters
+  // Load the full catalogue once; collections then filter instantly with no refetch
   const fetchAllProducts = useCallback(async (retries = 3, delay = 500) => {
-    if (isFullyLoaded) return;
-    if (retries === 3) setLoading(true);
-    
     try {
-      console.log("Searching or filtering triggered: Loading full product catalog...");
       const querySnapshot = await getDocs(collection(db, "products"));
-      
+
       if (querySnapshot && querySnapshot.docs) {
         const productsArray = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-        
+
         setProducts(productsArray);
-        setIsFullyLoaded(true);
-        setHasMore(false);
-        
-        // Cache to sessionStorage so subsequent runs are read-free
+
         const now = Date.now();
         sessionStorage.setItem('products_cache', JSON.stringify(productsArray));
         sessionStorage.setItem('products_fetch_time', now.toString());
       }
-      setLoading(false);
     } catch (error) {
       console.error(`Error loading full catalog (retries left: ${retries}):`, error);
       if (retries > 0) {
-        setTimeout(() => {
-          fetchAllProducts(retries - 1, delay * 2);
-        }, delay);
-      } else {
-        setLoading(false);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        return fetchAllProducts(retries - 1, delay * 2);
       }
+      setProducts([]);
     }
-  }, [isFullyLoaded]);
+  }, []);
 
   // Handle active filters count calculation
   const activeFiltersCount = useMemo(() => {
@@ -217,15 +136,15 @@ function Products() {
     }, 0);
   }, [filters]);
 
-  // Proactively fetch all products to perform full client-side search/filtering
+  // Initialize from cache or load the full catalogue, with a calm 700ms minimum
   useEffect(() => {
-    if ((searchTerm !== "" || activeFiltersCount > 0) && !isFullyLoaded && !loading && !isPaginating) {
-      fetchAllProducts();
-    }
-  }, [searchTerm, activeFiltersCount, isFullyLoaded, loading, isPaginating, fetchAllProducts]);
+    startedAtRef.current = Date.now();
 
-  // Initialize and check cache or fetch page 1
-  useEffect(() => {
+    const finishInitialLoad = () => {
+      const elapsed = Date.now() - startedAtRef.current;
+      setTimeout(() => setLoading(false), Math.max(0, 700 - elapsed));
+    };
+
     const checkCacheAndInit = () => {
       try {
         const cachedProducts = sessionStorage.getItem('products_cache');
@@ -242,9 +161,7 @@ function Products() {
             (now - parseInt(lastFetchTime)) < 5 * 60 * 1000 &&
             !authStateChanged) {
           setProducts(JSON.parse(cachedProducts));
-          setIsFullyLoaded(true);
-          setHasMore(false);
-          setLoading(false);
+          finishInitialLoad();
           return true;
         }
       } catch (e) {
@@ -253,13 +170,11 @@ function Products() {
       return false;
     };
 
-    const hasCache = checkCacheAndInit();
-    if (!hasCache) {
-      setIsFullyLoaded(false);
-      fetchProductsPage(true);
+    if (!checkCacheAndInit()) {
+      fetchAllProducts().then(finishInitialLoad);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, activeCategory]);
+  }, [user]);
 
   // Derive unique brands from active collection
   useEffect(() => {
@@ -287,27 +202,6 @@ function Products() {
     setVisibleCount(12);
   };
 
-  // High-performance IntersectionObserver infinite scroll trigger
-  useEffect(() => {
-    if (!observerRef.current || loading || isPaginating) return;
-
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        if (isFullyLoaded) {
-          setVisibleCount((prev) => prev + 12);
-        } else if (hasMore) {
-          fetchProductsPage(false);
-        }
-      }
-    }, {
-      rootMargin: "250px", // Trigger slightly before reaching the bottom
-      threshold: 0.01
-    });
-
-    observer.observe(observerRef.current);
-    return () => observer.disconnect();
-  }, [loading, isPaginating, isFullyLoaded, hasMore, fetchProductsPage]);
-
   const categories = useMemo(() => {
     const base = [
       "All",
@@ -330,6 +224,27 @@ function Products() {
 
     return ["All", ...merged];
   }, [dynamicCategories, products]);
+
+  // Derive the active collection from the URL
+  const activeCategory = useMemo(() => {
+    if (!categorySlug) return "All";
+    const match = categories.find((cat) => cat !== "All" && slugifyCategory(cat) === categorySlug);
+    return match || unslugifyCategory(categorySlug);
+  }, [categorySlug, categories]);
+
+  // Calm 700ms transition between collections, no page reload and no layout jolt
+  useEffect(() => {
+    if (previousSlugRef.current === categorySlug) return;
+    previousSlugRef.current = categorySlug;
+    setSwitching(true);
+    setVisibleCount(12);
+    if (switchTimerRef.current) clearTimeout(switchTimerRef.current);
+    switchTimerRef.current = setTimeout(() => setSwitching(false), 700);
+    return () => {
+      if (switchTimerRef.current) clearTimeout(switchTimerRef.current);
+    };
+  }, [categorySlug]);
+
 
   // Highly optimized product filter computation
   const filteredProducts = useMemo(() => {
@@ -388,12 +303,27 @@ function Products() {
   }, [products, activeCategory, searchTerm, filters]);
 
   // Paginated chunk currently visible on screen
-  const visibleProducts = useMemo(() => {
-    if (isFullyLoaded) {
-      return filteredProducts.slice(0, visibleCount);
-    }
-    return filteredProducts;
-  }, [filteredProducts, visibleCount, isFullyLoaded]);
+  const visibleProducts = useMemo(() => (
+    filteredProducts.slice(0, visibleCount)
+  ), [filteredProducts, visibleCount]);
+
+  // Client-side infinite scroll over the already-loaded catalogue
+  useEffect(() => {
+    if (!observerRef.current || loading || switching) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        setVisibleCount((prev) => prev + 12);
+      }
+    }, {
+      rootMargin: "250px",
+      threshold: 0.01
+    });
+
+    observer.observe(observerRef.current);
+    return () => observer.disconnect();
+  }, [loading, switching, filteredProducts.length, visibleProducts.length]);
+
 
   const handleAddToCart = useCallback((product) => {
     dispatch(addToCart({
@@ -408,16 +338,8 @@ function Products() {
         <Helmet>
           <title>Loading Premium Products... | KamiKoto</title>
         </Helmet>
-        <div className="container mx-auto px-2 py-8 max-w-7xl">
-          <div className="mb-8 animate-pulse">
-            <div className="h-10 w-64 bg-gray-100 rounded-xl mb-4" />
-            <div className="h-5 w-48 bg-gray-50 rounded-lg" />
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => (
-              <ProductSkeleton key={i} />
-            ))}
-          </div>
+        <div className="flex min-h-screen items-center justify-center">
+          <BrandLoader size={180} />
         </div>
       </div>
     );
@@ -426,8 +348,8 @@ function Products() {
   return (
     <div className="min-h-screen bg-white">
       <Helmet>
-        <title>Shop Premium Products | KamiKoto</title>
-        <meta name="description" content="Explore our curated collection of premium notebooks, journals, writing tools, and desk accessories." />
+        <title>{activeCategory === "All" ? "Shop All Products" : `Shop ${activeCategory}`} | KamiKoto</title>
+        <meta name="description" content={`Explore our curated collection of ${activeCategory === "All" ? "premium products" : activeCategory.toLowerCase()} at KamiKoto.`} />
       </Helmet>
       
       <div className="container mx-auto px-2 py-8 max-w-7xl">
@@ -439,7 +361,7 @@ function Products() {
           className="mb-8"
         >
           <span className="text-xs font-bold text-red-600 uppercase tracking-widest">Store Collection</span>
-          <h1 className="text-3xl sm:text-5xl font-black text-gray-900 tracking-tight mt-1.5 mb-2">Shop All Products</h1>
+          <h1 className="text-3xl sm:text-5xl font-black text-gray-900 tracking-tight mt-1.5 mb-2">{activeCategory === "All" ? "Shop All Products" : `Shop ${activeCategory}`}</h1>
           <p className="text-gray-500 text-sm font-medium">Enjoy free shipping on all orders above ₹500.</p>
         </m.div>
 
@@ -661,8 +583,10 @@ function Products() {
                 <button
                   key={category}
                   onClick={() => {
-                    setActiveCategory(category);
-                    setVisibleCount(12); // Reset page on category change
+                    if (isSelected) return;
+                    setSwitching(true);
+                    setVisibleCount(12);
+                    navigate(category === "All" ? "/products" : `/products/${slugifyCategory(category)}`);
                   }}
                   className={`
                     whitespace-nowrap px-5 py-2.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-300 flex-shrink-0
@@ -686,43 +610,69 @@ function Products() {
         </div>
 
         {/* Unified Products Grid */}
-        {visibleProducts.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
-            {visibleProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={handleAddToCart}
-              />
-            ))}
-          </div>
-        ) : (
-          /* Empty / No Results State */
-          <div className="text-center py-20 bg-gray-50/50 border border-gray-100 rounded-[32px] max-w-xl mx-auto px-2">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-white border border-gray-100 shadow-md rounded-2xl mb-4 text-red-600 font-black">
-              ✦
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No products matching filters</h3>
-            <p className="text-gray-500 text-sm max-w-sm mx-auto mb-6">We couldn't find matches. Try clearing some filters or searching for another term.</p>
-            <Button
-              variant="primary"
-              onClick={() => { resetFilters(); setInputValue(""); setActiveCategory("All"); }}
-              className="btn-shopify bg-gray-900 hover:bg-red-600 text-white text-xs font-bold rounded-xl py-2 px-5"
-            >
-              Reset All Filters
-            </Button>
-          </div>
-        )}
+        <div className="relative min-h-[340px]">
+          <AnimatePresence mode="wait" initial={false}>
+            {switching ? (
+              <m.div
+                key="category-loader"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex justify-center py-24"
+              >
+                <BrandLoader size={120} />
+              </m.div>
+            ) : visibleProducts.length > 0 ? (
+              <m.div
+                key={activeCategory}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8"
+              >
+                {visibleProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onAddToCart={handleAddToCart}
+                  />
+                ))}
+              </m.div>
+            ) : (
+              <m.div
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-center py-20 bg-gray-50/50 border border-gray-100 rounded-[32px] max-w-xl mx-auto px-2"
+              >
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-white border border-gray-100 shadow-md rounded-2xl mb-4 text-red-600 font-black">
+                  ✦
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">No products matching filters</h3>
+                <p className="text-gray-500 text-sm max-w-sm mx-auto mb-6">We couldn't find matches. Try clearing some filters or searching for another term.</p>
+                <Button
+                  variant="primary"
+                  onClick={() => { resetFilters(); setInputValue(""); navigate("/products"); }}
+                  className="btn-shopify bg-gray-900 hover:bg-red-600 text-white text-xs font-bold rounded-xl py-2 px-5"
+                >
+                  Reset All Filters
+                </Button>
+              </m.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         {/* Infinite Scroll Trigger & loading status */}
-        {((isFullyLoaded && filteredProducts.length > visibleCount) || (!isFullyLoaded && hasMore)) && (
+        {!switching && filteredProducts.length > visibleCount && (
           <div 
             ref={observerRef} 
             className="h-24 flex items-center justify-center mt-12 border-t border-gray-100 pt-8"
           >
             <div className="flex flex-col items-center gap-2">
-              {/* Sleek loading animation */}
-              <div className="w-6 h-6 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
+              <BrandLoader size={56} />
               <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Loading more products...</span>
             </div>
           </div>

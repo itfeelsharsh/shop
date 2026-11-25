@@ -207,6 +207,7 @@ function AnimatedRoutes() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/products" element={<Products />} />
+      <Route path="/products/:categorySlug" element={<Products />} />
       <Route path="/product/:id" element={<ProductView />} />
       <Route path="/cart" element={<Cart />} />
       <Route path="/signin" element={<SignIn />} />
