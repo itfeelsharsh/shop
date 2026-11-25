@@ -16,6 +16,7 @@ import { processNewOrder } from '../../utils/orderService';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import Button from '../../components/Button';
 import { sweepRazorpayTestModeRibbon } from '../../utils/razorpayRemover';
+import BrandLoader from '../../components/BrandLoader';
 import { getItemOptionLabel, getUnitPrice } from '../../utils/productOptions';
 
 
@@ -889,6 +890,23 @@ function UnifiedCheckout() {
     setCouponCode(filteredValue);
   };
 
+  const ctaRef = useRef(null);
+  const autoScrolledRef = useRef(false);
+
+  useEffect(() => {
+    if (currentStep !== 2) {
+      autoScrolledRef.current = false;
+      return;
+    }
+    if (autoScrolledRef.current || !areAllRequiredFieldsFilled()) return;
+    if (window.matchMedia('(min-width: 1024px)').matches) return;
+    autoScrolledRef.current = true;
+    const timer = setTimeout(() => {
+      ctaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [currentStep, customerName, phoneNumber, address]);
+
   // Exit if user is not logged in
   if (!loadingAuth && !user) {
     navigate('/signin');
@@ -917,15 +935,16 @@ function UnifiedCheckout() {
           animate={{ opacity: 1, scale: 1 }}
           className="text-center max-w-md bg-white border border-gray-100 p-8 rounded-2xl shadow-xl"
         >
-          <div className="relative w-20 h-20 mx-auto mb-6">
-            <div className="absolute inset-0 rounded-full border-4 border-gray-100"></div>
+          <BrandLoader size={150} className="mb-2" />
+          <div className="relative w-16 h-16 mx-auto mb-6">
+            <div className="absolute inset-0 rounded-full border-4 border-red-50"></div>
             <div className="absolute inset-0 rounded-full border-4 border-t-[#D32F2F] border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
-            <CreditCard className="w-8 h-8 text-[#D32F2F] absolute inset-0 m-auto animate-pulse" />
+            <div className="absolute inset-[22px] rounded-full bg-[#D32F2F] shadow-md shadow-red-900/20 animate-pulse"></div>
           </div>
-          
-          <h2 className="text-2xl font-bold mb-3 tracking-tight text-gray-900">Processing Payment</h2>
-          <p className="text-gray-600 text-sm mb-6 leading-relaxed">
-            Razorpay is confirming your transaction. Please keep this page open while we finish.
+
+          <h2 className="text-2xl font-bold mb-2 tracking-tight text-gray-900">Razorpay is confirming…</h2>
+          <p className="text-gray-500 text-sm leading-relaxed">
+            Please keep this page open while we finish.
           </p>
         </m.div>
       </div>
@@ -938,57 +957,46 @@ function UnifiedCheckout() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 py-12 lg:h-[calc(100dvh-73px)] lg:min-h-0 lg:overflow-hidden lg:py-6">
       <Helmet>
         <title>Checkout | KamiKoto</title>
         <meta name="description" content="Complete your purchase securely at KamiKoto." />
       </Helmet>
       <div className="container mx-auto px-2 sm:px-4">
-        {/* Checkout Steps */}
-        <m.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-4xl mx-auto mb-8"
-        >
-          <div className="flex items-center justify-between">
-            <div className={`flex flex-col items-center ${currentStep >= 1 ? 'text-gray-900' : 'text-gray-400'}`}>
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all ${
-                currentStep >= 1 ? 'bg-[#D32F2F] text-white shadow-lg border border-[#D32F2F]' : 'bg-gray-200 text-gray-500'
-              }`}>
-                <ShoppingBag size={20} />
-              </div>
-              <span className="text-sm font-semibold">Summary</span>
-            </div>
-
-            <div className={`flex-1 h-1 mx-4 transition-all ${currentStep >= 2 ? 'bg-[#D32F2F]' : 'bg-gray-200'}`}></div>
-
-            <div className={`flex flex-col items-center ${currentStep >= 2 ? 'text-gray-900' : 'text-gray-400'}`}>
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all ${
-                currentStep >= 2 ? 'bg-[#D32F2F] text-white shadow-lg border border-[#D32F2F]' : 'bg-gray-200 text-gray-500'
-              }`}>
-                <Truck size={20} />
-              </div>
-              <span className="text-sm font-semibold">Shipping</span>
-            </div>
-
-            <div className={`flex-1 h-1 mx-4 transition-all ${currentStep >= 3 ? 'bg-[#D32F2F]' : 'bg-gray-200'}`}></div>
-
-            <div className={`flex flex-col items-center ${currentStep >= 3 ? 'text-gray-900' : 'text-gray-400'}`}>
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all ${
-                currentStep >= 3 ? 'bg-[#D32F2F] text-white shadow-lg border border-[#D32F2F]' : 'bg-gray-200 text-gray-500'
-              }`}>
-                <CreditCard size={20} />
-              </div>
-              <span className="text-sm font-semibold">Payment</span>
-            </div>
-          </div>
-        </m.div>
-
         {/* Main Checkout Container */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-3">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden lg:flex lg:h-[calc(100dvh-73px-3rem)] lg:max-h-[1200px] lg:flex-col">
+          {/* Checkout steps (merged into the card header) */}
+          <m.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="shrink-0 border-b border-gray-100 px-4 py-3 sm:px-6 sm:py-4 md:px-8"
+          >
+            <div className="mx-auto flex max-w-3xl items-center justify-between">
+              {[
+                { key: 1, label: 'Summary', Icon: ShoppingBag },
+                { key: 2, label: 'Shipping', Icon: Truck },
+                { key: 3, label: 'Payment', Icon: CreditCard },
+              ].map((step, index, all) => (
+                <React.Fragment key={step.key}>
+                  <div className={`flex flex-col items-center ${currentStep >= step.key ? 'text-gray-900' : 'text-gray-400'}`}>
+                    <div className={`mb-1 flex h-8 w-8 items-center justify-center rounded-full transition-all sm:h-9 sm:w-9 ${
+                      currentStep >= step.key ? 'border border-[#D32F2F] bg-[#D32F2F] text-white shadow-md' : 'bg-gray-200 text-gray-500'
+                    }`}>
+                      <step.Icon size={16} />
+                    </div>
+                    <span className="text-[11px] font-semibold sm:text-xs">{step.label}</span>
+                  </div>
+                  {index < all.length - 1 && (
+                    <div className={`mx-2 h-0.5 flex-1 rounded-full transition-all sm:mx-4 ${currentStep >= step.key + 1 ? 'bg-[#D32F2F]' : 'bg-gray-200'}`}></div>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          </m.div>
+
+          <div className="grid grid-cols-1 lg:min-h-0 lg:flex-1 lg:grid-cols-3">
             {/* Left Column - Content */}
-            <div className="lg:col-span-2 p-4 sm:p-6 md:p-8">
+            <div className="lg:col-span-2 lg:min-h-0 lg:overflow-y-auto p-4 sm:p-6 md:p-8">
               <AnimatePresence mode="wait">
                 {currentStep === 1 && (
                   <m.div
@@ -1344,13 +1352,13 @@ function UnifiedCheckout() {
             </div>
 
             {/* Right Column - Order Summary */}
-            <div className="lg:col-span-1 bg-gradient-to-br from-gray-50 to-white p-4 sm:p-6 md:p-8 border-t lg:border-t-0 lg:border-l border-gray-200">
-              <div className="sticky top-8">
-                <h3 className="text-lg font-bold text-gray-900 mb-6">Order Summary</h3>
+            <div className="lg:col-span-1 lg:min-h-0 lg:overflow-y-auto bg-gradient-to-br from-gray-50 to-white p-4 sm:p-6 md:p-8 lg:p-5 border-t lg:border-t-0 lg:border-l border-gray-200">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 mb-6 lg:mb-3">Order Summary</h3>
 
                 {/* Coupon Section */}
-                <div className="bg-white p-4 rounded-xl border border-gray-200 mb-6">
-                  <h4 className="font-medium text-gray-700 mb-3 flex items-center">
+                <div className="bg-white p-4 lg:p-3 rounded-xl border border-gray-200 mb-6 lg:mb-4">
+                  <h4 className="font-medium text-gray-700 mb-3 lg:mb-2 flex items-center">
                     <Tag size={16} className="mr-2 text-gray-900" />
                     Apply Coupon
                   </h4>
@@ -1413,7 +1421,7 @@ function UnifiedCheckout() {
                   )}
                 </div>
 
-                <div className="space-y-3 text-sm mb-6">
+                <div className="space-y-3 lg:space-y-1.5 text-sm mb-6 lg:mb-4">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal</span>
                     <span className="font-medium">{formatPrice(subtotal)}</span>
@@ -1441,15 +1449,15 @@ function UnifiedCheckout() {
                     </div>
                   )}
 
-                  <div className="pt-3 mt-3 border-t border-gray-200">
-                    <div className="flex justify-between font-bold text-lg">
+                  <div className="pt-3 mt-3 lg:pt-2 lg:mt-2 border-t border-gray-200">
+                    <div className="flex justify-between font-bold text-lg lg:text-base">
                       <span>Total</span>
                       <span>{formatPrice(total + importDuty)}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-3 lg:space-y-2" ref={ctaRef}>
                   <Button
                     variant="primary"
                     size="large"

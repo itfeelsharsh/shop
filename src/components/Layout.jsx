@@ -38,7 +38,7 @@ const Layout = ({ children }) => {
         {children}
       </main>
       
-      <Footer />
+      {!location.pathname.startsWith('/checkout') && <Footer />}
     </div>
   );
 };
