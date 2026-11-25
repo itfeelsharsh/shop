@@ -47,6 +47,11 @@ const ORDER_STATUS = {
 function MyAccount() {
   const { section } = useParams();
   const currentSection = section || 'profile';
+  const contentRef = useRef(null);
+
+  useEffect(() => {
+    contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentSection]);
   
   const [user] = useAuthState(auth);
   const [profile, setProfile] = useState({
@@ -310,15 +315,15 @@ function MyAccount() {
   }
 
   return (
-    <div className="bg-gray-50/30 min-h-screen py-16">
+    <div className="bg-gray-50/30 min-h-screen py-16 lg:h-[calc(100dvh-73px)] lg:min-h-0 lg:overflow-hidden lg:py-6">
       <Helmet>
         <title>My Account | KamiKoto</title>
         <meta name="description" content="Manage your KamiKoto account, view orders, and update your profile." />
       </Helmet>
       
-      <div className="container mx-auto px-1 sm:px-4 max-w-7xl">
+      <div className="container mx-auto px-1 sm:px-4 max-w-7xl lg:flex lg:h-full lg:flex-col">
         {/* Header Section */}
-        <div className="mb-10 text-center md:text-left max-w-2xl">
+        <div className="mb-10 text-center md:text-left max-w-2xl lg:mb-4">
           <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">Account Dashboard</h1>
           <p className="text-gray-500 text-base mt-2">Manage your profile.</p>
         </div>
@@ -352,11 +357,11 @@ function MyAccount() {
         </div>
         
         {/* Dashboard Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start lg:min-h-0 lg:flex-1 lg:items-stretch">
           
           {/* Sidebar Navigation - Desktop (col-span-3) */}
-          <div className="hidden lg:block lg:col-span-3">
-            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 space-y-8 sticky top-24">
+          <div className="hidden lg:block lg:col-span-3 lg:h-full lg:overflow-y-auto">
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 space-y-8">
               {/* Profile Avatar Card */}
               <div className="text-center pb-6 border-b border-gray-100">
                 <div className="relative w-24 h-24 mx-auto mb-4 group">
@@ -419,8 +424,8 @@ function MyAccount() {
           </div>
 
           {/* Main Content Area (col-span-9) */}
-          <div className="col-span-1 lg:col-span-9">
-            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm px-1.5 py-5 sm:p-6 md:p-10 min-h-[500px]">
+          <div className="col-span-1 lg:col-span-9 lg:h-full lg:min-h-0">
+            <div ref={contentRef} className="bg-white rounded-3xl border border-gray-100 shadow-sm px-1.5 py-5 sm:p-6 md:p-10 min-h-[500px] lg:h-full lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain">
               <AnimatePresence mode="wait">
                 <m.div
                   key={currentSection}
