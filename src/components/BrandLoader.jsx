@@ -2,9 +2,26 @@ import React from 'react';
 
 /**
  * Brand loader: the animated cat, shown on its own with no text.
- * Encoded as a small looping MP4/WebM (about 240 KB) instead of the original 2.6 MB GIF.
+ * Full screens use a small looping MP4/WebM; inline buttons use a transparent animated WebP
+ * so the cat sits cleanly on any button colour (no white box).
  */
-const BrandLoader = ({ size = 160, className = '' }) => (
+const BrandLoader = ({ size = 160, className = '', inline = false }) => {
+  if (inline) {
+    return (
+      <img
+        src="/loading-cat-alpha.webp"
+        width={size}
+        height={size}
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+        className="pointer-events-none select-none"
+        style={{ width: size, height: size, objectFit: 'contain' }}
+      />
+    );
+  }
+
+  return (
   <div
     role="status"
     aria-label="Loading"
@@ -26,6 +43,7 @@ const BrandLoader = ({ size = 160, className = '' }) => (
       <source src="/loading-cat.webm" type="video/webm" />
     </video>
   </div>
-);
+  );
+};
 
 export default BrandLoader;

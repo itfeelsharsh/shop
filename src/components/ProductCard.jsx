@@ -242,7 +242,7 @@ const ProductCard = memo(function ProductCard({
             size="small"
             isLoading={isAddingToCart}
             loadingText=""
-            loadingIcon={<BrandLoader size={22} />}
+            loadingIcon={<BrandLoader size={22} inline />}
             disabled={!product?.stock || product.stock <= 0}
             onClick={handleAddToCart}
             className="!h-9 !w-9 !shrink-0 !rounded-lg !bg-[#D32F2F] !p-0 !text-white !shadow-none hover:!bg-[#B71C1C] disabled:!bg-gray-200 sm:!h-10 sm:!w-10"
